@@ -14,6 +14,12 @@ flowchart TB
         iOS[iOS App<br/>React Native]
         Android[Android App<br/>React Native]
         Web[Website]
+        Extension[Chrome Extension<br/>Map Scraper]
+    end
+
+    subgraph External["External Services"]
+        GoogleMaps[Google Maps]
+        GeoAPI[Google Geocoding API]
     end
 
     subgraph Backend
@@ -30,6 +36,10 @@ flowchart TB
     iOS --> API
     Android --> API
     Web --> API
+    Extension --> API
+
+    GoogleMaps -.->|Extract Data| Extension
+    GeoAPI -.->|Reverse Geocode| Extension
 
     API --> MongoDB
     API --> S3
@@ -50,6 +60,20 @@ The React Native application built with Expo SDK 51. Supports both iOS and Andro
 - User profiles with image upload
 - Guest mode (offline functionality)
 - Spin the wheel (random trick selector)
+
+### Chrome Extension (Map Scraper)
+
+A Chrome extension that extracts skate spot data from Google Maps and syncs it to TrickBook.
+
+**Key Features:**
+- One-click spot extraction from Google Maps
+- Automatic geocoding for city/state
+- Tag categorization (bowl, street, lights, etc.)
+- Spot list management
+- Bulk sync to TrickBook backend
+- CSV export for offline use
+
+See [Chrome Extension](/docs/chrome-extension/overview) for full documentation.
 
 ### Backend API
 
@@ -138,5 +162,6 @@ The backend serves multiple clients:
 | iOS App | api.thetrickbook.com | JWT |
 | Android App | api.thetrickbook.com | JWT |
 | Website | api.thetrickbook.com | JWT |
+| Chrome Extension | api.thetrickbook.com | JWT |
 
 **Important:** Any API changes must maintain backwards compatibility with all clients.

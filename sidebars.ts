@@ -36,6 +36,14 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Chrome Extension',
+      items: [
+        'chrome-extension/overview',
+        'chrome-extension/data-model',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Deployment',
       items: [
         'deployment/app-store',
@@ -51,6 +59,7 @@ const sidebars: SidebarsConfig = {
         'roadmap/priorities',
         'roadmap/security-fixes',
         'roadmap/efficiency-improvements',
+        'roadmap/chrome-extension-integration',
       ],
     },
   ],
