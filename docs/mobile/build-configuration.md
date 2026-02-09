@@ -20,22 +20,25 @@ TrickBook uses EAS (Expo Application Services) for building and deploying native
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "node": "20.18.0",
       "ios": {
         "resourceClass": "m-medium",
-        "image": "macos-sonoma-14.6-xcode-16.0"
+        "image": "macos-sonoma-14.6-xcode-16.1"
       }
     },
     "preview": {
       "distribution": "internal",
+      "node": "20.18.0",
       "ios": {
         "resourceClass": "m-medium",
-        "image": "macos-sonoma-14.6-xcode-16.0"
+        "image": "macos-sonoma-14.6-xcode-16.1"
       }
     },
     "production": {
+      "node": "20.18.0",
       "ios": {
         "resourceClass": "m-medium",
-        "image": "macos-sonoma-14.6-xcode-16.0"
+        "image": "macos-sonoma-14.6-xcode-16.1"
       },
       "android": {
         "buildType": "app-bundle"
@@ -45,16 +48,17 @@ TrickBook uses EAS (Expo Application Services) for building and deploying native
       "distribution": "store",
       "ios": {
         "resourceClass": "m-medium",
-        "image": "macos-sonoma-14.6-xcode-16.0",
+        "image": "macos-sonoma-14.6-xcode-16.1",
         "autoIncrement": true
       },
+      "node": "20.18.0",
       "env": {
-        "EXPO_NO_DOTENV": "1",
-        "NODE_ENV": "production"
+        "EXPO_NO_DOTENV": "1"
       }
     },
     "playstore": {
       "distribution": "store",
+      "node": "20.18.0",
       "android": {
         "buildType": "app-bundle",
         "image": "latest",
@@ -67,20 +71,26 @@ TrickBook uses EAS (Expo Application Services) for building and deploying native
     }
   },
   "submit": {
-    "production": {}
+    "production": {},
+    "playstore": {
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }
 ```
 
 ### Build Profiles
 
-| Profile | Platform | Distribution | Use Case |
-|---------|----------|--------------|----------|
-| `development` | iOS/Android | Internal | Local dev with dev-client |
-| `preview` | iOS/Android | Internal | QA testing |
-| `production` | iOS/Android | N/A | Generic production build |
-| `testflight` | iOS | Store | App Store submission |
-| `playstore` | Android | Store | Google Play submission |
+| Profile | Platform | Distribution | Node.js | Use Case |
+|---------|----------|--------------|---------|----------|
+| `development` | iOS/Android | Internal | 20.18.0 | Local dev with dev-client |
+| `preview` | iOS/Android | Internal | 20.18.0 | QA testing |
+| `production` | iOS/Android | N/A | 20.18.0 | Generic production build |
+| `testflight` | iOS | Store | 20.18.0 | App Store submission |
+| `playstore` | Android | Store | 20.18.0 | Google Play submission |
 
 ## App Configuration
 
@@ -91,38 +101,56 @@ TrickBook uses EAS (Expo Application Services) for building and deploying native
   "expo": {
     "name": "TrickBook",
     "slug": "TrickBook",
-    "version": "1.0.8",
+    "version": "2.0.0",
     "privacy": "public",
     "orientation": "portrait",
-    "icon": "./app/assets/icon.png",
+    "scheme": "trickbook",
+    "userInterfaceStyle": "automatic",
+    "icon": "./assets/images/icon.png",
     "splash": {
-      "image": "./app/assets/splash.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#121212"
     },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.thetrickbook.trickbook",
+      "buildNumber": "5",
+      "config": {
+        "googleMapsApiKey": "..."
+      },
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to access photos for a profile image.",
+        "NSCameraUsageDescription": "TrickBook uses the camera to take photos...",
+        "NSPhotoLibraryUsageDescription": "TrickBook needs access to your photos...",
+        "NSLocationWhenInUseUsageDescription": "TrickBook uses your location to find nearby spots.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "package": "com.thetrickbook.trickbook",
-      "versionCode": 4,
+      "versionCode": 5,
       "adaptiveIcon": {
-        "foregroundImage": "./app/assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      }
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#121212"
+      },
+      "config": {
+        "googleMaps": { "apiKey": "..." }
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
     },
     "plugins": [
-      "./plugins/fix-cpp-build-error"
-    ]
+      "expo-secure-store",
+      "expo-router",
+      "expo-video",
+      "expo-apple-authentication",
+      ["expo-location", { "locationWhenInUsePermission": "..." }]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }
 ```
@@ -133,32 +161,27 @@ TrickBook uses EAS (Expo Application Services) for building and deploying native
 |-------|-------|---------|
 | `name` | TrickBook | Display name |
 | `slug` | TrickBook | URL-safe identifier |
-| `version` | 1.0.8 | Semantic version |
+| `version` | 2.0.0 | Semantic version |
+| `scheme` | trickbook | Deep link scheme |
 | `bundleIdentifier` | com.thetrickbook.trickbook | iOS app ID |
 | `package` | com.thetrickbook.trickbook | Android app ID |
-| `versionCode` | 4 | Android build number |
+| `buildNumber` | 5 | iOS build number |
+| `versionCode` | 5 | Android build number |
+| `userInterfaceStyle` | automatic | Supports dark/light mode |
 
-## Native Plugins
+### Expo Plugins
 
-### Custom C++ Build Fix
+| Plugin | Purpose |
+|--------|---------|
+| `expo-secure-store` | Secure token storage |
+| `expo-router` | File-based navigation |
+| `expo-video` | Video playback |
+| `expo-apple-authentication` | Apple Sign-In |
+| `expo-location` | GPS location access |
 
-Fixes gesture handler build issues:
+### Typed Routes
 
-```javascript
-// plugins/fix-cpp-build-error.js
-const { withGradleProperties } = require('@expo/config-plugins');
-
-module.exports = function withFixCppBuildError(config) {
-  return withGradleProperties(config, (config) => {
-    config.modResults.push({
-      type: 'property',
-      key: 'android.enableJetifier',
-      value: 'true'
-    });
-    return config;
-  });
-};
-```
+With `experiments.typedRoutes: true`, Expo Router generates TypeScript types for all route paths, providing compile-time safety for navigation.
 
 ## Build Commands
 
@@ -207,8 +230,8 @@ eas submit --platform ios --id BUILD_ID
 ### Android (Google Play)
 
 ```bash
-# Submit latest Android build
-eas submit --platform android --latest
+# Submit latest Android build (internal track, draft)
+eas submit --platform android --latest --profile playstore
 ```
 
 ## Version Management
@@ -224,7 +247,7 @@ With `appVersionSource: "remote"` in eas.json:
 ```bash
 # Set app version
 eas build:version:set --platform ios --build-number 10
-eas build:version:set --platform android --version-code 5
+eas build:version:set --platform android --version-code 6
 ```
 
 ## Environment Variables
@@ -234,89 +257,14 @@ For production builds, sensitive values come from EAS secrets:
 ```bash
 # Set EAS secrets
 eas secret:create --name API_URL --value "https://api.thetrickbook.com"
-eas secret:create --name SENTRY_DSN --value "https://xxx@sentry.io/xxx"
 ```
 
-Access in app:
-
-```javascript
-const apiUrl = process.env.API_URL || 'https://api.thetrickbook.com/api';
-```
-
-## Android Signing
-
-EAS manages signing automatically. For manual setup:
-
-```bash
-# Generate new keystore
-eas credentials --platform android
-
-# View current credentials
-eas credentials --platform android
-```
-
-## iOS Signing
-
-EAS handles certificates and provisioning profiles:
-
-```bash
-# Configure iOS credentials
-eas credentials --platform ios
-
-# Use Apple Developer Portal credentials
-eas credentials --platform ios
-```
-
-## Build Validation Script
-
-Pre-build validation for Android:
-
-```bash
-#!/bin/bash
-# validate-android-build.sh
-
-echo "Validating Android build configuration..."
-
-# Check gradle.properties
-if ! grep -q "android.enableJetifier=true" android/gradle.properties 2>/dev/null; then
-  echo "Warning: android.enableJetifier not set"
-fi
-
-# Check build.gradle
-if ! grep -q "com.thetrickbook.trickbook" android/app/build.gradle 2>/dev/null; then
-  echo "Warning: Package name mismatch in build.gradle"
-fi
-
-# Check for AAB format
-if ! grep -q "app-bundle" eas.json; then
-  echo "Warning: Android not configured for App Bundle"
-fi
-
-echo "Validation complete"
-```
-
-## OTA Updates
-
-Over-the-air updates enabled via expo-updates:
-
-```javascript
-// Updates configuration in app.json
-"updates": {
-  "fallbackToCacheTimeout": 0
-}
-```
-
-```bash
-# Publish OTA update
-eas update --branch production --message "Bug fix"
-```
+The `EXPO_NO_DOTENV: "1"` flag in testflight/playstore profiles prevents loading local `.env` files during builds.
 
 ## Build Monitoring
 
-Track builds in EAS dashboard:
-- https://expo.dev/accounts/[username]/projects/TrickBook/builds
+Track builds in EAS dashboard or via CLI:
 
-Or via CLI:
 ```bash
 # List recent builds
 eas build:list
@@ -324,3 +272,12 @@ eas build:list
 # View build details
 eas build:view BUILD_ID
 ```
+
+## iOS Build Environment
+
+| Setting | Value |
+|---------|-------|
+| macOS | Sonoma 14.6 |
+| Xcode | 16.1 |
+| Resource Class | m-medium |
+| Node.js | 20.18.0 |

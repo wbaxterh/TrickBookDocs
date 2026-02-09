@@ -12,6 +12,7 @@ How data moves through the TrickBook application.
 sequenceDiagram
     participant User
     participant App
+    participant Zustand as Zustand Store
     participant Backend
     participant DB as MongoDB
 
@@ -20,43 +21,83 @@ sequenceDiagram
     Backend->>DB: Find user by email
     DB-->>Backend: User document
     Backend->>Backend: bcrypt.compare(password)
-    Backend-->>App: JWT token
-    App->>App: jwt-decode (extract user data)
-    App->>App: SecureStore.setItem(token)
-    App->>App: setUser(decoded)
-    App-->>User: Navigate to AppNavigator
+    Backend-->>App: JWT token + user data
+    App->>Zustand: authStore.login(token, user)
+    Zustand->>Zustand: SecureStore.setItem(token)
+    Zustand->>Zustand: Set user state
+    App-->>User: Navigate to (tabs) layout
 ```
 
 ## App Startup Flow
 
-```javascript
-// App.js - Simplified
-const App = () => {
-  const [user, setUser] = useState();
-  const [isReady, setIsReady] = useState(false);
+```typescript
+// app/_layout.tsx - Simplified
+const RootLayout = () => {
+  const { user, isLoading, loadStoredAuth } = useAuthStore();
 
   useEffect(() => {
-    restoreToken();
+    loadStoredAuth(); // Restore token from SecureStore
   }, []);
 
-  const restoreToken = async () => {
-    const token = await authStorage.getToken();
-    if (token) {
-      const decoded = jwtDecode(token);
-      const userProfile = await usersApi.getUser(decoded.email);
-      setUser({ ...decoded, ...userProfile.data });
-    }
-    setIsReady(true);
-  };
-
-  if (!isReady) return <SplashScreen />;
+  if (isLoading) return <SplashScreen />;
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
-      {user ? <AppNavigator /> : <AuthNavigator />}
-    </AuthContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <Stack>
+          {user ? (
+            <Stack.Screen name="(tabs)" />
+          ) : (
+            <Stack.Screen name="(auth)" />
+          )}
+        </Stack>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 };
+```
+
+## Data Fetching with React Query
+
+All API data flows through React Query for caching, deduplication, and automatic refetching.
+
+```typescript
+// Example: Fetching trick lists
+const { data: trickLists, isLoading, refetch } = useQuery({
+  queryKey: ['trickLists'],
+  queryFn: () => trickbookApi.getTrickLists(),
+  staleTime: 5 * 60 * 1000, // 5 minutes
+});
+
+// Example: Creating a trick list (mutation)
+const createMutation = useMutation({
+  mutationFn: (data: CreateTrickListData) =>
+    trickbookApi.createTrickList(data),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['trickLists'] });
+  },
+});
+```
+
+```
+React Query Cache Flow:
+
+Component mounts → Check cache
+    │
+    ├── Cache fresh → Return cached data
+    │
+    ├── Cache stale → Return cached data + refetch in background
+    │
+    └── No cache → Fetch from API
+                       │
+                       ▼
+                  apiClient.get('/listings')
+                       │
+                       ▼
+                  Auto-inject x-auth-token header
+                       │
+                       ▼
+                  Return data → Cache → Component
 ```
 
 ## Trick List Data Flow
@@ -67,80 +108,79 @@ const App = () => {
 1. User taps "+" button
            │
            ▼
-2. CreateTrickListScreen renders
+2. Form with React Hook Form + Zod validation
            │
            ▼
-3. User enters list name
+3. useMutation → POST /api/listings
+   { name: "Kickflips to learn" }
            │
            ▼
-4. Formik validates with Yup schema
-           │
-           ▼
-5. POST /api/listings
-   {
-     name: "Kickflips to learn",
-     user: "userId"
-   }
-           │
-           ▼
-6. Backend creates in MongoDB
+4. Backend creates in MongoDB
    db.tricklists.insertOne({...})
            │
            ▼
-7. Return { _id, name, tricks: [] }
+5. Return { _id, name, tricks: [] }
            │
            ▼
-8. Navigate to TrickListScreen
+6. Invalidate ['trickLists'] query → auto-refetch
+           │
+           ▼
+7. Navigate to trick list detail screen
 ```
 
-### Adding a Trick
-
-```
-1. User on TrickListScreen
-           │
-           ▼
-2. Tap "Add Trick" button
-           │
-           ▼
-3. AddTrickScreen modal
-           │
-           ▼
-4. Enter trick name
-           │
-           ▼
-5. PUT /api/listing
-   {
-     list_id: "listId",
-     name: "Kickflip",
-     checked: false
-   }
-           │
-           ▼
-6. Backend adds to tricks array
-           │
-           ▼
-7. Return updated list
-           │
-           ▼
-8. UI updates with new trick
-```
-
-### Checking Off a Trick
+### Tracking Trick Progress
 
 ```
 PUT /api/listing/{trickId}
 {
-  checked: true
+  checked: "Landed"  // "Not Started" | "Learning" | "Landed" | "Mastered"
 }
            │
            ▼
 Update in MongoDB
            │
            ▼
-Recalculate completion %
+Invalidate query cache
            │
            ▼
-Update RoundedLineBar UI
+Update StatusBadge + ProgressBar UI
+```
+
+## Social Feed Data Flow
+
+### Creating a Post
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App
+    participant API as Backend API
+    participant S3 as AWS S3
+    participant Bunny as Bunny.net
+    participant DB as MongoDB
+    participant Socket as Socket.IO
+
+    User->>App: Record/select video
+    App->>API: POST /api/upload (video file)
+    API->>Bunny: Upload to Bunny.net CDN
+    Bunny-->>API: Video URL + thumbnail
+    API-->>App: Media URLs
+    App->>API: POST /api/feed/posts
+    API->>DB: Insert feed_post
+    API->>Socket: Emit new post event
+    Socket-->>App: Real-time feed update
+```
+
+### Feed Algorithm Scoring
+
+```
+Feed posts are ranked by a scoring algorithm:
+
+score = (engagement * 0.35) + (recency * 0.25) +
+        (completion * 0.25) + (interaction * 0.15)
+
+Homie boost: Posts from friends get 2.5x multiplier
+Recency: 48-hour half-life decay
 ```
 
 ## Image Upload Flow
@@ -149,15 +189,40 @@ Update RoundedLineBar UI
 flowchart TD
     A[User selects image] --> B[expo-image-picker]
     B --> C[expo-image-manipulator]
-    C --> D["Resize to 640px<br/>Compress to 0.2 quality"]
+    C --> D["Resize + compress"]
     D --> E[Create FormData]
     E --> F["POST /api/image/upload"]
     F --> G[multer parses multipart]
     G --> H[multer-s3 streams to S3]
     H --> I[(AWS S3)]
     I --> J[Return S3 URL]
-    J --> K[Update user.imageUri in MongoDB]
-    K --> L[Display new profile image]
+    J --> K[Update record in MongoDB]
+    K --> L[Display new image]
+```
+
+## Direct Messaging Flow
+
+```mermaid
+sequenceDiagram
+    participant UserA as User A
+    participant AppA as App A
+    participant Socket as Socket.IO
+    participant API as Backend
+    participant DB as MongoDB
+    participant AppB as App B
+    participant UserB as User B
+
+    UserA->>AppA: Type message
+    AppA->>Socket: Emit typing indicator
+    Socket-->>AppB: Show "typing..."
+    UserA->>AppA: Send message
+    AppA->>API: POST /api/dm/messages
+    API->>DB: Insert dm_message
+    API->>Socket: Emit new message
+    Socket-->>AppB: Real-time message delivery
+    AppB-->>UserB: Show new message
+    UserB->>AppB: Read message
+    AppB->>API: PUT /api/dm/messages/:id/read
 ```
 
 ## Subscription Flow
@@ -185,64 +250,56 @@ sequenceDiagram
     API-->>App: Premium features enabled
 ```
 
-## Guest Mode Data Flow
-
-Guest mode stores data locally without backend sync:
-
-```javascript
-// AsyncStorage key: @guest_trick_list
-{
-  tricks: [
-    { id: 1, name: "Kickflip", checked: false },
-    { id: 2, name: "Heelflip", checked: true }
-  ]
-}
-```
+## Real-Time Data Flow
 
 ```
-Guest adds trick
-       │
-       ▼
-AsyncStorage.setItem('@guest_trick_list', JSON.stringify(list))
-       │
-       ▼
-On app restart
-       │
-       ▼
-AsyncStorage.getItem('@guest_trick_list')
-       │
-       ▼
-Restore local state
+Socket.IO Connection Lifecycle:
+
+App Launch
+    │
+    ▼
+Connect to Socket.IO server
+    │
+    ├── Auth: Pass JWT in handshake
+    │
+    ├── /feed namespace
+    │       │
+    │       ├── Join room: user:{userId}
+    │       ├── Listen: 'post:update' → update React Query cache
+    │       ├── Listen: 'reaction:update' → update reaction counts
+    │       └── Listen: 'comment:new' → show notification
+    │
+    └── /messages namespace
+            │
+            ├── Join room: user:{userId}
+            ├── Listen: 'message:new' → add to conversation
+            ├── Listen: 'typing' → show indicator
+            └── Listen: 'read' → update read receipts
 ```
 
 ## API Request Pattern
 
-All authenticated requests follow this pattern:
+All authenticated requests flow through a custom fetch client:
 
-```javascript
-// app/api/client.js
-const apiClient = create({
-  baseURL: "https://api.thetrickbook.com/api",
-});
-
-// Usage in components
-const response = await tricksApi.getTricks(userId);
-
-if (!response.ok) {
-  // Handle error
-  return;
-}
-
-// Use response.data
-setTricks(response.data);
+```typescript
+// src/lib/api/client.ts
+const apiClient = {
+  get: async (url: string) => {
+    const token = await SecureStore.getItemAsync('authToken');
+    const response = await fetch(`${BASE_URL}${url}`, {
+      headers: {
+        'x-auth-token': token ?? '',
+        'Content-Type': 'application/json',
+      },
+    });
+    return response.json();
+  },
+  // post, put, delete follow same pattern
+};
 ```
 
-Response format:
-```javascript
-{
-  ok: true,           // Success indicator
-  data: [...],        // Response payload
-  status: 200,        // HTTP status
-  problem: null       // Error type if failed
-}
-```
+Features:
+- Auto-injects auth token from Secure Store
+- Retry logic (3 attempts with 1s delay)
+- Custom timeouts (30s default, 120s for uploads)
+- Environment-aware base URL (dev vs production)

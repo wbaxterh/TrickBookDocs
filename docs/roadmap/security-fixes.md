@@ -47,12 +47,12 @@ Generate cryptographically secure secret:
 ```bash
 # Generate 32-byte random secret
 openssl rand -base64 32
-# Example output: K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=
+# Example output: <your-generated-secret-here>
 ```
 
 Update in environment:
 ```bash
-JWT_SECRET=K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols=
+JWT_SECRET=<paste-your-generated-secret-here>
 ```
 
 ---

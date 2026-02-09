@@ -37,10 +37,21 @@ User accounts and subscription information.
   _id: ObjectId,
   name: String,              // Display name
   email: String,             // Unique, used for login
-  password: String,          // bcrypt hashed (null for Google SSO)
+  password: String,          // bcrypt hashed (null for SSO users)
   imageUri: String,          // S3 URL for profile picture
   role: String,              // "admin" or null
   isGoogleSSO: Boolean,      // true if registered via Google
+  appleUserId: String,       // Apple Sign-In identifier
+  sports: [String],          // Array of sport types
+  riderProfile: Object,      // User's rider info
+
+  // Social features
+  network: Object,           // User connections
+  homies: [ObjectId],        // Array of friend user IDs
+  homieRequests: {
+    sent: [ObjectId],        // Outgoing requests
+    received: [ObjectId]     // Incoming requests
+  },
 
   subscription: {
     plan: String,            // "free" or "premium"
@@ -48,8 +59,12 @@ User accounts and subscription information.
     stripeCustomerId: String,
     stripeSubscriptionId: String,
     currentPeriodEnd: Date,
-    lastPaymentDate: Date
-  }
+    lastPaymentDate: Date,
+    adminOverride: Boolean   // For testing
+  },
+
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
 
@@ -158,17 +173,133 @@ Skate spot locations.
   name: String,
   latitude: Number,
   longitude: Number,
-  imageURL: String,          // S3 or external URL
+  images: [String],          // Array of image URLs
   description: String,
   rating: Number,            // 0-5
   tags: String,              // Comma-separated
   city: String,
-  state: String
+  state: String,
+  sportTypes: [String],      // skateboarding, bmx, etc.
+  category: String,          // park, street, indoor, diy, other
+  userId: ObjectId,          // Creator reference
+  createdAt: Date,
+  updatedAt: Date
 }
 ```
 
 **Indexes:**
 - Geospatial index on `{latitude, longitude}` (recommended)
+
+---
+
+### feed_posts
+
+Social feed posts with media content.
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId,          // Creator reference
+  caption: String,
+  description: String,
+  mediaType: String,         // "video" or "image"
+  mediaUrl: String,          // CDN URL
+  thumbnailUrl: String,      // Video thumbnail
+  tricks: [String],          // Associated trick names
+  stats: {
+    loveCount: Number,
+    respectCount: Number,
+    commentCount: Number,
+    shareCount: Number,
+    viewCount: Number
+  },
+  engagement: {
+    completionRate: Number
+  },
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+---
+
+### reactions
+
+Love/respect reactions on feed posts.
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  postId: ObjectId,
+  type: String,              // "love" or "respect"
+  createdAt: Date
+}
+```
+
+---
+
+### feed_comments
+
+Comments on feed posts.
+
+```javascript
+{
+  _id: ObjectId,
+  postId: ObjectId,
+  userId: ObjectId,
+  content: String,
+  createdAt: Date
+}
+```
+
+---
+
+### saved_posts
+
+User bookmarked posts.
+
+```javascript
+{
+  _id: ObjectId,
+  userId: ObjectId,
+  postId: ObjectId,
+  createdAt: Date
+}
+```
+
+---
+
+### conversations
+
+Direct message conversations.
+
+```javascript
+{
+  _id: ObjectId,
+  participants: [ObjectId],  // User IDs
+  lastMessage: Object,       // Preview of last message
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+---
+
+### dm_messages
+
+Individual direct messages.
+
+```javascript
+{
+  _id: ObjectId,
+  conversationId: ObjectId,
+  senderId: ObjectId,
+  content: String,
+  read: Boolean,
+  createdAt: Date
+}
+```
 
 ---
 
@@ -249,6 +380,18 @@ users
   ├──< spotlists (userId field)
   │       │
   │       └──< spots (spotIds array)
+  │
+  ├──< feed_posts (userId field)
+  │       │
+  │       ├──< reactions (postId field)
+  │       ├──< feed_comments (postId field)
+  │       └──< saved_posts (postId field)
+  │
+  ├──< conversations (participants array)
+  │       │
+  │       └──< dm_messages (conversationId field)
+  │
+  ├──< homies (users.homies array → users._id)
   │
   └──< expoPushTokens (userId field)
 

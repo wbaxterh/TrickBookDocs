@@ -4,231 +4,240 @@ sidebar_position: 2
 
 # Navigation
 
-TrickBook uses React Navigation 6 with a conditional navigation structure based on authentication state.
+TrickBook uses Expo Router for file-based navigation, similar to Next.js. Routes are defined by the file system structure in the `app/` directory.
 
 ## Navigation Architecture
 
 ```
-App.js
+app/
    │
-   ├── AuthContext.Provider
+   ├── _layout.tsx              # Root layout (providers + auth gate)
+   │       │
+   │       ├── IF user authenticated:
+   │       │   └── (tabs)/_layout.tsx (Bottom Tab Navigator)
+   │       │
+   │       └── ELSE (not authenticated):
+   │           └── (auth)/_layout.tsx (Stack Navigator)
    │
-   └── NavigationContainer
-       │
-       ├── IF user logged in:
-       │   └── AppNavigator (Bottom Tabs)
-       │
-       ├── ELSE IF guest mode:
-       │   └── GuestNavigator (Bottom Tabs)
-       │
-       └── ELSE (not authenticated):
-           └── AuthNavigator (Stack)
+   ├── (auth)/                   # Auth group
+   │   ├── welcome.tsx
+   │   ├── login.tsx
+   │   └── register.tsx
+   │
+   ├── (tabs)/                   # Main tab group
+   │   ├── index.tsx             # Home tab
+   │   ├── trickbook/            # TrickBook tab
+   │   ├── spots/                # Spots tab
+   │   ├── homies/               # Homies tab
+   │   ├── media/                # Media tab
+   │   └── profile/              # Profile (hidden tab)
+   │
+   └── profile/                  # Profile settings (stack)
+       ├── edit.tsx
+       ├── settings.tsx
+       └── ...
 ```
 
-## Auth Navigator
+## Root Layout
+
+The root layout sets up providers and conditionally renders auth or main app screens.
+
+```typescript
+// app/_layout.tsx
+import { Stack } from 'expo-router';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '@/lib/providers/ThemeProvider';
+import { useAuthStore } from '@/lib/stores/authStore';
+
+export default function RootLayout() {
+  const { user, isLoading, loadStoredAuth } = useAuthStore();
+
+  useEffect(() => {
+    loadStoredAuth();
+  }, []);
+
+  if (isLoading) return <SplashScreen />;
+
+  return (
+    <SafeAreaProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            {user ? (
+              <Stack.Screen name="(tabs)" />
+            ) : (
+              <Stack.Screen name="(auth)" />
+            )}
+          </Stack>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </SafeAreaProvider>
+  );
+}
+```
+
+## Auth Group
 
 Handles authentication screens before user login.
 
-```javascript
-// app/navigation/AuthNavigator.js
-const AuthNavigator = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Welcome" component={WelcomeScreen} />
-    <Stack.Screen name="Login" component={LoginScreen} />
-    <Stack.Screen name="Register" component={RegisterScreen} />
-  </Stack.Navigator>
-);
+```typescript
+// app/(auth)/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function AuthLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="welcome" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="register" />
+    </Stack>
+  );
+}
 ```
 
 **Screens:**
-| Screen | Purpose |
-|--------|---------|
-| Welcome | Landing page with login/register/guest options |
-| Login | Email/password authentication |
-| Register | New user registration |
+| Screen | File | Purpose |
+|--------|------|---------|
+| Welcome | `welcome.tsx` | Landing page with login/register options |
+| Login | `login.tsx` | Email/password + Google SSO + Apple Sign-In |
+| Register | `register.tsx` | New user registration |
 
-## App Navigator
+## Tab Navigator
 
-Main navigation for authenticated users. Bottom tab layout.
+Main navigation for authenticated users with 5 tabs.
 
-```javascript
-// app/navigation/AppNavigator.js
-const AppNavigator = () => (
-  <Tab.Navigator>
-    <Tab.Screen
-      name="Account"
-      component={AccountNavigator}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <MaterialCommunityIcons name="account" color={color} size={size} />
-        )
-      }}
-    />
+```typescript
+// app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
-    <Tab.Screen
-      name="Create"
-      component={CreateTrickListScreen}
-      options={{
-        tabBarButton: () => <NewListButton onPress={...} />
-      }}
-    />
-
-    <Tab.Screen
-      name="Tricks"
-      component={TrickNavigator}
-      options={{
-        tabBarIcon: ({ color, size }) => (
-          <MaterialCommunityIcons name="playlist-check" color={color} size={size} />
-        )
-      }}
-    />
-  </Tab.Navigator>
-);
+export default function TabLayout() {
+  return (
+    <Tabs>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="trickbook"
+        options={{
+          title: 'TrickBook',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="list" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="spots"
+        options={{
+          title: 'Spots',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="location" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="homies"
+        options={{
+          title: 'Homies',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="media"
+        options={{
+          title: 'Media',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="play-circle" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          href: null, // Hidden from tab bar
+        }}
+      />
+    </Tabs>
+  );
+}
 ```
 
 **Tabs:**
-| Tab | Navigator | Purpose |
+| Tab | Directory | Purpose |
 |-----|-----------|---------|
-| Account | AccountNavigator | User profile & settings |
-| Create | Direct screen | New trick list (+ button) |
-| Tricks | TrickNavigator | Trick list management |
+| Home | `index.tsx` | Dashboard with stats, goals, activity |
+| TrickBook | `trickbook/` | Trick list management and Trickipedia |
+| Spots | `spots/` | Spot discovery, maps, reviews |
+| Homies | `homies/` | Friend network and profiles |
+| Media | `media/` | Social feed and The Couch |
+| Profile | `profile/` | User profile (hidden from tab bar, accessed via Home) |
 
-## Account Navigator
+## Profile Routes
 
-Stack navigation for account-related screens.
+Stack navigation for profile and settings screens.
 
-```javascript
-// app/navigation/AccountNavigator.js
-const AccountNavigator = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="My Account" component={AccountScreen} />
-    <Stack.Screen name="Edit Account" component={EditAccountDetailsScreen} />
-    <Stack.Screen name="Trick Lists" component={TrickNavigator} />
-    <Stack.Screen name="Settings" component={SettingsScreen} />
-    <Stack.Screen name="Stats" component={StatsScreen} />
-    <Stack.Screen name="Spin The Wheel" component={SpinTheWheelScreen} />
-    <Stack.Screen name="Tutorials" component={TutorialScreen} />
-    <Stack.Screen name="How To Use" component={HowToUse} />
-  </Stack.Navigator>
-);
+```
+app/profile/
+├── index.tsx              # User profile view
+├── edit.tsx               # Edit profile info
+├── settings.tsx           # App settings
+├── account.tsx            # Account management
+├── change-password.tsx    # Password update
+├── notifications.tsx      # Notification preferences
+├── privacy.tsx            # Privacy settings
+├── theme.tsx              # Dark/Light theme selection
+└── support.tsx            # Help and support
 ```
 
-## Trick Navigator
+## Navigation Patterns
 
-Stack navigation for trick list management.
+### Programmatic Navigation
 
-```javascript
-// app/navigation/TrickNavigator.js
-const TrickNavigator = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="My Trick Lists" component={ListTrickListsScreen} />
+```typescript
+import { useRouter } from 'expo-router';
 
-    <Stack.Screen
-      name="Edit Trick List"
-      component={EditTrickListScreen}
-      options={{ presentation: 'modal' }}
-    />
+const MyComponent = () => {
+  const router = useRouter();
 
-    <Stack.Screen name="Tricks" component={TrickListScreen} />
+  // Navigate to a route
+  router.push('/spots/details/123');
 
-    <Stack.Screen
-      name="Edit Trick"
-      component={EditTrickScreen}
-      options={{ presentation: 'modal' }}
-    />
+  // Navigate back
+  router.back();
 
-    <Stack.Screen
-      name="Add Trick"
-      component={AddTrickScreen}
-      options={{ presentation: 'modal' }}
-    />
-
-    <Stack.Screen
-      name="Trick Details"
-      component={TrickDetailsScreen}
-      options={{ presentation: 'modal' }}
-    />
-  </Stack.Navigator>
-);
-```
-
-## Guest Navigator
-
-Simplified navigation for guest mode (no account features).
-
-```javascript
-// app/navigation/GuestNavigator.js
-const GuestNavigator = () => (
-  <Tab.Navigator>
-    <Tab.Screen name="Account" component={GuestAccountNavigator} />
-    <Tab.Screen name="Add" component={AddTrickScreen} />
-    <Tab.Screen name="Tricks" component={GuestTrickNavigator} />
-  </Tab.Navigator>
-);
-```
-
-## Route Constants
-
-Centralized route names prevent typos.
-
-```javascript
-// app/navigation/routes.js
-export default Object.freeze({
-  // Trick routes
-  TRICKS: "Tricks",
-  EDITTRICK: "Edit Trick",
-  ADDTRICK: "Add Trick",
-  TRICKDETAILS: "Trick Details",
-
-  // List routes
-  TRICKLISTS: "Trick Lists",
-  EDITTRICKLIST: "Edit Trick List",
-
-  // Account routes
-  ACCOUNT: "My Account",
-  EDITACCOUNT: "Edit Account",
-  SETTINGS: "Settings",
-  STATS: "Stats",
-
-  // Auth routes
-  LOGIN: "Login",
-  REGISTER: "Register",
-  WELCOME: "Welcome",
-
-  // Guest routes
-  GUESTTRICKS: "Guest Tricks",
-
-  // Feature routes
-  TUTORIALS: "Tutorials",
-  HOWTO: "How To Use",
-  SPINTHEWHEEL: "Spin The Wheel"
-});
-```
-
-**Usage:**
-```javascript
-import routes from '../navigation/routes';
-
-navigation.navigate(routes.TRICKS);
-```
-
-## Navigation Theme
-
-Custom theme matching app design.
-
-```javascript
-// app/navigation/navigationTheme.js
-import { DefaultTheme } from '@react-navigation/native';
-import colors from '../config/colors';
-
-export default {
-  ...DefaultTheme,
-  colors: {
-    ...DefaultTheme.colors,
-    primary: colors.primary,
-    background: colors.background
-  }
+  // Replace current screen
+  router.replace('/(auth)/login');
 };
+```
+
+### Link Component
+
+```typescript
+import { Link } from 'expo-router';
+
+<Link href="/trickbook/list/123">
+  View Trick List
+</Link>
+```
+
+### Dynamic Routes
+
+```typescript
+// app/(tabs)/spots/[id].tsx
+import { useLocalSearchParams } from 'expo-router';
+
+export default function SpotDetails() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  // Fetch spot data using id...
+}
 ```
 
 ## Navigation Flow Examples
@@ -236,109 +245,79 @@ export default {
 ### Login Flow
 
 ```
-WelcomeScreen
+(auth)/welcome.tsx
      │
      ├── "Login" button
      │       │
      │       ▼
-     │   LoginScreen
+     │   (auth)/login.tsx
      │       │
-     │       ├── Success → setUser() → AppNavigator
+     │       ├── Email/Password → POST /api/auth
+     │       ├── Google SSO → OAuth2 flow
+     │       └── Apple Sign-In → Apple auth flow
      │       │
-     │       └── Back → WelcomeScreen
+     │       ├── Success → authStore.login()
+     │       │              → Root layout redirects to (tabs)
+     │       │
+     │       └── Back → welcome.tsx
      │
-     └── "Continue as Guest" button
+     └── "Register" button
              │
              ▼
-         setGuest(true) → GuestNavigator
+         (auth)/register.tsx
 ```
 
 ### Trick List Flow
 
 ```
-ListTrickListsScreen (list of all lists)
+(tabs)/trickbook/index.tsx (list of all trick lists)
      │
      ├── Tap list card
      │       │
      │       ▼
-     │   TrickListScreen (tricks in list)
+     │   (tabs)/trickbook/[listId].tsx (tricks in list)
      │       │
-     │       ├── Tap "+" button
-     │       │       │
-     │       │       ▼
-     │       │   AddTrickScreen (modal)
+     │       ├── Tap "+" → Add trick modal
      │       │
-     │       ├── Tap trick
-     │       │       │
-     │       │       ▼
-     │       │   TrickDetailsScreen (modal)
+     │       ├── Tap trick → Trick detail view
      │       │
      │       └── Swipe trick → Edit/Delete actions
      │
      └── Tap "+" header button
              │
              ▼
-         CreateTrickListScreen (modal)
+         Create new trick list
 ```
 
-## Header Configuration
+### Spots Flow
 
-Custom headers for different screens:
-
-```javascript
-// Add button to header
-<Stack.Screen
-  name="My Trick Lists"
-  component={ListTrickListsScreen}
-  options={({ navigation }) => ({
-    headerRight: () => (
-      <TouchableOpacity onPress={() => navigation.navigate(routes.CREATE)}>
-        <MaterialCommunityIcons name="plus" size={24} />
-      </TouchableOpacity>
-    )
-  })}
-/>
-
-// Modal close button
-<Stack.Screen
-  name="Add Trick"
-  component={AddTrickScreen}
-  options={({ navigation }) => ({
-    presentation: 'modal',
-    headerRight: () => (
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <AppText>Close</AppText>
-      </TouchableOpacity>
-    )
-  })}
-/>
+```
+(tabs)/spots/index.tsx (map view + spot list)
+     │
+     ├── Tap spot marker on map
+     │       │
+     │       ▼
+     │   Spot detail view
+     │       │
+     │       ├── View reviews
+     │       ├── Add review (StarRatingInput)
+     │       ├── Add to spot list
+     │       └── Get directions
+     │
+     └── "My Lists" button
+             │
+             ▼
+         Spot list management
 ```
 
-## New List Button
+## Key Differences from React Navigation
 
-Custom center tab button with special styling.
-
-```javascript
-// app/navigation/NewListButton.js
-const NewListButton = ({ onPress }) => (
-  <TouchableOpacity onPress={onPress} style={styles.container}>
-    <View style={styles.button}>
-      <MaterialCommunityIcons name="plus" color="white" size={40} />
-    </View>
-  </TouchableOpacity>
-);
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    top: -20  // Float above tab bar
-  },
-  button: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: colors.primary
-  }
-});
-```
+| Feature | Old (React Navigation 6) | New (Expo Router) |
+|---------|--------------------------|-------------------|
+| Route definition | `<Stack.Screen component={...}>` | File-based (`app/page.tsx`) |
+| Navigation | `navigation.navigate('Screen')` | `router.push('/path')` |
+| Params | `route.params.id` | `useLocalSearchParams()` |
+| Deep linking | Manual config | Automatic from file structure |
+| Type safety | Manual types | Generated from file paths |
+| Layouts | Inline in navigators | `_layout.tsx` files |
+| Groups | Not supported | `(groupName)/` directories |

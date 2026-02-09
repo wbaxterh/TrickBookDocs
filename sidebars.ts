@@ -44,6 +44,17 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Features',
+      items: [
+        'features/overview',
+        'features/trickbook',
+        'features/spots',
+        'features/homies',
+        'features/media',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Deployment',
       items: [
         'deployment/app-store',
@@ -60,6 +71,8 @@ const sidebars: SidebarsConfig = {
         'roadmap/security-fixes',
         'roadmap/efficiency-improvements',
         'roadmap/chrome-extension-integration',
+        'roadmap/mobile-app-rebuild',
+        'roadmap/mobile-design-prompt',
       ],
     },
   ],

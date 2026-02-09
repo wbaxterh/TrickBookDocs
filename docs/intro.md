@@ -9,15 +9,16 @@ Welcome to the TrickBook technical documentation. This site covers the architect
 
 ## What is TrickBook?
 
-TrickBook is a mobile application for skateboarders (and other action sports enthusiasts) to track their trick progression, manage trick lists, discover new tricks, and find skate spots.
+TrickBook is a mobile platform for skateboarders and action sports enthusiasts to track trick progression, discover skate spots, connect with friends ("homies"), share media, and explore curated action sports content.
 
 ## Platform Overview
 
 | Component | Technology | Status |
 |-----------|------------|--------|
-| **Mobile App** | React Native + Expo SDK 51 | Production (iOS) |
-| **Backend API** | Node.js + Express + MongoDB | Production |
-| **Website** | Shares backend API | Production |
+| **Mobile App** | React Native + Expo SDK 54 (TypeScript) | Production (iOS) |
+| **Backend API** | Node.js + Express + MongoDB + Socket.IO | Production |
+| **Website** | Next.js (shares backend API) | Production |
+| **Chrome Extension** | Spot scraper for Google Maps | Production |
 | **iOS** | App Store | Live |
 | **Android** | Google Play | Pending |
 
@@ -28,6 +29,7 @@ TrickBook is a mobile application for skateboarders (and other action sports ent
 - [Architecture Overview](/docs/architecture/overview) - System design and components
 - [Backend API](/docs/backend/overview) - API documentation and endpoints
 - [Mobile App](/docs/mobile/overview) - React Native app structure
+- [Features](/docs/features/overview) - Feature documentation
 
 ### For Deployment
 
@@ -44,8 +46,8 @@ TrickBook is a mobile application for skateboarders (and other action sports ent
 
 ```
 /Reactnative
-├── Backend/          # Node.js Express API
-├── TrickList/        # React Native mobile app
+├── Backend/          # Node.js Express API + Socket.IO
+├── TrickList/        # React Native mobile app (TypeScript + Expo Router)
 └── docs/             # This documentation site
 ```
 
@@ -53,12 +55,27 @@ TrickBook is a mobile application for skateboarders (and other action sports ent
 
 | Component | Version |
 |-----------|---------|
-| Mobile App | 1.0.8 |
+| Mobile App | 2.0.0 |
 | iOS Bundle | com.thetrickbook.trickbook |
 | Android Package | com.thetrickbook.trickbook |
-| Expo SDK | 51.0.0 |
-| React Native | 0.74.5 |
+| Expo SDK | 54.0.0 |
+| React Native | 0.81.5 |
+| TypeScript | 5.9.2 |
+| Node.js (Mobile) | 20.18.0 |
 | Node.js (Backend) | 12.6.x (needs upgrade) |
+
+## Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **TrickBook** | Create and track trick lists with progress tracking |
+| **Trickipedia** | Browse global trick encyclopedia with tutorials |
+| **Spots** | Discover skate spots on a map, leave reviews and ratings |
+| **Homies** | Connect with friends, send/accept friend requests |
+| **Feed/Media** | Share videos and photos, react with love/respect |
+| **The Couch** | Curated action sports video library |
+| **Direct Messages** | Real-time chat with friends |
+| **Subscriptions** | Freemium model with Stripe payments |
 
 ## Getting Started
 

@@ -437,5 +437,5 @@ export function getSocket() {
 ## Related Documentation
 
 - [Authentication](/docs/backend/authentication) - JWT and user auth
-- [Push Notifications](/docs/mobile/push-notifications) - Expo push setup
+- [Backend Overview](/docs/backend/overview) - Backend architecture and integrations
 - [API Endpoints](/docs/backend/api-endpoints) - Full API reference

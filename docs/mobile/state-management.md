@@ -4,316 +4,310 @@ sidebar_position: 3
 
 # State Management
 
-TrickBook uses a combination of React Context, local state, and AsyncStorage for state management.
+TrickBook uses Zustand for auth state, React Query for server state, and React Context for theming.
 
-## Authentication State
+## Overview
 
-Global auth state using React Context.
+| State Type | Solution | Purpose |
+|------------|----------|---------|
+| Auth state | Zustand | User session, token, login/logout |
+| Server state | React Query | API data fetching, caching, mutations |
+| Theme | React Context | Dark/Light mode |
+| Form state | React Hook Form + Zod | Form handling and validation |
+| Secure storage | Expo Secure Store | JWT token persistence |
 
-### Context Definition
+## Authentication State (Zustand)
 
-```javascript
-// app/auth/context.js
-import React from 'react';
+Global auth state using Zustand with Expo Secure Store for persistence.
 
-const AuthContext = React.createContext();
+### Store Definition
 
-export default AuthContext;
+```typescript
+// src/lib/stores/authStore.ts
+import { create } from 'zustand';
+import * as SecureStore from 'expo-secure-store';
+import jwtDecode from 'jwt-decode';
+
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  login: (token: string, user: User) => Promise<void>;
+  logout: () => Promise<void>;
+  loadStoredAuth: () => Promise<void>;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  user: null,
+  token: null,
+  isLoading: true,
+
+  login: async (token, user) => {
+    await SecureStore.setItemAsync('authToken', token);
+    set({ user, token, isLoading: false });
+  },
+
+  logout: async () => {
+    await SecureStore.deleteItemAsync('authToken');
+    set({ user: null, token: null });
+  },
+
+  loadStoredAuth: async () => {
+    const token = await SecureStore.getItemAsync('authToken');
+    if (token) {
+      const decoded = jwtDecode(token);
+      // Fetch full user profile from API
+      const user = await fetchUserProfile(decoded);
+      set({ user, token, isLoading: false });
+    } else {
+      set({ isLoading: false });
+    }
+  },
+}));
 ```
 
-### Provider Setup
+### Usage in Components
 
-```javascript
-// App.js
-import AuthContext from './app/auth/context';
+```typescript
+import { useAuthStore } from '@/lib/stores/authStore';
 
-const App = () => {
-  const [user, setUser] = useState(null);
-  const [guest, setGuest] = useState(false);
-
-  return (
-    <AuthContext.Provider value={{ user, setUser, guest, setGuest }}>
-      <NavigationContainer>
-        {user ? <AppNavigator /> :
-         guest ? <GuestNavigator /> :
-         <AuthNavigator />}
-      </NavigationContainer>
-    </AuthContext.Provider>
-  );
-};
-```
-
-### Context Usage
-
-```javascript
-// In any component
-import { useContext } from 'react';
-import AuthContext from '../auth/context';
-
-const MyComponent = () => {
-  const { user, setUser } = useContext(AuthContext);
-
-  const handleLogout = () => {
-    setUser(null);
-    authStorage.removeToken();
-  };
+const ProfileScreen = () => {
+  const { user, logout } = useAuthStore();
 
   return (
     <View>
       <Text>Hello, {user?.name}</Text>
-      <Button title="Logout" onPress={handleLogout} />
+      <Button title="Logout" onPress={logout} />
     </View>
   );
 };
 ```
 
-## Token Storage
+## Server State (React Query)
 
-Secure storage for JWT tokens using Expo Secure Store.
+All API data is managed through React Query for automatic caching, background refetching, and optimistic updates.
 
-```javascript
-// app/auth/storage.js
-import * as SecureStore from 'expo-secure-store';
+### Query Client Setup
 
-const key = 'authToken';
+```typescript
+// app/_layout.tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-const storeToken = async (authToken) => {
-  try {
-    await SecureStore.setItemAsync(key, authToken);
-  } catch (error) {
-    console.log('Error storing auth token', error);
-  }
-};
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 2,
+    },
+  },
+});
 
-const getToken = async () => {
-  try {
-    return await SecureStore.getItemAsync(key);
-  } catch (error) {
-    console.log('Error getting auth token', error);
-    return null;
-  }
-};
-
-const removeToken = async () => {
-  try {
-    await SecureStore.deleteItemAsync(key);
-  } catch (error) {
-    console.log('Error removing auth token', error);
-  }
-};
-
-export default { storeToken, getToken, removeToken };
+export default function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {/* ... */}
+    </QueryClientProvider>
+  );
+}
 ```
 
-## Token Restoration
+### Fetching Data (useQuery)
 
-On app launch, restore user from stored token.
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { trickbookApi } from '@/lib/api/trickbook';
 
-```javascript
-// App.js
-const restoreToken = async () => {
-  const token = await authStorage.getToken();
+const TrickListsScreen = () => {
+  const {
+    data: trickLists,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['trickLists'],
+    queryFn: trickbookApi.getTrickLists,
+  });
 
-  if (!token) return;
-
-  // Decode JWT to get user data
-  const decoded = jwtDecode(token);
-
-  // Fetch complete user profile
-  const response = await usersApi.getUser(decoded.email);
-
-  if (response.ok) {
-    setUser({ ...decoded, ...response.data });
-  }
-};
-
-useEffect(() => {
-  restoreToken();
-}, []);
-```
-
-## Local Component State
-
-Screen-level state using useState.
-
-```javascript
-// Typical screen state
-const TrickListScreen = ({ route }) => {
-  const [tricks, setTricks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState(null);
-
-  const loadTricks = async () => {
-    setLoading(true);
-    const response = await tricksApi.getTricks(listId);
-
-    if (response.ok) {
-      setTricks(response.data);
-    } else {
-      setError('Failed to load tricks');
-    }
-
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    loadTricks();
-  }, []);
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await loadTricks();
-    setRefreshing(false);
-  };
+  if (isLoading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage error={error} />;
 
   return (
     <FlatList
-      data={tricks}
-      refreshing={refreshing}
-      onRefresh={handleRefresh}
-      // ...
+      data={trickLists}
+      refreshing={false}
+      onRefresh={refetch}
+      renderItem={({ item }) => <TrickListCard list={item} />}
     />
   );
 };
 ```
 
-## Guest Mode State
+### Mutations (useMutation)
 
-AsyncStorage for offline guest trick list.
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-```javascript
-// Guest mode storage key
-const GUEST_KEY = '@guest_trick_list';
+const CreateTrickList = () => {
+  const queryClient = useQueryClient();
 
-// Save guest tricks
-const saveGuestTricks = async (tricks) => {
-  try {
-    await AsyncStorage.setItem(GUEST_KEY, JSON.stringify(tricks));
-  } catch (error) {
-    console.log('Error saving guest tricks', error);
-  }
-};
+  const createMutation = useMutation({
+    mutationFn: trickbookApi.createTrickList,
+    onSuccess: () => {
+      // Invalidate and refetch trick lists
+      queryClient.invalidateQueries({ queryKey: ['trickLists'] });
+    },
+  });
 
-// Load guest tricks
-const loadGuestTricks = async () => {
-  try {
-    const data = await AsyncStorage.getItem(GUEST_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch (error) {
-    console.log('Error loading guest tricks', error);
-    return [];
-  }
-};
-
-// Usage in GuestTrickListScreen
-const [tricks, setTricks] = useState([]);
-
-useEffect(() => {
-  const load = async () => {
-    const stored = await loadGuestTricks();
-    setTricks(stored);
+  const handleCreate = (name: string) => {
+    createMutation.mutate({ name });
   };
-  load();
-}, []);
-
-const addTrick = async (name) => {
-  const newTricks = [...tricks, { id: Date.now(), name, checked: false }];
-  setTricks(newTricks);
-  await saveGuestTricks(newTricks);
-};
-```
-
-## Form State (Formik)
-
-Form management with Formik and Yup validation.
-
-```javascript
-// app/components/forms/AppForm.js
-import { Formik } from 'formik';
-
-const AppForm = ({ initialValues, onSubmit, validationSchema, children }) => (
-  <Formik
-    initialValues={initialValues}
-    onSubmit={onSubmit}
-    validationSchema={validationSchema}
-  >
-    {() => <>{children}</>}
-  </Formik>
-);
-```
-
-### Login Form Example
-
-```javascript
-// LoginScreen.js
-import * as Yup from 'yup';
-import { AppForm, AppFormField, SubmitButton } from '../components/forms';
-
-const validationSchema = Yup.object().shape({
-  email: Yup.string().required().email().label('Email'),
-  password: Yup.string().required().min(4).label('Password')
-});
-
-const LoginScreen = () => {
-  const { setUser } = useContext(AuthContext);
-
-  const handleSubmit = async ({ email, password }) => {
-    const response = await authApi.login(email, password);
-
-    if (!response.ok) {
-      return setError('Invalid email or password');
-    }
-
-    const decoded = jwtDecode(response.data.token);
-    setUser(decoded);
-    authStorage.storeToken(response.data.token);
-  };
-
-  return (
-    <AppForm
-      initialValues={{ email: '', password: '' }}
-      onSubmit={handleSubmit}
-      validationSchema={validationSchema}
-    >
-      <AppFormField
-        name="email"
-        placeholder="Email"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <AppFormField
-        name="password"
-        placeholder="Password"
-        secureTextEntry
-      />
-
-      <SubmitButton title="Login" />
-    </AppForm>
-  );
-};
-```
-
-## Jotai (Available but Minimal)
-
-Jotai is installed for atomic state but minimally used currently.
-
-```javascript
-import { atom, useAtom } from 'jotai';
-
-// Define atom
-const countAtom = atom(0);
-
-// Use in component
-const Counter = () => {
-  const [count, setCount] = useAtom(countAtom);
 
   return (
     <Button
-      title={`Count: ${count}`}
-      onPress={() => setCount(c => c + 1)}
+      title="Create List"
+      onPress={() => handleCreate('New List')}
+      disabled={createMutation.isPending}
     />
+  );
+};
+```
+
+### Query Key Patterns
+
+```typescript
+// Common query keys used across the app
+const queryKeys = {
+  trickLists: ['trickLists'],
+  trickList: (id: string) => ['trickList', id],
+  tricks: (listId: string) => ['tricks', listId],
+  trickipedia: (filters?: object) => ['trickipedia', filters],
+  spots: ['spots'],
+  spot: (id: string) => ['spot', id],
+  spotLists: ['spotLists'],
+  spotReviews: (spotId: string) => ['spotReviews', spotId],
+  feed: ['feed'],
+  feedPost: (id: string) => ['feedPost', id],
+  homies: ['homies'],
+  conversations: ['conversations'],
+  messages: (conversationId: string) => ['messages', conversationId],
+  userProfile: (id: string) => ['userProfile', id],
+  userStats: (id: string) => ['userStats', id],
+};
+```
+
+## Theme State (React Context)
+
+Dark/Light mode managed via React Context with persistent preference.
+
+```typescript
+// src/lib/providers/ThemeProvider.tsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+type Theme = 'dark' | 'light';
+
+const ThemeContext = createContext<{
+  theme: Theme;
+  toggleTheme: () => void;
+}>({ theme: 'dark', toggleTheme: () => {} });
+
+export const ThemeProvider = ({ children }) => {
+  const [theme, setTheme] = useState<Theme>('dark');
+
+  useEffect(() => {
+    AsyncStorage.getItem('theme').then((stored) => {
+      if (stored) setTheme(stored as Theme);
+    });
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    AsyncStorage.setItem('theme', next);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+export const useTheme = () => useContext(ThemeContext);
+```
+
+## Form State (React Hook Form + Zod)
+
+Forms use React Hook Form for efficient re-renders and Zod for schema validation.
+
+```typescript
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email'),
+  password: z.string().min(5, 'Password must be at least 5 characters'),
+});
+
+type LoginForm = z.infer<typeof loginSchema>;
+
+const LoginScreen = () => {
+  const { login } = useAuthStore();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+
+  const onSubmit = async (data: LoginForm) => {
+    const response = await authApi.login(data.email, data.password);
+    if (response.token) {
+      await login(response.token, response.user);
+    }
+  };
+
+  return (
+    <View>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Email"
+            value={value}
+            onChangeText={onChange}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        )}
+      />
+      {errors.email && <Text>{errors.email.message}</Text>}
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, value } }) => (
+          <TextInput
+            placeholder="Password"
+            value={value}
+            onChangeText={onChange}
+            secureTextEntry
+          />
+        )}
+      />
+      {errors.password && <Text>{errors.password.message}</Text>}
+
+      <Button
+        title={isSubmitting ? 'Logging in...' : 'Login'}
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
+      />
+    </View>
   );
 };
 ```
@@ -321,29 +315,43 @@ const Counter = () => {
 ## State Flow Diagram
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      App.js                              │
-│  ┌─────────────────────────────────────────────────┐    │
-│  │           AuthContext.Provider                   │    │
-│  │  { user, setUser, guest, setGuest }             │    │
-│  └─────────────────────────────────────────────────┘    │
-│                          │                               │
-│                          ▼                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │  Secure      │  │   Local      │  │  Async       │  │
-│  │  Store       │  │   useState   │  │  Storage     │  │
-│  │              │  │              │  │              │  │
-│  │  JWT Token   │  │  UI State    │  │  Guest Data  │  │
-│  │              │  │  Loading     │  │              │  │
-│  │              │  │  Errors      │  │              │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    app/_layout.tsx                            │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │   Zustand     │  │ React Query  │  │  ThemeProvider    │  │
+│  │   AuthStore   │  │  Client      │  │  (Context)        │  │
+│  │              │  │              │  │                    │  │
+│  │  user        │  │  queries     │  │  theme: dark/light│  │
+│  │  token       │  │  mutations   │  │  toggleTheme()    │  │
+│  │  login()     │  │  cache       │  │                    │  │
+│  │  logout()    │  │              │  │                    │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────────────────┘  │
+│         │                  │                                  │
+│         ▼                  ▼                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │  Expo         │  │  API Client  │  │  React Hook Form │  │
+│  │  Secure Store │  │  (fetch)     │  │  + Zod           │  │
+│  │              │  │              │  │                    │  │
+│  │  JWT Token   │  │  Auto-auth   │  │  Form validation  │  │
+│  │  (encrypted) │  │  Retry logic │  │  Type inference    │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-## Best Practices
+## Migration Notes
 
-1. **Use Context for global state** (auth, theme)
-2. **Use local state for UI** (loading, modals)
-3. **Use Secure Store for sensitive data** (tokens)
-4. **Use AsyncStorage for non-sensitive persistence** (guest data)
-5. **Use Formik for forms** (validation, submission)
+The app is migrating from legacy patterns to the new stack:
+
+| Old Pattern | New Pattern | Status |
+|-------------|-------------|--------|
+| React Context (auth) | Zustand authStore | Migrated |
+| Manual useState/useEffect | React Query | Migrated |
+| Formik + Yup | React Hook Form + Zod | Migrated |
+| AsyncStorage (tokens) | Expo Secure Store | Migrated |
+| apisauce | Custom fetch client | Migrated |
+| Jotai atoms | Zustand stores | Migrated |
+
+:::note
+Some legacy code in `app/auth/` and `app/api/` still uses the old patterns and is being gradually migrated to `src/lib/`.
+:::

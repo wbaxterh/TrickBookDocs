@@ -11,9 +11,9 @@ const config: Config = {
     v4: true,
   },
 
-  // GitHub Pages configuration
-  url: 'https://wbaxterh.github.io',
-  baseUrl: '/TrickBookDocs/',
+  // Custom domain deployment via GitHub Pages
+  url: 'https://docs.thetrickbook.com',
+  baseUrl: '/',
 
   organizationName: 'wbaxterh',
   projectName: 'TrickBookDocs',

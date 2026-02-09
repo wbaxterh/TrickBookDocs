@@ -4,7 +4,7 @@ sidebar_position: 3
 
 # Authentication
 
-TrickBook uses JWT-based authentication with optional Google SSO.
+TrickBook uses JWT-based authentication with Google SSO and Apple Sign-In.
 
 ## Authentication Methods
 
@@ -23,20 +23,45 @@ const validPassword = await bcrypt.compare(password, user.password);
 
 ### 2. Google SSO
 
-OAuth2 authentication using Google Identity Services.
+OAuth2 authentication using Google Identity Services. Supports web, iOS, and Android clients.
 
 ```javascript
 const { OAuth2Client } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Verify Google ID token
+// Verify Google ID token (accepts multiple client IDs)
 const ticket = await client.verifyIdToken({
   idToken: googleIdToken,
-  audience: process.env.GOOGLE_CLIENT_ID
+  audience: [
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_IOS_CLIENT_ID,
+    process.env.GOOGLE_ANDROID_CLIENT_ID,
+  ]
 });
 
 const { email, name, picture } = ticket.getPayload();
 ```
+
+- Auto-creates user if email doesn't exist
+- Updates profile on subsequent logins
+
+### 3. Apple Sign-In
+
+Apple identity token verification using `apple-signin-auth`.
+
+```javascript
+const appleSignin = require('apple-signin-auth');
+
+// Verify Apple identity token
+const appleUser = await appleSignin.verifyIdToken(identityToken);
+const { email, sub: appleUserId } = appleUser;
+
+// Link Apple ID to existing email or create new user
+// Fallback name: "Apple User" (Apple only sends name on first auth)
+```
+
+- Links `appleUserId` to existing email accounts
+- Supports first-time and returning Apple auth flows
 
 ## JWT Token Structure
 
