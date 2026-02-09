@@ -24,6 +24,12 @@ TrickBook is a mobile platform for skateboarders and action sports enthusiasts t
 
 ## Quick Links
 
+### Engineering Standards (Start Here)
+
+- [Engineering Standards Overview](/docs/engineering/overview) - Current state and what needs to be done
+- [Gap Analysis](/docs/roadmap/gap-analysis) - Full audit of both repos
+- [Priority Roadmap](/docs/roadmap/priorities) - Implementation order and sprint plan
+
 ### For Developers
 
 - [Architecture Overview](/docs/architecture/overview) - System design and components
@@ -33,14 +39,15 @@ TrickBook is a mobile platform for skateboarders and action sports enthusiasts t
 
 ### For Deployment
 
+- [CI/CD Pipeline](/docs/deployment/ci-cd) - Automated quality gates and deployment
 - [App Store Deployment](/docs/deployment/app-store) - iOS submission process
 - [Google Play Deployment](/docs/deployment/google-play) - Android submission process
 - [Backend Deployment](/docs/deployment/backend) - Server deployment
 
-### Current Priorities
+### Security
 
-- [Priority Roadmap](/docs/roadmap/priorities) - What needs to be done
 - [Security Fixes](/docs/roadmap/security-fixes) - Critical security improvements
+- [Backend Security](/docs/backend/security) - Current vulnerabilities and fixes
 
 ## Repository Structure
 

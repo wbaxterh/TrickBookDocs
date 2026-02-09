@@ -4,230 +4,199 @@ sidebar_position: 1
 
 # Priority Roadmap
 
-Current priorities and action items for TrickBook development.
+Current priorities for TrickBook. Engineering standards come first - no new features until the safety net is in place.
 
 ## Priority Matrix
 
-### P0 - Critical (Do Immediately)
+### P0 - Engineering Standards (Next Session)
 
-| Task | Component | Status | Notes |
-|------|-----------|--------|-------|
-| Rotate exposed credentials | Backend | Pending | AWS, MongoDB, email passwords exposed |
-| Set up Android signing | Mobile | Pending | Required for Google Play |
-| Create Google Play listing | Mobile | Pending | Store presence needed |
-| Build Android AAB | Mobile | Pending | `eas build --platform android --profile playstore` |
-| Submit to Google Play | Mobile | Pending | First Android release |
+These are blocking. Ship no new features until these are done.
 
-### P1 - High (This Week)
+| # | Task | Repo | Effort | Docs |
+|---|------|------|--------|------|
+| 1 | Add Biome (lint + format) | Both | 30 min | [Setup](/docs/engineering/linting-formatting) |
+| 2 | Add pre-commit hooks (Husky + lint-staged) | Both | 30 min | [Setup](/docs/engineering/pre-commit-hooks) |
+| 3 | Add ErrorBoundary component | Mobile | 1 hour | [Guide](/docs/engineering/error-handling) |
+| 4 | Add Sentry error tracking | Both | 1 hour | [Guide](/docs/engineering/error-handling#sentry-integration) |
+| 5 | Write first 10 tests (critical paths) | Both | Half day | [Strategy](/docs/engineering/testing) |
+| 6 | Add CI/CD with quality gates | Both | 1 hour | [Pipeline](/docs/deployment/ci-cd) |
+| 7 | Add global error handler middleware | Backend | 1 hour | [Guide](/docs/engineering/error-handling#backend-global-error-handler) |
+| 8 | Create .env.example files | Both | 15 min | [Template](/docs/engineering/code-quality#envexample-files) |
 
-| Task | Component | Status | Notes |
-|------|-----------|--------|-------|
-| Upgrade Node.js to 18+ | Backend | Pending | Current v12 is EOL |
-| Fix JWT secret | Backend | Pending | Currently hardcoded |
-| Add token expiration | Backend | Pending | Tokens never expire |
-| Update helmet to v7 | Backend | Pending | Security headers outdated |
-| Centralize DB connection | Backend | Pending | Currently per-route connections |
+**Definition of done:** Every commit is linted, every PR runs tests, every production error is tracked.
 
-### P2 - Medium (This Sprint)
+### P1 - Security Hardening (Same Sprint)
 
-| Task | Component | Status | Notes |
-|------|-----------|--------|-------|
-| Add rate limiting | Backend | Pending | No brute-force protection |
-| Add structured logging | Backend | Pending | Only console.log currently |
-| Set up CI/CD pipeline | Both | Pending | Manual deployments currently |
-| Add error tracking (Sentry) | Both | Pending | No crash reporting |
-| Dockerize backend | Backend | Pending | For consistent deployments |
+| Task | Repo | Status | Docs |
+|------|------|--------|------|
+| Rotate exposed credentials | Backend | Pending | [Guide](/docs/roadmap/security-fixes) |
+| Upgrade Node.js 12 to 20 LTS | Backend | Pending | [Guide](/docs/roadmap/security-fixes#critical-nodejs-upgrade) |
+| Fix JWT secret (env var + expiration) | Backend | Pending | [Guide](/docs/roadmap/security-fixes#critical-jwt-security) |
+| Add rate limiting | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-rate-limiting) |
+| Add input sanitization (NoSQL injection) | Backend | Pending | [Guide](/docs/engineering/code-quality#backend-input-sanitization) |
+| Restrict CORS whitelist | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-cors-whitelist) |
+| Update helmet to v8 | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-update-security-packages) |
+| Add health check endpoint | Backend | Pending | [Guide](/docs/engineering/error-handling#backend-health-check-endpoint) |
+| Add graceful shutdown | Backend | Pending | [Guide](/docs/engineering/error-handling#backend-graceful-shutdown) |
 
-### P3 - Low (Backlog)
+### P2 - Code Cleanup (Following Sprint)
 
-| Task | Component | Status | Notes |
-|------|-----------|--------|-------|
-| Add unit tests | Both | Pending | No test coverage |
-| Add TypeScript | Both | Pending | JavaScript only |
-| Implement refresh tokens | Backend | Pending | Better security |
-| Add push notifications | Mobile | Pending | Not implemented |
-| Performance optimization | Both | Pending | No caching layer |
+| Task | Repo | Effort | Docs |
+|------|------|--------|------|
+| Remove 6 dead dependencies | Mobile | 30 min | [Details](/docs/engineering/code-quality#dead-dependencies) |
+| Remove aws-sdk v2 (v3 already installed) | Backend | 15 min | [Details](/docs/roadmap/gap-analysis#19-old-aws-sdk-v2-still-installed-backend) |
+| Add Zod schemas for all API responses | Mobile | 1 day | [Guide](/docs/engineering/code-quality#api-response-validation) |
+| Replace console.log with structured logger | Both | 2 hours | [Guide](/docs/engineering/logging) |
+| Centralize MongoDB connection pool | Backend | Half day | [Guide](/docs/roadmap/security-fixes#medium-centralize-database-connection) |
+| Pick one MongoDB driver (drop unused one) | Backend | Half day | [Details](/docs/engineering/code-quality#backend-mixed-mongodb-drivers) |
+| Dockerize backend | Backend | 1 hour | [Guide](/docs/engineering/code-quality#backend-dockerize) |
+| Tighten TypeScript strict settings | Mobile | 1 hour | [Details](/docs/engineering/code-quality#typescript-strictness-tricklist) |
 
----
+### P3 - Feature Work (After Standards Are Met)
 
-## Google Play Launch Checklist
-
-**Goal:** Get TrickBook on Google Play Store
-
-### Week 1: Setup
-
-- [ ] Create Google Play Developer account ($25)
-- [ ] Generate Android signing keystore via EAS
-- [ ] Build first Android App Bundle
-- [ ] Create store listing draft
-
-### Week 2: Store Listing
-
-- [ ] Write app description
-- [ ] Create feature graphic (1024x500)
-- [ ] Take screenshots on Android device/emulator
-- [ ] Complete content rating questionnaire
-- [ ] Fill out data safety form
-
-### Week 3: Testing & Submit
-
-- [ ] Test on multiple Android versions
-- [ ] Test on different screen sizes
-- [ ] Fix any Android-specific bugs
-- [ ] Submit for review
-- [ ] Monitor review status
-
-### Week 4: Launch
-
-- [ ] Address any review feedback
-- [ ] Configure staged rollout (20% → 50% → 100%)
-- [ ] Monitor crash reports
-- [ ] Respond to user reviews
+| Task | Repo | Notes |
+|------|------|-------|
+| Google Play submission | Mobile | Store listing, screenshots, review |
+| Push notifications | Mobile | Expo push + backend triggers |
+| Offline mode improvements | Mobile | Queue mutations, sync on reconnect |
+| Refresh tokens | Backend | Access token (15m) + refresh (7d) |
+| Expand test coverage to 40% | Both | Add tests as you touch files |
+| API versioning | Backend | `/api/v1/` prefix |
 
 ---
 
-## Backend Security Sprint
+## Sprint Plan: Engineering Standards
 
-**Goal:** Address critical security vulnerabilities
+**Goal:** Go from 0 quality gates to full CI/CD pipeline in one session.
 
-### Day 1: Credentials
-
-```bash
-# 1. Rotate MongoDB password in Atlas
-# 2. Create new AWS access keys
-# 3. Update email app password
-# 4. Generate secure JWT secret
-openssl rand -base64 32
-```
-
-### Day 2: Code Updates
-
-```javascript
-// 1. Update JWT signing
-jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-// 2. Add token expiration check
-const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-// 3. Update CORS
-app.use(cors({
-  origin: ['https://thetrickbook.com'],
-  credentials: true
-}));
-```
-
-### Day 3: Dependencies
+### Hour 1: Biome + Pre-commit (Both Repos)
 
 ```bash
-# Update critical packages
-npm install helmet@latest
-npm install jsonwebtoken@latest
-npm install express-rate-limit
+# TrickList
+cd TrickList
+npm install --save-dev @biomejs/biome husky lint-staged
+npx @biomejs/biome init
+npx husky init
+# Configure biome.json, lint-staged, .husky/pre-commit
+npm run lint:fix  # Auto-fix everything
+# Commit the formatting pass
+
+# Backend
+cd Backend
+npm install --save-dev @biomejs/biome husky lint-staged
+npx @biomejs/biome init
+npx husky init
+npm run lint:fix
+# Commit
 ```
 
-### Day 4: Node.js Upgrade
+### Hour 2: Error Handling + Sentry
 
-```json
-// Update package.json
-{
-  "engines": {
-    "node": ">=18.0.0"
-  }
-}
+```bash
+# TrickList
+cd TrickList
+npx expo install @sentry/react-native
+# Create src/components/ErrorBoundary.tsx
+# Wire up in app/_layout.tsx
+# Add EXPO_PUBLIC_SENTRY_DSN to .env
+
+# Backend
+cd Backend
+npm install @sentry/node express-mongo-sanitize
+# Create middleware/errorHandler.js
+# Create utils/AppError.js
+# Add Sentry.init to index.js
+# Add graceful shutdown handlers
+# Add health check endpoint
 ```
 
-### Day 5: Testing & Deploy
+### Hours 3-4: First Tests
 
-- [ ] Test all endpoints
-- [ ] Verify auth flow
-- [ ] Deploy to production
-- [ ] Monitor for issues
+```bash
+# TrickList
+cd TrickList
+npm install --save-dev @testing-library/react-native @testing-library/jest-native
+# Write tests: client.test.ts, authStore.test.ts, trickStatus.test.ts
+# 2 screen smoke tests
+
+# Backend
+cd Backend
+npm install --save-dev jest supertest mongodb-memory-server
+# Write tests: auth.test.js, users.test.js, auth-middleware.test.js
+# trick-lists.test.js, spots.test.js
+```
+
+### Hour 5: CI/CD
+
+```bash
+# TrickList - create .github/workflows/ci.yml
+# Backend - create .github/workflows/ci.yml
+# Configure branch protection rules on GitHub
+# Create .env.example for both repos
+```
 
 ---
 
 ## Feature Roadmap
 
-### Q1: Foundation
+### Q1: Foundation (Current)
 
 - [x] Core trick list functionality
-- [x] User authentication
+- [x] User authentication (email + Google + Apple)
 - [x] iOS App Store launch
-- [ ] **Google Play launch**
-- [ ] Security hardening
-- [ ] CI/CD pipeline
+- [x] Feed/social features
+- [x] Direct messaging
+- [x] Spot discovery with maps
+- [ ] **Engineering standards** (this sprint)
+- [ ] Security hardening (this sprint)
+- [ ] Google Play launch
 
-### Q2: Enhancement
+### Q2: Growth
 
 - [ ] Push notifications
-- [ ] Offline mode improvements
-- [ ] Social features (share lists)
+- [ ] Offline mode
 - [ ] Analytics dashboard
 - [ ] Performance optimization
+- [ ] Expand test coverage to 60%
 
 ### Q3: Expansion
 
-- [ ] Trickipedia video integration
 - [ ] Community features
-- [ ] Spot sharing/discovery
 - [ ] Premium feature expansion
 - [ ] API versioning
+- [ ] International expansion
 
 ### Q4: Scale
 
-- [ ] International expansion
 - [ ] Additional sport support
 - [ ] Partner integrations
-- [ ] Enterprise features
-- [ ] White-label options
-
----
-
-## Technical Debt
-
-### Backend
-
-| Item | Effort | Impact |
-|------|--------|--------|
-| Centralize DB connections | Medium | High |
-| Add request validation | Medium | Medium |
-| Implement caching | High | High |
-| Add API versioning | Medium | Medium |
-| Remove unused mongoose | Low | Low |
-
-### Mobile
-
-| Item | Effort | Impact |
-|------|--------|--------|
-| Add error boundaries | Low | Medium |
-| Implement offline sync | High | High |
-| Add TypeScript | High | Medium |
-| Improve state management | Medium | Medium |
-| Add deep linking | Medium | Low |
+- [ ] Automated E2E testing
 
 ---
 
 ## Metrics to Track
+
+### Engineering Health
+
+| Metric | Current | Target |
+|--------|---------|--------|
+| Test coverage | 0% | 40% (Q1), 70% (Q2) |
+| Lint errors | Unknown (no linter) | 0 |
+| CI pass rate | N/A (no CI) | >95% |
+| Mean time to detect error | Days (user report) | Minutes (Sentry alert) |
+| Crash-free sessions | Unknown | >99.5% |
 
 ### App Metrics
 
 - Daily Active Users (DAU)
 - Monthly Active Users (MAU)
 - Retention (Day 1, 7, 30)
-- Tricks completed per user
 - Session duration
-
-### Technical Metrics
-
-- API response time (p50, p95, p99)
-- Error rate
-- Crash-free sessions
-- App size
-- Build time
+- Tricks completed per user
 
 ### Business Metrics
 
 - Downloads (iOS vs Android)
 - Premium conversion rate
-- Churn rate
 - Revenue per user
-- Customer acquisition cost
+- App Store rating

@@ -4,404 +4,261 @@ sidebar_position: 4
 
 # CI/CD Pipeline
 
-Automated build and deployment configuration for TrickBook.
+Automated quality gates and deployment for all TrickBook repositories. Every PR must pass lint, typecheck, and tests before merge. Every merge to main triggers deployment.
 
-## Recommended Setup
+## Pipeline Overview
 
+```mermaid
+graph TD
+    A[Push / PR] --> B{Which repo?}
+    B -->|TrickList| C[Mobile Pipeline]
+    B -->|Backend| D[Backend Pipeline]
+    B -->|docs| E[Docs Pipeline]
+
+    C --> C1[Biome Check]
+    C1 --> C2[TypeScript Check]
+    C2 --> C3[Jest Tests]
+    C3 --> C4{Merge to main?}
+    C4 -->|Yes| C5[EAS Build]
+    C5 --> C6[Submit to Stores]
+
+    D --> D1[Biome Check]
+    D1 --> D2[Jest Tests]
+    D2 --> D3{Merge to main?}
+    D3 -->|Yes| D4[Deploy API]
+
+    E --> E1[Build Docusaurus]
+    E1 --> E2[Deploy to GitHub Pages]
 ```
-GitHub Repository
-       │
-       ├── Push to main/master
-       │       │
-       │       ▼
-       │   GitHub Actions
-       │       │
-       │       ├── Backend tests & deploy
-       │       │
-       │       └── Mobile builds via EAS
-       │
-       └── Pull Request
-               │
-               ▼
-           Run tests only
-```
+
+## Quality Gates (All Repos)
+
+Every PR must pass these checks before merge:
+
+| Gate | Tool | Blocks Merge? |
+|------|------|:---:|
+| Lint | Biome | Yes |
+| Format | Biome | Yes |
+| Type Check | TypeScript (mobile only) | Yes |
+| Tests | Jest | Yes |
+| Coverage | Jest (threshold) | Yes |
 
 ## GitHub Actions Workflows
 
-### Backend CI/CD
-
-Create `.github/workflows/backend.yml`:
+### Mobile App (`TrickList/.github/workflows/ci.yml`)
 
 ```yaml
-name: Backend CI/CD
+name: Mobile CI
 
 on:
   push:
-    branches: [master, main]
-    paths:
-      - 'Backend/**'
+    branches: [main]
   pull_request:
-    branches: [master, main]
-    paths:
-      - 'Backend/**'
+    branches: [main]
 
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: Backend/package-lock.json
+          node-version: 20
+          cache: npm
 
       - name: Install dependencies
-        working-directory: Backend
         run: npm ci
 
-      - name: Run linter
-        working-directory: Backend
-        run: npm run lint --if-present
+      - name: Lint & Format Check
+        run: npx biome check .
 
-      - name: Run tests
-        working-directory: Backend
-        run: npm test --if-present
-        env:
-          NODE_ENV: test
-          ATLAS_URI: ${{ secrets.TEST_ATLAS_URI }}
-          JWT_SECRET: test-secret
+      - name: Type Check
+        run: npx tsc --noEmit
 
-  deploy:
-    needs: test
+      - name: Run Tests
+        run: npm test -- --coverage --ci
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  build:
+    needs: validate
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-
+    if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
-      # Option 1: Deploy to Railway
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build iOS (TestFlight)
+        run: eas build --platform ios --profile testflight --non-interactive
+
+      - name: Build Android (Play Store)
+        run: eas build --platform android --profile playstore --non-interactive
+```
+
+### Backend (`Backend/.github/workflows/ci.yml`)
+
+```yaml
+name: Backend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint & Format Check
+        run: npx biome check .
+
+      - name: Run Tests
+        run: npm test -- --coverage --ci --forceExit
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-for-ci-only
+          PORT: 5001
+
+      - name: Upload Coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deploy to your hosting provider
+      # Option 1: Railway
       - name: Deploy to Railway
         uses: bervProject/railway-deploy@main
         with:
           railway_token: ${{ secrets.RAILWAY_TOKEN }}
           service: trickbook-api
 
-      # Option 2: Deploy to Render
-      # - name: Deploy to Render
-      #   run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
-
-      # Option 3: Deploy to custom server
-      # - name: Deploy via SSH
-      #   uses: appleboy/ssh-action@v1.0.0
-      #   with:
-      #     host: ${{ secrets.SSH_HOST }}
-      #     username: ${{ secrets.SSH_USER }}
-      #     key: ${{ secrets.SSH_KEY }}
-      #     script: |
-      #       cd /var/www/trickbook-api
-      #       git pull
-      #       npm ci --only=production
-      #       pm2 restart trickbook-api
+      # Option 2: Docker deploy
+      # - name: Build and Push Docker Image
+      #   run: |
+      #     docker build -t trickbook-api .
+      #     docker push $REGISTRY/trickbook-api:latest
 ```
 
-### Mobile App CI/CD
+### Docs Site (already deployed)
 
-Create `.github/workflows/mobile.yml`:
+The docs site CI/CD is already configured and deploying to GitHub Pages at `docs.thetrickbook.com`. See `.github/workflows/deploy.yml` in the TrickBookDocs repo.
 
-```yaml
-name: Mobile CI/CD
+## Required GitHub Secrets
 
-on:
-  push:
-    branches: [master, main]
-    paths:
-      - 'TrickList/**'
-  pull_request:
-    branches: [master, main]
-    paths:
-      - 'TrickList/**'
+| Secret | Repo | Description |
+|--------|------|-------------|
+| `EXPO_TOKEN` | TrickList | Expo access token for EAS builds |
+| `RAILWAY_TOKEN` | Backend | Railway deployment token |
+| `SENTRY_DSN` | Both | Sentry error tracking DSN |
 
-jobs:
-  lint:
-    runs-on: ubuntu-latest
+### Getting Tokens
 
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: TrickList/package-lock.json
-
-      - name: Install dependencies
-        working-directory: TrickList
-        run: npm ci
-
-      - name: Run linter
-        working-directory: TrickList
-        run: npm run lint --if-present
-
-  build:
-    needs: lint
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: TrickList/package-lock.json
-
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Install dependencies
-        working-directory: TrickList
-        run: npm ci
-
-      - name: Build iOS
-        working-directory: TrickList
-        run: eas build --platform ios --profile testflight --non-interactive
-
-      - name: Build Android
-        working-directory: TrickList
-        run: eas build --platform android --profile playstore --non-interactive
-
-  submit:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Expo
-        uses: expo/expo-github-action@v8
-        with:
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Submit to App Store
-        working-directory: TrickList
-        run: eas submit --platform ios --latest --non-interactive
-
-      - name: Submit to Google Play
-        working-directory: TrickList
-        run: eas submit --platform android --latest --non-interactive
-```
-
-### Documentation Site
-
-Create `.github/workflows/docs.yml`:
-
-```yaml
-name: Deploy Docs
-
-on:
-  push:
-    branches: [master, main]
-    paths:
-      - 'docs/**'
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: docs/package-lock.json
-
-      - name: Install dependencies
-        working-directory: docs
-        run: npm ci
-
-      - name: Build docs
-        working-directory: docs
-        run: npm run build
-
-      # Deploy to GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build
-
-      # Or deploy to Vercel
-      # - name: Deploy to Vercel
-      #   uses: amondnet/vercel-action@v25
-      #   with:
-      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-      #     working-directory: ./docs
-```
-
-## Required Secrets
-
-Set these in GitHub repository settings → Secrets:
-
-### Backend Secrets
-| Secret | Description |
-|--------|-------------|
-| `RAILWAY_TOKEN` | Railway deployment token |
-| `TEST_ATLAS_URI` | Test database connection |
-
-### Mobile Secrets
-| Secret | Description |
-|--------|-------------|
-| `EXPO_TOKEN` | Expo access token |
-
-### Docs Secrets
-| Secret | Description |
-|--------|-------------|
-| `VERCEL_TOKEN` | Vercel deployment token (optional) |
-
-## Getting Tokens
-
-### Expo Token
 ```bash
-# Generate token
-eas login
-eas secret:list
+# Expo token
+# Go to: https://expo.dev/accounts/[username]/settings/access-tokens
 
-# Or via Expo dashboard
-# https://expo.dev/accounts/[username]/settings/access-tokens
-```
-
-### Railway Token
-```bash
+# Railway token
 railway login
 railway token
 ```
 
-## Branch Protection
+## Branch Protection Rules
 
-Recommended branch protection rules for `main`/`master`:
+Configure on GitHub (`Settings > Branches > Branch protection rules`):
 
-1. **Require pull request reviews**
-   - Required approving reviews: 1
-   - Dismiss stale reviews
+**Branch:** `main`
 
-2. **Require status checks**
-   - Require branches to be up to date
-   - Required checks: `lint`, `test`
+- [x] Require pull request before merging
+- [x] Require status checks to pass before merging
+  - Required checks: `validate`
+- [x] Require branches to be up to date before merging
+- [x] Do not allow bypassing the above settings
 
-3. **Require conversation resolution**
+This means:
+- No direct pushes to main
+- Every change goes through a PR
+- Every PR must pass lint + typecheck + tests
+- Stale PRs must rebase before merge
 
-4. **Do not allow bypassing**
+## Local Development Workflow
 
-## Workflow Triggers
+```bash
+# 1. Create feature branch
+git checkout -b feat/add-trick-sharing
 
-### Manual Triggers
+# 2. Make changes, commit (pre-commit hook runs Biome)
+git add .
+git commit -m "feat: add trick sharing"
 
-Add manual trigger option:
+# 3. Run full validation locally before pushing
+npm run validate  # biome check + tsc + jest
 
-```yaml
-on:
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Environment to deploy to'
-        required: true
-        default: 'staging'
-        type: choice
-        options:
-          - staging
-          - production
+# 4. Push and create PR
+git push -u origin feat/add-trick-sharing
+gh pr create
+
+# 5. CI runs automatically on PR
+# 6. After review + CI pass, merge to main
+# 7. Deploy triggers automatically
 ```
 
-### Scheduled Builds
+## Monitoring Deployments
 
-Run tests nightly:
+### EAS Build Status
 
-```yaml
-on:
-  schedule:
-    - cron: '0 2 * * *'  # 2 AM UTC daily
+```bash
+eas build:list --limit 5
 ```
 
-## Notifications
+### Backend Health Check
 
-### Slack Notifications
-
-```yaml
-- name: Notify Slack
-  uses: 8398a7/action-slack@v3
-  with:
-    status: ${{ job.status }}
-    fields: repo,message,commit,author
-  env:
-    SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-  if: always()
+```bash
+curl https://api.thetrickbook.com/api/health
 ```
 
-### Discord Notifications
+### Sentry Dashboard
 
-```yaml
-- name: Notify Discord
-  uses: sarisia/actions-status-discord@v1
-  if: always()
-  with:
-    webhook: ${{ secrets.DISCORD_WEBHOOK }}
-```
-
-## Caching
-
-Speed up builds with caching:
-
-```yaml
-- name: Cache node modules
-  uses: actions/cache@v4
-  with:
-    path: |
-      ~/.npm
-      node_modules
-    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-    restore-keys: |
-      ${{ runner.os }}-node-
-```
-
-## Environment Files
-
-For different environments:
-
-```yaml
-- name: Create env file
-  run: |
-    echo "API_URL=${{ secrets.API_URL }}" >> .env
-    echo "SENTRY_DSN=${{ secrets.SENTRY_DSN }}" >> .env
-```
-
-## Summary
-
-Complete CI/CD setup:
-
-1. **On PR**: Run linting and tests
-2. **On merge to main**: Build and deploy
-3. **Manual trigger**: For hotfixes or rollbacks
-4. **Notifications**: Slack/Discord alerts
-
-This ensures:
-- Code quality via automated checks
-- Consistent deployments
-- Quick feedback on issues
-- Audit trail of all deployments
+After Sentry is configured, monitor errors at:
+`https://[org].sentry.io/projects/`

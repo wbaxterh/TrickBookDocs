@@ -5,6 +5,19 @@ const sidebars: SidebarsConfig = {
     'intro',
     {
       type: 'category',
+      label: 'Engineering Standards',
+      items: [
+        'engineering/overview',
+        'engineering/linting-formatting',
+        'engineering/testing',
+        'engineering/pre-commit-hooks',
+        'engineering/error-handling',
+        'engineering/logging',
+        'engineering/code-quality',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Architecture',
       items: [
         'architecture/overview',
@@ -68,6 +81,7 @@ const sidebars: SidebarsConfig = {
       label: 'Roadmap',
       items: [
         'roadmap/priorities',
+        'roadmap/gap-analysis',
         'roadmap/security-fixes',
         'roadmap/efficiency-improvements',
         'roadmap/chrome-extension-integration',
