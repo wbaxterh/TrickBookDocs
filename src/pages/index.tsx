@@ -20,13 +20,13 @@ function HomepageHeader() {
           <Link
             className="button button--secondary button--lg"
             to="/docs/">
-            Get Started
+            Read the Docs
           </Link>
           <Link
             className="button button--outline button--secondary button--lg"
             style={{marginLeft: '1rem'}}
-            to="/docs/deployment/google-play">
-            Deploy to Google Play
+            href="https://thetrickbook.com">
+            Visit TrickBook
           </Link>
         </div>
       </div>

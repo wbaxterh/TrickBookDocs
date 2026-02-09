@@ -78,6 +78,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Release Notes',
+      items: [
+        'releases/v2.0.0',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Roadmap',
       items: [
         'roadmap/priorities',

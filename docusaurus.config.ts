@@ -65,9 +65,10 @@ const config: Config = {
     },
     navbar: {
       title: 'TrickBook',
+      style: 'dark',
       logo: {
         alt: 'TrickBook Logo',
-        src: 'img/logo.svg',
+        src: 'img/TrickBookLogo.png',
       },
       items: [
         {

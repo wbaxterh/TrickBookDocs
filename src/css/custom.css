@@ -1,37 +1,108 @@
 /**
  * TrickBook Documentation Custom Styles
- * Based on the TrickBook app color scheme
+ * Brand colors: Yellow (#FCF150) + Dark (#1f1f1f)
  */
 
-/* Light mode colors */
+/* Light mode colors - dark gold for readable links on white */
 :root {
-  --ifm-color-primary: #4A90D9;
-  --ifm-color-primary-dark: #3580d2;
-  --ifm-color-primary-darker: #2d78cc;
-  --ifm-color-primary-darkest: #2563a8;
-  --ifm-color-primary-light: #5f9dde;
-  --ifm-color-primary-lighter: #6aa4e1;
-  --ifm-color-primary-lightest: #8bb8e8;
+  --ifm-color-primary: #806D00;
+  --ifm-color-primary-dark: #735F00;
+  --ifm-color-primary-darker: #6B5900;
+  --ifm-color-primary-darkest: #584900;
+  --ifm-color-primary-light: #8D7A00;
+  --ifm-color-primary-lighter: #958100;
+  --ifm-color-primary-lightest: #AF9800;
   --ifm-code-font-size: 95%;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  --tb-yellow: #FCF150;
+  --tb-dark: #1f1f1f;
 }
 
-/* Dark mode colors */
+/* Dark mode colors - brand yellow for links/accents on dark backgrounds */
 [data-theme='dark'] {
-  --ifm-color-primary: #5BA3E8;
-  --ifm-color-primary-dark: #3d92e3;
-  --ifm-color-primary-darker: #2e88e0;
-  --ifm-color-primary-darkest: #236db8;
-  --ifm-color-primary-light: #79b4ed;
-  --ifm-color-primary-lighter: #88bcef;
-  --ifm-color-primary-lightest: #b0d2f5;
+  --ifm-color-primary: #FCF150;
+  --ifm-color-primary-dark: #FBE91E;
+  --ifm-color-primary-darker: #FBE505;
+  --ifm-color-primary-darkest: #D4C100;
+  --ifm-color-primary-light: #FDF582;
+  --ifm-color-primary-lighter: #FDF79B;
+  --ifm-color-primary-lightest: #FEFACC;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+  --ifm-background-color: #121212;
 }
 
-/* Hero banner styling */
+/* Navbar - dark with yellow title */
+.navbar {
+  background-color: var(--tb-dark);
+  border-bottom: 2px solid var(--tb-yellow);
+}
+
+.navbar__title {
+  color: var(--tb-yellow) !important;
+  font-weight: 700;
+}
+
+.navbar__logo img {
+  border-radius: 6px;
+}
+
+.navbar__link {
+  color: #ffffff !important;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: var(--tb-yellow) !important;
+}
+
+/* Hero banner - TrickBook yellow with dark text */
 .hero--primary {
-  background: linear-gradient(135deg, #4A90D9 0%, #2563a8 100%);
+  background: var(--tb-yellow);
+  color: var(--tb-dark);
+}
+
+.hero--primary .hero__title {
+  color: var(--tb-dark);
+  font-weight: 900;
+}
+
+.hero--primary .hero__subtitle {
+  color: #333333;
+}
+
+.hero--primary .button--secondary {
+  background-color: var(--tb-dark);
+  color: var(--tb-yellow);
+  border-color: var(--tb-dark);
+  font-weight: 700;
+}
+
+.hero--primary .button--secondary:hover {
+  background-color: #333333;
+  border-color: #333333;
+}
+
+.hero--primary .button--outline.button--secondary {
+  background-color: transparent;
+  color: var(--tb-dark);
+  border-color: var(--tb-dark);
+  border-width: 2px;
+}
+
+.hero--primary .button--outline.button--secondary:hover {
+  background-color: var(--tb-dark);
+  color: var(--tb-yellow);
+}
+
+/* Footer */
+.footer--dark {
+  background-color: var(--tb-dark);
+  border-top: 2px solid var(--tb-yellow);
+}
+
+.footer__title {
+  color: var(--tb-yellow);
 }
 
 /* Code blocks */
