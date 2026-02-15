@@ -13,11 +13,17 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "typecheck": "tsc",
+    "validate": "biome check . && tsc --noEmit && npm run build",
     "pdf": "node scripts/generate-pdf.js",
     "pdf:all": "node scripts/generate-pdf.js",
     "pdf:combined": "node scripts/generate-combined-pdf.js",
-    "pdf:section": "node scripts/generate-pdf.js"
+    "pdf:section": "node scripts/generate-pdf.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@docusaurus/core": "3.9.2",
@@ -30,9 +36,12 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
     "@docusaurus/module-type-aliases": "3.9.2",
     "@docusaurus/tsconfig": "3.9.2",
     "@docusaurus/types": "3.9.2",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "md-to-pdf": "^5.2.5",
     "typescript": "~5.6.2"
   },
@@ -50,5 +59,14 @@
   },
   "engines": {
     "node": ">=20.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "biome check --write",
+      "biome format --write"
+    ],
+    "*.{json,css}": [
+      "biome format --write"
+    ]
   }
 }

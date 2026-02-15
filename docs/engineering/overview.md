@@ -4,24 +4,24 @@ sidebar_position: 1
 
 # Engineering Standards
 
-Baseline engineering standards for the TrickBook project. These apply to **all repositories** (TrickList, Backend, docs) and must be in place before any new feature work.
+Baseline engineering standards for the TrickBook project. These apply to **all repositories** (TrickList, Backend, Website, Docs) and must be in place before any new feature work.
 
 ## Current State
 
-| Standard | TrickList (Mobile) | Backend | Docs |
-|----------|-------------------|---------|------|
-| Linting & Formatting | None | None | None |
-| Testing | 0 tests / 98+ files | 0 tests / 24 route files | N/A |
-| Pre-commit Hooks | None | None | None |
-| CI/CD Pipeline | Manual EAS only | Manual deploy | GitHub Actions |
-| Error Boundary | None | No global handler | N/A |
-| Error Tracking | None | None | N/A |
-| Structured Logging | console.log (54 calls) | console.log (410+ calls) | N/A |
-| API Response Validation | Zod in 2 files only | Joi in 8/24 routes | N/A |
-| .env.example | Missing | Missing | N/A |
-| TypeScript Strict | Basic `strict: true` | No TypeScript | N/A |
-| Docker | N/A | Missing | N/A |
-| Health Check | N/A | Missing | N/A |
+| Standard | TrickList (Mobile) | Backend | Website (NextJS) | Docs |
+|----------|-------------------|---------|-----------------|------|
+| Linting & Formatting | Biome | Biome | Biome | Biome |
+| Testing | 0 tests / 98+ files | 0 tests / 24 route files | None | N/A |
+| Pre-commit Hooks | Husky + lint-staged | Husky + lint-staged | Husky + lint-staged | Husky + lint-staged |
+| CI/CD Pipeline | GitHub Actions (lint + typecheck) + EAS | GitHub Actions (lint) + PM2 deploy | GitHub Actions (lint + build) | GitHub Actions (lint + typecheck + build + deploy) |
+| Error Boundary | None | No global handler | None | N/A |
+| Error Tracking | None | None | None | N/A |
+| Structured Logging | console.log (warnings) | console.log (410+ calls) | console.log (warnings) | N/A |
+| API Response Validation | Zod in 2 files only | Joi in 8/24 routes | None | N/A |
+| .env.example | `.env.example` | `.env.example` | `.env.example` | N/A |
+| TypeScript Strict | Basic `strict: true` | No TypeScript | No TypeScript | Basic `strict: true` |
+| Docker | N/A | Missing | N/A | N/A |
+| Health Check | N/A | Missing | N/A | N/A |
 
 ## Implementation Order
 
@@ -95,7 +95,22 @@ Backend/
 └── package.json             # Scripts: lint, test, validate
 ```
 
-## Package.json Scripts (Both Repos)
+### Website (NextJS)
+
+```
+TrickBookWebsite/
+├── biome.json              # Lint + format config (JS, CSS Modules, Tailwind)
+├── .husky/
+│   └── pre-commit          # Runs: lint-staged
+├── pages/                  # Next.js page routes
+├── components/             # React components
+├── lib/                    # Utilities and API calls
+├── styles/                 # CSS Modules + Tailwind
+├── .env.example            # Template for required vars
+└── package.json            # Scripts: lint, format, validate
+```
+
+## Package.json Scripts (All Repos)
 
 Every repo must have these scripts:
 
