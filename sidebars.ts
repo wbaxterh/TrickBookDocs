@@ -1,4 +1,4 @@
-import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docsSidebar: [
@@ -21,6 +21,7 @@ const sidebars: SidebarsConfig = {
       label: 'Architecture',
       items: [
         'architecture/overview',
+        'architecture/repo-dependency-map',
         'architecture/tech-stack',
         'architecture/data-flow',
       ],
@@ -50,10 +51,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Chrome Extension',
-      items: [
-        'chrome-extension/overview',
-        'chrome-extension/data-model',
-      ],
+      items: ['chrome-extension/overview', 'chrome-extension/data-model'],
     },
     {
       type: 'category',
@@ -79,9 +77,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'Release Notes',
-      items: [
-        'releases/v2.0.0',
-      ],
+      items: ['releases/v2.0.0'],
     },
     {
       type: 'category',

@@ -57,6 +57,8 @@ flowchart TB
 
 ## Components
 
+For cross-repo service boundaries and endpoint ownership, see [Repo Dependency Map](/docs/architecture/repo-dependency-map).
+
 ### Mobile App (TrickList)
 
 The React Native application built with Expo SDK 54 and TypeScript. Uses Expo Router for file-based navigation and NativeWind for Tailwind CSS styling.
