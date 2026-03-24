@@ -62,6 +62,7 @@ const sidebars: SidebarsConfig = {
         'features/spots',
         'features/homies',
         'features/media',
+        'features/ai-companions',
       ],
     },
     {
@@ -90,6 +91,7 @@ const sidebars: SidebarsConfig = {
         'roadmap/chrome-extension-integration',
         'roadmap/mobile-app-rebuild',
         'roadmap/mobile-design-prompt',
+        'roadmap/ai-companion-tools',
       ],
     },
   ],
