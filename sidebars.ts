@@ -24,6 +24,7 @@ const sidebars: SidebarsConfig = {
         'architecture/repo-dependency-map',
         'architecture/tech-stack',
         'architecture/data-flow',
+        'architecture/kaori',
       ],
     },
     {
