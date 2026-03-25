@@ -83,6 +83,13 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'User Feedback',
+      items: [
+        'feedback/user-feedback-log',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Roadmap',
       items: [
         'roadmap/priorities',
