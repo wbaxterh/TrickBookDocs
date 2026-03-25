@@ -50,14 +50,40 @@ If you have feedback, email **wesleybaxterhuber@gmail.com** or DM us on [Instagr
 
 ---
 
+## 2026-03-24 — Jake (via iMessage)
+
+**Context:** Wes asked for feedback directly
+
+> It's hard to add homies.. I search for Clark and It says It cant find him
+> Like if I could just search names and profiles pop up like ig that'd be sick
+
+### Feature Requests Extracted
+
+| # | Request | Category | Priority | Status |
+|---|---------|----------|----------|--------|
+| 1 | **Homie search broken** — can't find "Clark" by name | 🐛 Bug | 🔴 Critical | 🔍 Investigating |
+| 2 | **Better user discovery** — search names and see profile cards like Instagram | ✨ Feature | High | 📋 Planned |
+
+### Analysis
+
+**This is the same search bug Alex reported.** Two users independently can't find friends by name. This is now a **critical priority** — if users can't add friends, the social features are dead.
+
+**Instagram-style discovery (#2):** Jake wants to search a name and see profile cards pop up. Current search likely requires exact username match. Should support:
+- Partial name matching (fuzzy search)
+- Profile preview cards in search results (avatar, name, bio, trick count)
+- Suggested homies (mutual friends, nearby, same spots)
+
+---
+
 ## Feedback Summary
 
-| Theme | Mentions | Priority |
-|-------|----------|----------|
-| Social/sharing features | 1 | 🔴 High |
-| User discovery/search | 1 | 🔴 High |
-| Comments/community | 1 | 🟡 Medium |
-| Spot engagement | 1 | 🟡 Medium |
+| Theme | Mentions | Users | Priority |
+|-------|----------|-------|----------|
+| **User search/discovery broken** | 2 | Alex, Jake | 🔴 Critical |
+| Social/sharing features | 1 | Alex | 🔴 High |
+| Better profile discovery (IG-style) | 1 | Jake | 🔴 High |
+| Comments/community | 1 | Alex | 🟡 Medium |
+| Spot engagement | 1 | Alex | 🟡 Medium |
 
 ---
 
