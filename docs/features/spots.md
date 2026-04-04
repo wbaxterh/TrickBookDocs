@@ -38,8 +38,11 @@ The Spots feature allows users to discover, share, and organize action sports lo
 - Filter by amenities (lights, bathroom, free entry)
 - State/city hierarchical navigation
 - User ratings and reviews
-- Photo galleries
+- Photo galleries with carousel viewer
 - Directions integration (Google Maps, Apple Maps)
+- **Resort info UI** — ratings, stats, and features for ski/snowboard resorts
+- **Photo carousel** — swipeable image gallery on spot detail pages
+- **Lodging cards** — nearby accommodation suggestions on spot/resort pages
 
 ### Map Integration
 
@@ -291,6 +294,49 @@ The Chrome Extension (Map Scraper) extracts spots from Google Maps and syncs to 
 ```
 
 See [Chrome Extension Documentation](/docs/chrome-extension/overview) for details.
+
+## Resort Info (Ski/Snowboard Spots)
+
+*Added March 2026*
+
+Spots with `type: "resort"` or sport types including snowboarding/skiing display additional resort-specific UI:
+
+### Resort Detail UI
+- **Ratings & stats panel** — overall rating, difficulty breakdown, trail count, vertical drop
+- **Features grid** — terrain parks, night skiing, rentals, lessons, lodging
+- **Photo carousel** — swipeable gallery of resort images with fullscreen viewer
+- **Lodging cards** — nearby hotels/lodges with photos, distance, and booking links
+
+### Resort-Specific Schema Fields
+
+```javascript
+{
+  // Standard spot fields plus:
+  resortInfo: {
+    trailCount: Number,        // Total trails
+    verticalDrop: Number,      // Feet
+    lifts: Number,             // Lift count
+    terrain: {
+      beginner: Number,        // Percentage
+      intermediate: Number,
+      advanced: Number,
+      expert: Number
+    },
+    features: [String],        // ["terrain park", "night skiing", "rentals", "lessons"]
+    season: {
+      open: String,            // "November"
+      close: String            // "April"
+    },
+    snowfall: Number           // Average annual inches
+  },
+  lodging: [{
+    name: String,
+    imageUrl: String,
+    distance: String,          // "0.5 miles"
+    url: String                // Booking link
+  }]
+}
+```
 
 ## Image Storage
 

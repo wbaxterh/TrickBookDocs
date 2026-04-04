@@ -86,9 +86,9 @@ Every user gets Kaori as an automatic friend ("homie") on signup. She appears in
 | `search_trickipedia` | ✅ Live |
 | `create_spot_draft` | ✅ Live |
 | `share_content` | ✅ Live |
-| Rich chat message rendering (frontend) | 🔧 In Progress |
-| Frontend card components | 🔧 In Progress |
-| AI Companions section on Homies screen | 🔧 In Progress |
+| Rich chat message rendering (frontend) | ✅ Live |
+| Frontend card components | ✅ Live |
+| AI Companions section on Homies screen | ✅ Live |
 | Spot draft admin approval flow | 📋 Planned |
 | File uploads in DM | 📋 Planned |
 | Additional companions (Tony, Rico, etc.) | 📋 Planned |

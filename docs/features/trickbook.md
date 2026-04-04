@@ -69,7 +69,13 @@ Trickipedia is the core feature of TrickBook - a comprehensive trick encyclopedi
   description: String,       // Detailed description
   steps: [String],           // Step-by-step instructions
   tips: [String],            // Pro tips
-  videoUrl: String,          // YouTube tutorial link
+  videoUrl: String,          // YouTube tutorial link (legacy, single video)
+  videos: [{                 // Multiple tutorial videos (added Mar 2026)
+    url: String,             // Video URL (YouTube, Instagram, etc.)
+    platform: String,        // "youtube", "instagram", "tiktok"
+    title: String,           // Optional display title
+    thumbnailUrl: String     // Optional thumbnail override
+  }],
   imageUrl: String,          // S3 image URL
   sportTypes: [String],      // ["skateboarding"]
   prerequisites: [String],   // Tricks to learn first

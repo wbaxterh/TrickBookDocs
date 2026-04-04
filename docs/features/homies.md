@@ -36,7 +36,7 @@ Homies is TrickBook's social feature that allows users to connect with other rid
 
 **Key Features:**
 - Homie request system (send, accept, decline)
-- User search and discovery
+- User search and discovery with **search bar + pagination** (Mar 2026)
 - Direct messaging between homies
 - Real-time message delivery (Socket.IO)
 - Typing indicators

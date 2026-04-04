@@ -53,7 +53,33 @@ flowchart LR
 | [Homies](/docs/features/homies) | Social connections and messaging | ✅ Live |
 | [Media](/docs/features/media) | Video streaming and user content | ✅ Live |
 
-## Recent Updates (January 2026)
+## Recent Updates (March 2026)
+
+### Spots & Resorts (Mar 22–29)
+- **Resort info UI** — ratings, stats, features display for ski/snowboard spots
+- **Photo carousel + lodging cards** on spot detail pages
+- Connected tricks, spots, and feed videos — spot/video tagging on tricklists, trick history on spot pages, spot tagging on feed uploads
+- Fixed infinite loading on spot list detail and my-spots pages
+
+### Kaori AI Companion (Mar 23)
+- AI companion in messages — bot companions section, AI badge, auto-conversation creation
+- Bio, location, AI badge on profile page + Kaori full rider profile
+- Uses OpenRouter (Claude 3 Haiku) via backend
+
+### Social & Profiles (Mar 23–24)
+- Message bubble sides fixed (mine right, other left)
+- Search bar + pagination on Find Homies tab
+- Media hero image fallback to poster/driveThumbnail
+
+### Trickipedia (Mar 10–25)
+- Backend `videos[]` array field — multiple tutorials per trick
+- Frontend "Tutorials & Videos" display with platform chips
+- BMX 180 and 360 thumbnail images
+- Category routing fix for BMX/Inline Skating via `CATEGORY_MAP`
+
+---
+
+## Earlier Updates (January 2026)
 
 ### Homepage Redesign
 - Updated hero text: "The platform dedicated to Action Sports"
