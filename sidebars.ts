@@ -25,6 +25,7 @@ const sidebars: SidebarsConfig = {
         'architecture/tech-stack',
         'architecture/data-flow',
         'architecture/kaori',
+        'architecture/kaori-audit-2026-05',
       ],
     },
     {
@@ -84,9 +85,7 @@ const sidebars: SidebarsConfig = {
     {
       type: 'category',
       label: 'User Feedback',
-      items: [
-        'feedback/user-feedback-log',
-      ],
+      items: ['feedback/user-feedback-log'],
     },
     {
       type: 'category',
