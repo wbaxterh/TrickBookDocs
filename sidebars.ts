@@ -47,6 +47,7 @@ const sidebars: SidebarsConfig = {
         'backend/authentication',
         'backend/database',
         'backend/security',
+        'backend/ride-stay-v1',
       ],
     },
     {
