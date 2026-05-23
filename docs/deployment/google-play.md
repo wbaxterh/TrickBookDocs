@@ -4,306 +4,209 @@ sidebar_position: 2
 
 # Google Play Deployment (Android)
 
-Guide for deploying TrickBook to the Google Play Store.
-
-## Prerequisites
-
-- Google Play Developer Account ($25 one-time)
-- EAS CLI installed (`npm install -g eas-cli`)
-- Logged into EAS (`eas login`)
+Guide for deploying TrickBook to the Google Play Store via EAS Build and EAS Submit.
 
 ## Current Status
 
 | Item | Status |
 |------|--------|
 | Package Name | `com.thetrickbook.trickbook` |
-| Version Code | 4 |
-| Google Play | **Not yet submitted** |
+| Latest Version | 2.1.0 (versionCode 15) |
+| Google Play | **Submitted** -- Closed Alpha (internal track, draft) |
+| Build Profile | `playstore` (AAB, store distribution) |
+| Service Account | `trickbook-couch@trickbook.iam.gserviceaccount.com` |
+| Version Source | Remote (`appVersionSource: "remote"` in eas.json) |
 
-## Deployment Steps
+## Build and Submit Pipeline
 
-### Step 1: Google Play Console Setup
-
-1. Go to [Google Play Console](https://play.google.com/console)
-2. Click **Create app**
-3. Fill out:
-   - App name: **TrickBook**
-   - Default language: English
-   - App or game: App
-   - Free or paid: Free
-
-### Step 2: Store Listing
-
-Fill out all required fields:
-
-#### Main Store Listing
-- **Short description** (80 chars max):
-  ```
-  Track your skateboarding trick progress and discover new tricks
-  ```
-
-- **Full description** (4000 chars max):
-  ```
-  TrickBook is the ultimate companion app for skateboarders...
-  [Full description of features]
-  ```
-
-#### Graphics Assets
-
-| Asset | Dimensions | Required |
-|-------|------------|----------|
-| App icon | 512 x 512 | Yes |
-| Feature graphic | 1024 x 500 | Yes |
-| Phone screenshots | min 320px, max 3840px | 2-8 required |
-| Tablet screenshots | min 320px, max 3840px | Optional |
-
-### Step 3: Content Rating
-
-1. Go to **Policy** → **App content** → **Content rating**
-2. Complete the IARC questionnaire
-3. Categories to declare:
-   - No violence
-   - No sexual content
-   - No controlled substances
-   - User-generated content (optional)
-
-### Step 4: Data Safety
-
-Declare what data the app collects:
-
-| Data Type | Collected | Shared | Purpose |
-|-----------|-----------|--------|---------|
-| Email | Yes | No | Account creation |
-| Name | Yes | No | Profile |
-| Photos | Yes | No | Profile picture |
-| App activity | Yes | No | Analytics |
-
-### Step 5: Build for Google Play
+### Quick Deploy (standard flow)
 
 ```bash
-cd TrickList
+cd ~/Documents/TrickBook/repos/TrickList
 
-# Build Android App Bundle
-eas build --platform android --profile playstore
+# Build AAB for Play Store (versionCode auto-increments)
+eas build --profile playstore --platform android
+
+# Wait for build to finish (~15-30 min on free tier)
+
+# Submit the latest build to Google Play
+eas submit --platform android --profile playstore --latest
 ```
 
-Build takes approximately 15-30 minutes.
+### EAS Submit Configuration
 
-### Step 6: Download and Upload
-
-**Option A: Auto-submit via EAS**
-```bash
-# Configure service account first (one-time setup)
-eas credentials --platform android
-
-# Submit to Play Store
-eas submit --platform android --latest
-```
-
-**Option B: Manual Upload**
-1. Download `.aab` file from EAS dashboard
-2. In Play Console → **Production** → **Create new release**
-3. Upload the `.aab` file
-4. Add release notes
-5. Review and roll out
-
-### Step 7: Review and Release
-
-1. **Testing tracks** (optional but recommended):
-   - Internal testing (up to 100 testers)
-   - Closed testing (invite-only)
-   - Open testing (anyone can join)
-
-2. **Production release**:
-   - Google reviews apps (usually 1-3 days)
-   - Once approved, choose rollout percentage
-   - Start with 20% → 50% → 100%
-
-## Android-Specific Configuration
-
-### app.json Android Config
+The `eas.json` submit profile handles Play Store authentication and track selection:
 
 ```json
 {
-  "expo": {
-    "android": {
-      "package": "com.thetrickbook.trickbook",
-      "versionCode": 4,
-      "adaptiveIcon": {
-        "foregroundImage": "./app/assets/adaptive-icon.png",
-        "backgroundColor": "#FFFFFF"
-      },
-      "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE"
-      ]
+  "submit": {
+    "playstore": {
+      "android": {
+        "serviceAccountKeyPath": "../../secrets/trickbook-0fd5cf54c409.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
     }
   }
 }
 ```
 
-### Signing Configuration
+| Field | Value | Notes |
+|-------|-------|-------|
+| `serviceAccountKeyPath` | `../../secrets/trickbook-0fd5cf54c409.json` | Relative to TrickList root |
+| `track` | `internal` | Closed Alpha testing track |
+| `releaseStatus` | `draft` | Requires manual promotion in Play Console |
 
-EAS manages signing automatically. To view:
+:::warning
+The service account key JSON must never be committed to git. It is stored in `/Documents/TrickBook/secrets/` which is outside the repo and gitignored in TrickList.
+:::
 
-```bash
-eas credentials --platform android
+### Build Profile
+
+The `playstore` build profile in `eas.json`:
+
+```json
+{
+  "playstore": {
+    "distribution": "store",
+    "node": "20.18.0",
+    "android": {
+      "buildType": "app-bundle",
+      "image": "latest",
+      "autoIncrement": true
+    },
+    "env": {
+      "EXPO_NO_DOTENV": "1",
+      "NODE_ENV": "production"
+    }
+  }
+}
 ```
 
-To manually manage:
-```bash
-# Generate new keystore
-eas credentials --platform android
+Key settings:
+- **`buildType: "app-bundle"`** -- produces `.aab` (required by Play Store)
+- **`autoIncrement: true`** -- versionCode increments automatically on each build
+- **`EXPO_NO_DOTENV: "1"`** -- prevents loading local `.env` in CI builds
+- **`NODE_ENV: "production"`** -- npm installs production deps only
 
-# View SHA-1 fingerprint (needed for Google Sign-In)
-eas credentials --platform android
+## Signing and OAuth
+
+### Android Signing Keys
+
+EAS manages the upload keystore remotely. Google Play App Signing re-signs the APK with Google's own key before distribution.
+
+```mermaid
+flowchart LR
+    EAS[EAS Build] -->|Signs with Upload Key| AAB[.aab file]
+    AAB -->|Uploaded to Play| PlayConsole[Google Play Console]
+    PlayConsole -->|Re-signs with App Signing Key| APK[Distributed APK]
+    APK --> Users
 ```
 
-## Setting Up EAS Submit
+This means **two SHA-1 fingerprints** matter for Google OAuth:
 
-### Create Service Account
+| Key | SHA-1 Prefix | Used By |
+|-----|--------------|---------|
+| **Upload key** | `60:74:90:D9:...` | Dev builds, EAS preview builds |
+| **App signing key** | `A2:9D:C9:0E:...` | Play Store distributed installs |
 
-1. Go to Google Cloud Console
-2. Create project or select existing
-3. Enable **Google Play Android Developer API**
-4. Create service account with role: **Service Account User**
-5. Generate JSON key file
+Both are registered as separate Android OAuth clients in Google Cloud Console. See [ADR-001: Native Google Sign-In](/docs/architecture/adrs/native-google-signin) for the full decision record.
 
-### Link to Play Console
+### Finding SHA-1 Fingerprints
 
-1. In Play Console → **Settings** → **API access**
-2. Link to Google Cloud project
-3. Grant service account access:
-   - **Admin** for full access
-   - **Release manager** for submissions only
+In Google Play Console: **Release** > **Setup** > **App Integrity**
 
-### Configure EAS
+- **Upload key certificate** -- your EAS keystore fingerprint
+- **App signing key certificate** -- Google's re-signing key fingerprint
 
-```bash
-# Set service account credentials
-eas credentials --platform android
-# Select "service account" and upload JSON key
-```
+## After Submission: Play Console Steps
 
-## Play Console Checklist
+Once `eas submit` completes, the AAB lands as a **draft** on the internal track. To publish:
 
-### Before First Release
+1. **Play Console** > **Closed testing - Alpha** > **Edit release**
+2. Review the release, click **Next** > **Save**
+3. **Publishing overview** > **Send for review**
+4. Google reviews (1-7 days for closed test)
+5. After approval, click **Publish** in Publishing overview (managed publishing is enabled)
 
-- [ ] Create developer account
-- [ ] Complete identity verification (if required)
-- [ ] Add payment profile (for paid apps/IAP)
-- [ ] Accept Developer Distribution Agreement
+:::tip
+Existing opted-in testers auto-upgrade when a new version is published. They do not need to re-opt-in, and the tester count is preserved.
+:::
 
-### App Setup
+## Play Store Requirements Checklist
 
-- [ ] Set app category (Lifestyle or Sports)
-- [ ] Set content rating
-- [ ] Complete data safety form
-- [ ] Add privacy policy URL
-- [ ] Set target age group
+### Before First Production Release
 
-### Store Listing
+- [x] Create developer account
+- [x] Complete identity verification
+- [x] Accept Developer Distribution Agreement
+- [x] App name and package configured
+- [x] Build and submit AAB
+- [x] Service account key configured
+- [ ] Store listing (title, description, screenshots, feature graphic)
+- [ ] Content rating (IARC questionnaire)
+- [ ] Data safety form
+- [ ] Privacy policy URL (page exists at `thetrickbook.com/privacy-policy`)
+- [ ] Target age group
 
-- [ ] App name
-- [ ] Short description
-- [ ] Full description
-- [ ] App icon (512x512)
-- [ ] Feature graphic (1024x500)
-- [ ] Screenshots (phone)
-- [ ] Screenshots (tablet) - optional
-- [ ] Video URL - optional
+### Graphics Assets
+
+| Asset | Dimensions | Required |
+|-------|------------|----------|
+| App icon | 512 x 512 | Yes |
+| Feature graphic | 1024 x 500 | Yes |
+| Phone screenshots | 1080 x 1920 (portrait) | 2-8 required |
+| Tablet screenshots | Variable | Optional |
+
+### Data Safety Declaration
+
+| Data Type | Collected | Shared | Purpose |
+|-----------|-----------|--------|---------|
+| Email | Yes | No | Account creation |
+| Name | Yes | No | Profile |
+| Location | Yes | No | Spot discovery (nearby) |
+| Photos/Videos | Yes | No | Profile picture, feed posts |
+| App activity | Yes | No | Analytics |
 
 ## Version Management
 
-With `autoIncrement: true`:
-```bash
-# versionCode auto-increments on each build
-eas build --platform android --profile playstore
-```
+Versions are managed remotely by EAS (`appVersionSource: "remote"` in eas.json). The `versionCode` in `app.config.js` is ignored for builds.
 
-Manual version set:
 ```bash
-eas build:version:set --platform android --version-code 10
+# Check current remote version
+eas build:version:get --platform android
+
+# Manually set version (if needed)
+eas build:version:set --platform android --version-code 16
 ```
 
 ## Troubleshooting
 
-### Build Failures
+### "Build is expired"
+
+EAS builds expire after 30 days. If a build has expired, create a new one:
 
 ```bash
-# View logs
-eas build:view --logs
-
-# Clear cache
-eas build --platform android --profile playstore --clear-cache
+eas build --profile playstore --platform android
 ```
 
-### Signing Issues
+### Version Code Conflicts
+
+If Play Store rejects a versionCode that's already been used:
 
 ```bash
-# Reset credentials
-eas credentials --platform android --reset
+eas build:version:set --platform android --version-code <next-number>
+eas build --profile playstore --platform android
 ```
 
-### Upload Errors
+### Google Sign-In Error 400
 
-Common issues:
-- **Version code too low** - Increment versionCode
-- **Package name mismatch** - Must match exactly
-- **Target SDK too low** - Update Expo SDK
+If users see "Access blocked: invalid_request" when signing in with Google, the SHA-1 fingerprint is likely wrong. Verify the app signing key SHA-1 is registered in Google Cloud Console. See [ADR-001](/docs/architecture/adrs/native-google-signin).
 
-### Review Rejections
+## Build History
 
-Common reasons:
-1. **Privacy policy missing** - Add URL in store listing
-2. **Crash on launch** - Test on multiple devices
-3. **Deceptive behavior** - Ensure app does what it says
-4. **Insufficient content** - App must have real functionality
-
-## Release Checklist
-
-Before each release:
-
-- [ ] Test on physical Android device
-- [ ] Test on Android 10, 11, 12, 13
-- [ ] Test on different screen sizes
-- [ ] Verify all permissions work
-- [ ] Update versionCode
-- [ ] Write release notes
-- [ ] Take new screenshots (if UI changed)
-- [ ] Submit for review
-- [ ] Monitor for ANRs and crashes after release
-
-## Monitoring
-
-### Play Console Analytics
-
-- **Statistics** → Installs, uninstalls, ratings
-- **Android Vitals** → Crashes, ANRs, battery usage
-- **Ratings and reviews** → User feedback
-
-### Crash Reporting
-
-Enable Firebase Crashlytics or Sentry:
-```bash
-npx expo install @sentry/react-native
-```
-
-## First-Time Setup Summary
-
-```bash
-# 1. Build the app
-eas build --platform android --profile playstore
-
-# 2. Create Play Console listing (web)
-
-# 3. Set up EAS submit credentials
-eas credentials --platform android
-
-# 4. Submit to Play Store
-eas submit --platform android --latest
-
-# 5. Complete store listing in Play Console
-
-# 6. Submit for review
-```
+| Date | Version | versionCode | Build ID | Notes |
+|------|---------|-------------|----------|-------|
+| May 13, 2026 | 2.1.0 | 15 | `d085fbe6` | Native Google Sign-In, map pin fix |
+| May 1, 2026 | 2.1.0 | 14 | `fc614c87` | First successful Play Store submission |
+| Feb 8, 2026 | 2.0.0 | 12 | `ff2d405d` | Initial playstore build (expired) |

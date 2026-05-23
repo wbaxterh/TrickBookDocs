@@ -26,6 +26,14 @@ const sidebars: SidebarsConfig = {
         'architecture/data-flow',
         'architecture/kaori',
         'architecture/kaori-audit-2026-05',
+        {
+          type: 'category',
+          label: 'ADRs',
+          items: [
+            'architecture/adrs/native-google-signin',
+            'architecture/adrs/kaori-fallback-chain',
+          ],
+        },
       ],
     },
     {
@@ -74,13 +82,14 @@ const sidebars: SidebarsConfig = {
         'deployment/app-store',
         'deployment/google-play',
         'deployment/backend',
+        'deployment/infrastructure',
         'deployment/ci-cd',
       ],
     },
     {
       type: 'category',
       label: 'Release Notes',
-      items: ['releases/v3.0.0', 'releases/v2.0.0'],
+      items: ['releases/v3.1.0', 'releases/v3.0.0', 'releases/v2.0.0'],
     },
     {
       type: 'category',
