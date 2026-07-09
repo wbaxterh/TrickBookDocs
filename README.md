@@ -41,7 +41,7 @@ PDFs are output to the `pdf-exports/` directory.
 
 Push to `main` branch triggers automatic deployment via GitHub Actions.
 
-**Live URL:** https://wbaxterh.github.io/TrickBookDocs/
+**Live URL:** https://docs.thetrickbook.com
 
 ### Manual Deployment
 
@@ -65,17 +65,25 @@ docs/
 │   ├── authentication.md      # Auth system
 │   ├── database.md            # MongoDB schema
 │   └── security.md            # Security status
+├── chrome-extension/          # Chrome extension docs
+├── deployment/
+│   ├── app-store.md           # iOS deployment
+│   ├── google-play.md         # Android deployment
+│   ├── backend.md             # Server deployment
+│   └── ci-cd.md               # GitHub Actions
+├── engineering/
+│   ├── overview.md            # Engineering standards
+│   ├── linting-formatting.md  # Biome setup
+│   ├── pre-commit-hooks.md    # Husky + lint-staged
+│   └── ...                    # More standards docs
+├── features/                  # Feature documentation
 ├── mobile/
 │   ├── overview.md            # App structure
 │   ├── navigation.md          # React Navigation
 │   ├── state-management.md    # State patterns
 │   ├── api-integration.md     # API client
 │   └── build-configuration.md # EAS/Expo config
-├── deployment/
-│   ├── app-store.md           # iOS deployment
-│   ├── google-play.md         # Android deployment
-│   ├── backend.md             # Server deployment
-│   └── ci-cd.md               # GitHub Actions
+├── releases/                  # Release notes per version
 └── roadmap/
     ├── priorities.md          # Task priorities
     ├── security-fixes.md      # Security TODOs

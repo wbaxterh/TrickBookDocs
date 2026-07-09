@@ -6,8 +6,8 @@
  */
 
 const { mdToPdf } = require('md-to-pdf');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 const OUTPUT_DIR = path.join(__dirname, '..', 'pdf-exports');
@@ -35,12 +35,12 @@ const SECTION_ORDER = [
   'deployment/ci-cd.md',
   'roadmap/priorities.md',
   'roadmap/security-fixes.md',
-  'roadmap/efficiency-improvements.md'
+  'roadmap/efficiency-improvements.md',
 ];
 
 const PDF_CONFIG = {
   stylesheet: [
-    'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css',
   ],
   css: `
     body {
@@ -72,7 +72,7 @@ const PDF_CONFIG = {
       top: '25mm',
       bottom: '25mm',
       left: '20mm',
-      right: '20mm'
+      right: '20mm',
     },
     printBackground: true,
     displayHeaderFooter: true,
@@ -85,8 +85,8 @@ const PDF_CONFIG = {
       <div style="font-size: 10px; width: 100%; text-align: center; color: #999;">
         Page <span class="pageNumber"></span> of <span class="totalPages"></span>
       </div>
-    `
-  }
+    `,
+  },
 };
 
 function stripFrontmatter(content) {
@@ -139,7 +139,7 @@ ${SECTION_ORDER.map((file, i) => {
       console.log(`  Adding: ${file}`);
       const content = fs.readFileSync(filePath, 'utf-8');
       const cleanContent = stripFrontmatter(content);
-      combinedContent += cleanContent + '\n\n---\n\n';
+      combinedContent += `${cleanContent}\n\n---\n\n`;
     } else {
       console.log(`  ⚠ Missing: ${file}`);
     }
@@ -159,9 +159,7 @@ ${SECTION_ORDER.map((file, i) => {
       fs.writeFileSync(OUTPUT_FILE, pdf.content);
       console.log(`\n✓ Generated: ${OUTPUT_FILE}`);
     }
-  } catch (error) {
-    console.error('Error generating PDF:', error.message);
-  }
+  } catch (_error) {}
 
   // Clean up temp file
   fs.unlinkSync(tempFile);

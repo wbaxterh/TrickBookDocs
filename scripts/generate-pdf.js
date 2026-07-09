@@ -10,15 +10,15 @@
  */
 
 const { mdToPdf } = require('md-to-pdf');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 const OUTPUT_DIR = path.join(__dirname, '..', 'pdf-exports');
 
 const PDF_CONFIG = {
   stylesheet: [
-    'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css',
   ],
   css: `
     body {
@@ -47,7 +47,7 @@ const PDF_CONFIG = {
       top: '20mm',
       bottom: '20mm',
       left: '15mm',
-      right: '15mm'
+      right: '15mm',
     },
     printBackground: true,
     headerTemplate: `
@@ -60,12 +60,12 @@ const PDF_CONFIG = {
         Page <span class="pageNumber"></span> of <span class="totalPages"></span>
       </div>
     `,
-    displayHeaderFooter: true
+    displayHeaderFooter: true,
   },
   marked_options: {
     headerIds: true,
-    gfm: true
-  }
+    gfm: true,
+  },
 };
 
 async function generatePdf(inputPath, outputPath) {
@@ -79,8 +79,7 @@ async function generatePdf(inputPath, outputPath) {
       console.log(`  ✓ Generated: ${path.basename(outputPath)}`);
       return true;
     }
-  } catch (error) {
-    console.error(`  ✗ Error converting ${inputPath}:`, error.message);
+  } catch (_error) {
     return false;
   }
 }

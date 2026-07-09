@@ -1,14 +1,14 @@
-import type {ReactNode} from 'react';
-import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
+import Layout from '@theme/Layout';
+import clsx from 'clsx';
+import type { ReactNode } from 'react';
 
 import styles from './index.module.css';
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <header className={clsx('hero hero--primary', styles.heroBanner)}>
       <div className="container">
@@ -17,15 +17,14 @@ function HomepageHeader() {
         </Heading>
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/">
+          <Link className="button button--secondary button--lg" to="/docs/">
             Read the Docs
           </Link>
           <Link
             className="button button--outline button--secondary button--lg"
-            style={{marginLeft: '1rem'}}
-            href="https://thetrickbook.com">
+            style={{ marginLeft: '1rem' }}
+            href="https://thetrickbook.com"
+          >
             Visit TrickBook
           </Link>
         </div>
@@ -44,10 +43,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: 'Architecture',
     description: (
-      <>
-        System design, technology stack, and data flow documentation
-        for the TrickBook platform.
-      </>
+      <>System design, technology stack, and data flow documentation for the TrickBook platform.</>
     ),
     link: '/docs/architecture/overview',
   },
@@ -55,8 +51,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Backend API',
     description: (
       <>
-        Node.js Express API documentation including endpoints,
-        authentication, database schema, and security.
+        Node.js Express API documentation including endpoints, authentication, database schema, and
+        security.
       </>
     ),
     link: '/docs/backend/overview',
@@ -65,8 +61,8 @@ const FeatureList: FeatureItem[] = [
     title: 'Mobile App',
     description: (
       <>
-        React Native + Expo mobile app documentation covering
-        navigation, state management, and build configuration.
+        React Native + Expo mobile app documentation covering navigation, state management, and
+        build configuration.
       </>
     ),
     link: '/docs/mobile/overview',
@@ -75,8 +71,7 @@ const FeatureList: FeatureItem[] = [
     title: 'Deployment',
     description: (
       <>
-        Step-by-step guides for deploying to App Store, Google Play,
-        and backend hosting platforms.
+        Step-by-step guides for deploying to App Store, Google Play, and backend hosting platforms.
       </>
     ),
     link: '/docs/deployment/app-store',
@@ -84,26 +79,20 @@ const FeatureList: FeatureItem[] = [
   {
     title: 'Security',
     description: (
-      <>
-        Current security status, vulnerabilities, and fixes
-        required for production readiness.
-      </>
+      <>Current security status, vulnerabilities, and fixes required for production readiness.</>
     ),
     link: '/docs/backend/security',
   },
   {
     title: 'Roadmap',
     description: (
-      <>
-        Priority tasks, upcoming features, and efficiency
-        improvements for faster development.
-      </>
+      <>Priority tasks, upcoming features, and efficiency improvements for faster development.</>
     ),
     link: '/docs/roadmap/priorities',
   },
 ];
 
-function Feature({title, description, link}: FeatureItem) {
+function Feature({ title, description, link }: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
       <div className="padding-horiz--md padding-vert--lg">
@@ -121,8 +110,8 @@ function HomepageFeatures(): ReactNode {
     <section className={styles.features}>
       <div className="container">
         <div className="row">
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
+          {FeatureList.map((props) => (
+            <Feature key={props.title} {...props} />
           ))}
         </div>
       </div>
@@ -131,11 +120,11 @@ function HomepageFeatures(): ReactNode {
 }
 
 export default function Home(): ReactNode {
-  const {siteConfig} = useDocusaurusContext();
   return (
     <Layout
       title="Documentation"
-      description="Technical documentation for the TrickBook mobile app and platform">
+      description="Technical documentation for the TrickBook mobile app and platform"
+    >
       <HomepageHeader />
       <main>
         <HomepageFeatures />

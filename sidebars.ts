@@ -73,6 +73,7 @@ const sidebars: SidebarsConfig = {
         'features/homies',
         'features/media',
         'features/ai-companions',
+        'features/notifications',
       ],
     },
     {
