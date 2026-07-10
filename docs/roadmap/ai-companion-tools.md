@@ -5,6 +5,8 @@ title: "AI Companion Tool Calling"
 
 # AI Companion Tool Calling — Implementation Plan
 
+Status: **Shipped (2026)** — implemented as kaori-tools.js in TB-Backend with 8 tools on Gemini Flash via OpenRouter; see [Kaori AI Architecture](/docs/architecture/kaori) for the live system. This document is preserved as the original plan.
+
 This document covers the full implementation of tool calling (function calling) for TrickBook's AI companions, enabling them to perform actions like creating tricklists, searching spots, and submitting new spots on behalf of users.
 
 ## Overview

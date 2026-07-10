@@ -5,6 +5,8 @@ title: "Kaori System Audit (May 2026)"
 
 # Kaori AI System Audit — May 2026
 
+Status: **Superseded — see [Kaori AI Architecture](/docs/architecture/kaori)** · Snapshot date: May 2026
+
 Current state of Kaori's AI companion system, voice pipeline, 3D character, and tool integration.
 
 ## Status Overview
@@ -255,3 +257,22 @@ From `kaori-character.json`:
 - **LLM:** OpenRouter → Gemini 2.0 Flash
 - **TTS:** ElevenLabs (eleven_v3)
 - **Kaori Bot User ID:** `69c15e55c7ebe2c6884f1267`
+
+---
+
+## What changed since this audit (July 2026)
+
+This audit is preserved as a historical snapshot. Several of its gaps have since been closed:
+
+| Area | May 2026 (this audit) | July 2026 |
+|------|----------------------|-----------|
+| Mobile integration | ❌ Not built — standard DM fallback | ✅ 3D companion stage shipped in mobile PR #4 (VRM stage, live voice, chat overlay) |
+| Character animation | ❌ FBX animations missing, procedural only | ✅ Speech-synced trick choreography (FS360) closes the animations gap |
+| Persona & memory | Hardcoded prompt, memory not auto-populated | ✅ Backend `2fa8388`: corpus-mined rider persona, unified cross-surface memory (DMs + bot chats), `onStage` stage-demo prompt gating |
+| Kith voice sidecar | Upstream Kith on port 3040 | ✅ Vendored + patched Kith (speed forwarding); nginx `/kith/ws` proxy verified externally |
+| Voice ID | `klHOJHbGA89BjwulA7MN` | ✅ Now `f4h3tN7EZXwGMHo8bUoV` |
+| ElizaOS (port 3001) | Stopped | Remains retired — prod path is direct OpenRouter via `kaori-ai-response.js` |
+
+:::tip
+For the current end-to-end state and launch readiness, see the [Companions Launch Audit](/docs/roadmap/companions-launch).
+:::

@@ -5,443 +5,191 @@ title: "Kaori AI Architecture"
 
 # Kaori AI Architecture
 
-Deep-dive into how TrickBook's AI companion system works — from a user's message to a tool-calling response with rich content cards.
+Deep-dive into how TrickBook's AI companion system works — one LLM brain serving three surfaces, a streaming voice sidecar, and a 3D body that acts out what she says.
+
+Status: **Current — live in prod** · Last updated: 2026-07-09
+
+:::tip Related pages
+Feature overview: [AI Companions](/docs/features/ai-companions) · Path to users: [Companions Launch Audit](/docs/roadmap/companions-launch) · Business model: [Monetization](/docs/roadmap/monetization)
+:::
 
 ## System Overview
 
-Kaori is TrickBook's first AI companion — a snowboard-obsessed bot inspired by Kaori Nishidake from SSX Tricky. She lives inside the app's DM system and can have natural conversations, access your TrickBook data, and perform actions on your behalf.
+Kaori is TrickBook's flagship AI companion — a dry, understated snowboarder (homage to SSX's Kaori Nishidake) who chats, acts on your TrickBook data via tools, speaks with a real voice, and physically demonstrates tricks on a 3D stage. Three client surfaces converge on **one brain** inside TB-Backend:
 
-![Current Architecture](/img/kaori-architecture/01-current-arch.png)
-
-### Key Components
+```
+   Web: Kaori Live + DMs        Mobile: companion chat      Mobile: 3D stage (voice)
+   pages/kaori-live.js          bot chat screen             KaoriStage + useKithVoice
+        │                            │                            │
+        │ POST /api/dm               │ POST /api/bot-chat/        │ POST /api/bot-chat/message
+        │ (+ x-kith-session)         │      message               │ (+ x-kith-session)
+        ▼                            ▼                            ▼
+  ┌──────────────────────────────────────────────────────────────────────┐
+  │                     TB-Backend (Express, PM2)                        │
+  │    routes/dm.js ────────────┐        ┌──────── routes/botChat.js     │
+  │                             ▼        ▼                               │
+  │                 kaori-ai-response.js  — "the brain"                  │
+  │       persona · unified memory · onStage gating · tool loop          │
+  │                             │                                        │
+  │        kaori-tools.js ──────┼────── MongoDB Atlas (TrickList2)       │
+  │                             ▼                                        │
+  │                 OpenRouter → Gemini Flash                            │
+  └──────────────────┬───────────────────────────────────────────────────┘
+                     │ fire-and-forget POST /speak/:sessionId
+                     ▼
+       kith-voice (Bun, :3040) ─→ Python sidecar (Pipecat) ─→ ElevenLabs
+                     │ WS: turn/tts/emotion events + audio chunks
+                     ▼
+       client — gapless playback, mouth-sync, choreography cues
+```
 
 | Component | Tech | Purpose |
 |-----------|------|---------|
-| **TB-Backend** | Express.js, Node 18 | Main API server, DM routing, Socket.IO |
-| **Kaori Server v2** | Express.js, Port 3001 | AI brain — personality, tool calling, RAG |
-| **OpenRouter** | API gateway | LLM routing to Gemini 2.0 Flash |
-| **MongoDB Atlas** | TrickList2 database | App data — users, tricklists, spots, DMs |
-| **PostgreSQL** | elizaos database | Conversation memory, RAG embeddings |
-| **pgvector** | PostgreSQL extension | 384-dim embeddings for snowboard knowledge |
+| **TB-Backend** | Express.js, PM2 `TB-Backend` | API server, DM + bot-chat routing, Kaori brain |
+| **kaori-ai-response.js** | Node, OpenRouter | Persona, memory merge, tool-calling loop |
+| **kaori-tools.js** | Node | Tool registry + MongoDB execution |
+| **kith-voice** | Bun + [Kith](https://github.com/wbaxterh/kith), PM2 `kith-voice` :3040 | Voice sessions, WS event stream, `/speak` API |
+| **Python sidecar** | Pipecat (vendored) | Streaming ElevenLabs TTS pipeline |
+| **MongoDB Atlas** | TrickList2 database | App data + all conversation memory |
 
-### Infrastructure
-
-Everything runs on a single **t3.small EC2 instance** (2 vCPU, 2 GB RAM, 20 GB disk):
-
-- **PM2 process 0:** TB-Backend (Express, ~194 MB)
-- **PM2 process 1:** kaori-bot (Express, ~88 MB)
-- **Nginx:** Reverse proxy + SSL termination
-- **PostgreSQL 12:** Local, with pgvector 0.4.4
+Kith is our own OSS voice runtime ([github.com/wbaxterh/kith](https://github.com/wbaxterh/kith)). Everything runs on the single prod EC2 instance behind nginx (`api.thetrickbook.com`).
 
 ---
 
-## Message Flow
+## The Brain: TB-Backend
 
-Here's exactly what happens when a user sends a message to Kaori:
+Both entry points — `routes/dm.js` (web DMs / Kaori Live) and `routes/botChat.js` (mobile chat + 3D stage) — persist the user message, then call `generateKaoriResponse()` in `kaori-ai-response.js`. There is no separate AI server: the brain is an in-process module.
 
-![Message Flow](/img/kaori-architecture/02-message-flow.png)
+### Persona
 
-### Step-by-Step
+`KAORI_SYSTEM_PROMPT` is a corpus-mined **dry rider register**: 1–3 short sentences, no cheerleader openers, praise as one specific line ("that back lip was clean"), rationed hype, real trick vocabulary ("front three", "back lip"), and an explicit banned-poser-vocabulary list ("shred the gnar", "I'd be happy to help", …). Register examples are baked into the prompt so the model imitates rhythm, not just rules.
 
-1. **User sends DM** → Frontend POSTs to `dm.js` via REST API
-2. **dm.js detects bot conversation** → Checks if recipient `isBot: true`
-3. **Saves user message** to `dm_messages` collection in MongoDB
-4. **Emits typing indicator** via Socket.IO (1–2.5s realistic delay)
-5. **Forwards to Kaori Server** → `POST localhost:3001/api/chat` with `{userId, message}`
-6. **Kaori Server builds context:**
-   - Fetches last 20 messages from PostgreSQL (`bot_conversations` table)
-   - Queries MongoDB for user's tricklists and profile
-   - Runs semantic search against pgvector RAG (snowboard knowledge)
-7. **Constructs system prompt** from character personality + user context + RAG snippets
-8. **Calls OpenRouter** with messages array + tool definitions
-9. **Tool execution loop** (if model requests tools) — max 3 iterations
-10. **Returns response** with optional `richContent` for frontend cards
-11. **dm.js saves bot message** + richContent to `dm_messages`
-12. **Socket.IO emits** the new message to the frontend in real-time
+### Unified cross-surface memory
 
-### Key Files
+Kaori remembers you *across surfaces*. Every reply merges recent context from both message stores:
 
-```
-EC2 Server
-├── ~/TB-Backend/
-│   ├── routes/dm.js              # DM router, bot detection, HTTP relay
-│   ├── routes/users.js           # Auto-add Kaori as homie on signup
-│   └── kaori-ai-response.js      # Legacy response helper
-│
-├── ~/elizaos-trickbook/
-│   ├── kaori-server-v2.js        # Main Kaori brain (612 lines)
-│   ├── characters/kaori.json     # Character personality definition
-│   └── .env                      # API keys, DB connections
-│
-└── PostgreSQL (elizaos DB)
-    ├── bot_conversations          # Per-user chat history
-    ├── kaori_articles             # Scraped article metadata
-    └── kaori_chunks               # 566 embedded chunks (384-dim)
-```
+1. **`dm_messages`** — web Kaori Live / DM surface (last 8; conversation looked up by participants if the caller has no conversation id)
+2. **`bot_chats`** — mobile chat + 3D-stage voice (last 8)
+
+The two are merged chronologically, trimmed to the most recent 12, and deduped against the current prompt (callers persist the user message before invoking the brain). Tell her your name on the web and she knows it on the stage.
+
+On top of that, a **relationship profile** (`companion_profiles` collection) tracks interaction count, a relationship stage (stranger → acquaintance → friend → close_friend → bestie), remembered facts, name, sports, and last-session mood — all injected into the system prompt so her energy adapts as you rack up messages.
+
+### Tool-calling loop
+
+The brain calls OpenRouter (**Gemini Flash**, `google/gemini-3.5-flash`) with the full tool registry, `tool_choice: auto`, max 3 iterations. Tool results are fed back as `role: tool` messages until the model produces text. Registry (`kaori-tools.js`):
+
+| Tool | Purpose |
+|------|---------|
+| `search_spots` | Find skateparks / resorts / breaks in `ck_spots` |
+| `search_trickipedia` | Look up tricks by name or category |
+| `get_user_tricklists` | The user's real lists with resolved trick names |
+| `create_tricklist` | Create a list (flagged `createdBy: 'kaori'`) |
+| `add_trick_to_list` | Add a trickipedia trick to a list |
+| `update_trick_status` | Mark trick progress on a list |
+| `lookup_boardsport_knowledge` | Curated boardsport knowledge base (`kaori-knowledge.json`) |
+| `remember_user_info` | Persist name / sports / facts to the relationship profile |
+
+The prompt is explicit that saying "I added it" without calling the tool means it didn't happen — no hallucinated writes. A pgvector RAG lookup (`kaori-rag/`) is a **silent-optional** path: wrapped in try/catch, injected only if the module exists and returns hits.
+
+### onStage gating
+
+When a request carries a valid `x-kith-session` header (a UUID minted by the voice service), the caller sets `{ onStage: true }` and the brain appends `STAGE_DEMO_PROMPT`: for trick demos, keep sentences short, open flat ("aight, front three."), include a "watch this" sentence (cues the full trick), then one imperative sentence per phase using the exact keywords **wind up / pop / spin / land** so her 3D body can match, then a dry sign-off. Normal chat stays normal — the structure only kicks in for demonstrations.
 
 ---
 
-## Tool Calling System
+## Voice Pipeline (Kith)
 
-Kaori uses OpenRouter's native function calling API to execute actions within TrickBook.
+`kith-voice/src/server.ts` is a Bun server that owns voice sessions:
 
-![Tool Calling Flow](/img/kaori-architecture/03-tool-calling.png)
-
-### How It Works
-
-1. Every API call to OpenRouter includes a `tools` array defining 6 available functions
-2. The model decides whether to call tools based on the user's message
-3. If tools are called, results are fed back to the model for a natural-language response
-4. The loop runs up to **3 iterations** to prevent infinite tool chains
-
-### Available Tools
-
-#### Read-Only Tools (safe, no data modification)
-
-| Tool | Description | MongoDB Collection |
-|------|-------------|-------------------|
-| `search_spots` | Find spots by name, city, state, type | `ck_spots` |
-| `get_user_tricklists` | Get user's tricklists with resolved trick names | `tricklists` |
-| `search_trickipedia` | Search tricks by name or category | `tricks` |
-| `share_content` | Share a spot/tricklist/trick as a rich card | Any |
-
-#### Write Tools (creates data, flagged with `createdBy: 'kaori'`)
-
-| Tool | Description | MongoDB Collection |
-|------|-------------|-------------------|
-| `create_tricklist` | Create a new tricklist with tricks from trickipedia | `tricklists` |
-| `create_spot_draft` | Submit a new spot for admin approval | `spot_drafts` |
-
-### Safety Guardrails
-
-- **Max 3 tool iterations** per message — prevents runaway loops
-- **Rate limit:** 5 write operations per user per hour
-- **Audit trail:** `createdBy: 'kaori'` flag on all AI-created content
-- **Spot moderation:** AI-submitted spots go to `spot_drafts` (pending approval), not directly to `ck_spots`
-- **No deletion tools:** Bots can create and read, but never delete user data
-- **DBRef pattern:** Tricklists use MongoDB's DBRef format for the `user` field — `{ "$ref": "users", "$id": ObjectId }`, accessed in JS via `.oid` property
-
-### Tool Schema Example
-
-```javascript
-{
-  type: "function",
-  function: {
-    name: "search_spots",
-    description: "Search TrickBook spots by name, city, state, country, or type.",
-    parameters: {
-      type: "object",
-      properties: {
-        query: { type: "string", description: "Search term" },
-        type: { type: "string", enum: ["skatepark", "street", "diy", "snow"] },
-        limit: { type: "number", description: "Max results, default 5" }
-      },
-      required: ["query"]
-    }
-  }
-}
+```
+Client ◄── WS ──► kith-voice ◄── WS ──► Python sidecar (Pipecat) ──► ElevenLabs
+TB-Backend ── HTTP POST /speak/:sessionId ──► kith-voice
 ```
 
-### Tool Execution Loop (Pseudocode)
+### Session protocol
 
-```javascript
-let iterations = 0;
-while (iterations < 3) {
-  const response = await callOpenRouter(messages, TOOLS);
+1. Client opens `wss://api.thetrickbook.com/kith/ws` (nginx proxies `/kith/ws` → `:3040/ws`).
+2. Server mints a UUID session id, spins up a **per-session PipecatRuntime** (its own Python subprocess), and sends `{ type: '_ready', sessionId }`.
+3. The client sends every chat request with header `x-kith-session: <sessionId>` — same contract for web DMs (`dm.js`) and mobile bot chat (`botChat.js`).
+4. After responding with the text reply, the backend **fire-and-forgets** `POST ${KITH_VOICE_URL}/speak/<sessionId>` with the reply text (session id validated against a UUID regex before it goes in a URL; runs after `res.json`, so it can never break the HTTP response).
+5. Kith speaks the reply **sentence by sentence** — one full turn cycle per sentence:
 
-  if (response.finish_reason === 'tool_calls') {
-    for (const toolCall of response.tool_calls) {
-      const result = await executeTool(toolCall.name, toolCall.args, userId);
-      messages.push({ role: 'tool', content: JSON.stringify(result) });
-    }
-    iterations++;
-    continue;
-  }
-
-  // Model returned final text response
-  return { text: response.content, richContent };
-}
 ```
+turn_start(assistant) → tts_start → tts_audio_chunk* → tts_end → turn_end   (× per sentence)
+plus: emotion_state (expression layer) · barge_in_detected (user interrupt)
+```
+
+End-of-reply is *not* a WS event — clients detect it via the audio player's queue-drain grace window. A `VoiceRouter` layer applies Kaori's slang dictionaries (Gen-Z + board-sports + laugh tags) and a `cleanForTTS` transform (strips markdown, collapses `!!!!` and `soooooo`) before synthesis. Clients can also send `{ type: 'barge-in' }` to cut her off.
+
+### Vendored Python sidecar
+
+The Pipecat sidecar is **vendored and git-tracked** at `kith-voice/python-sidecar` — we patched the pipeline to forward the ElevenLabs `speed` voice setting, which upstream drops, and vendoring keeps the patch alive across `bun install`. Build its venv once with `python-sidecar/setup.sh`; `PIPECAT_PYTHON_PATH` / `PIPECAT_PYTHON_CWD` override (the server logs the active interpreter on boot to catch stale overrides). Voice: ElevenLabs `eleven_v3`, voice id `f4h3tN7EZXwGMHo8bUoV` (via `ELEVENLABS_VOICE_ID`), streaming `mp3_44100_128`.
 
 ---
 
-## Rich Content System
+## Mobile 3D Stage
 
-When tools return results, the response includes structured `richContent` that the frontend renders as interactive cards.
+The Kaori companion stage merged to `v2-rebuild` in PR #4 (2026-07-08). It requires a **new dev-client / EAS build** — no store build contains it yet.
 
-### Message Schema Extension
+### Rendering stack
 
-```javascript
-// dm_messages document
-{
-  _id: ObjectId,
-  conversationId: ObjectId,
-  senderId: "69c15e55c7ebe2c6884f1267",  // Kaori's user ID
-  content: "omg yes here's a solid park list for you!! 🔥",
-  richContent: {
-    type: "tricklist_card",
-    data: {
-      _id: "...",
-      name: "Park Essentials",
-      trickCount: 8,
-      deepLink: "trickbook://tricklist/..."
-    }
-  },
-  timestamp: Date,
-  read: false
-}
-```
+- **three `0.170`** + **`@react-three/fiber/native`** + **expo-gl**, VRM via `@pixiv/three-vrm`. The `/native` fiber entry installs the Hermes polyfills (FileLoader, TextureLoader, Blob URL) that make GLTFLoader work at all; a shim also defines `navigator.userAgent`, which three r170's GLTFLoader probes and React Native lacks.
+- **Textures inside the VRM must be PNG/JPEG** — expo-gl's native decoder supports nothing else (never run gltf-transform over a VRM; it strips the VRM extensions).
+- **Physical devices only** — MToon materials don't render on simulators; a fallback card explains.
+- Fully procedural idle (breathing, sway, blink, eye tracking) ported from the website's `kaori-live` stage so web and mobile share one motion language. One-finger orbit, pinch zoom.
 
-### Card Types
+### Choreography model
 
-| Type | When Used | Deep Link |
-|------|-----------|-----------|
-| `spot_card` | Single spot result | `trickbook://spot/<id>` |
-| `spots_list` | Multiple spot search results | Per-spot deep links |
-| `tricklist_card` | Created or shared tricklist | `trickbook://tricklist/<id>` |
-| `trick_card` | Trickipedia entry | `trickbook://trick/<id>` |
-| `spot_draft_confirmation` | After submitting a new spot | Shows pending status |
+Trick demos are data, not baked animations:
 
----
+- **`riderFundamentals.ts`** — the reusable motion vocabulary every board trick is built from: stance yaw, anatomically-correct crouch with hip drop, coil/wind-up counter-rotation distributed hips→spine→chest→neck, arm blending (rest / wound-up / tucked / balance), parabolic jump arc. Values visually tuned on-device against the VRM 1.0 rig.
+- **`trickAnimations.ts`** — a `TRICKS` registry of per-trick timelines composed from those fundamentals (first entry: frontside 360, per real technique references). **Adding a trick = one registry entry**, no animator.
+- The demo runs as an on-board *session*: Kaori loops the full trick with stance breathers while explaining, and segment demos (wind-up / pop / landing) fire in the gaps.
 
-## RAG Knowledge Base
+### Sentence-cue system
 
-Kaori has a snowboard knowledge base built from scraped industry articles, embedded locally and stored in pgvector.
-
-### Pipeline
-
-```
-Scraper (Node.js)
-  └─ 65 Torment Magazine articles
-      └─ Chunked (512 tokens, 50 token overlap)
-          └─ 566 chunks
-              └─ Embedded via @xenova/transformers
-                  └─ Xenova/all-MiniLM-L6-v2 (384-dim, quantized)
-                      └─ Stored in pgvector (kaori_chunks table)
-                          └─ IVFFlat index for fast similarity search
-```
-
-### Query Flow
-
-```sql
--- Semantic search (cosine similarity)
-SELECT chunk_text, title, source_url,
-       1 - (embedding <=> $1) as similarity
-FROM kaori_chunks
-ORDER BY embedding <=> $1
-LIMIT 3;
-```
-
-- **Embedding model:** `Xenova/all-MiniLM-L6-v2` (384-dim, quantized) — runs locally, zero API cost
-- **Similarity threshold:** ~45-54% for relevant results
-- **Context window:** Top 3 chunks injected into system prompt
-
-### Planned Expansion
-
-- ThirtyTwo, Burton, Capita brand news
-- Local mountain conditions (IG scraping)
-- Event calendars (competitions, demos)
-- User-generated content (popular feed posts)
-
----
-
-## Data Model
-
-![Data Model](/img/kaori-architecture/05-data-model.png)
-
-### Dual Database Architecture
-
-**MongoDB Atlas (TrickList2)** — Application data:
-- `users` — User accounts, bot flags, profiles
-- `dm_conversations` — DM thread metadata
-- `dm_messages` — Individual messages with optional `richContent`
-- `tricklists` — User trick lists (DBRef `user` field)
-- `ck_spots` — 3,805 skate/snow spots worldwide
-- `spot_drafts` — AI-submitted spots pending approval
-- `tricks` — Trickipedia (68 tricks, 7 categories)
-
-**PostgreSQL (elizaos)** — AI infrastructure:
-- `bot_conversations` — Per-user conversation history (20-message window)
-- `kaori_articles` — Scraped article metadata
-- `kaori_chunks` — 566 embedded chunks with pgvector (384-dim)
-
-### Why Two Databases?
-
-MongoDB is the existing app database — all frontend features read from it. PostgreSQL was added specifically for AI features because:
-1. pgvector extension provides native vector similarity search
-2. Structured conversation history with easy windowing (`LIMIT 20 ORDER BY created_at DESC`)
-3. Future ElizaOS compatibility (it uses PostgreSQL natively)
-
----
-
-## Character System
-
-Kaori's personality is defined in `characters/kaori.json`:
-
-```json
-{
-  "name": "Kaori",
-  "bio": "Japanese snowboarder from SSX Tricky, now living as an AI companion in TrickBook",
-  "style": {
-    "all": [
-      "Gen Z texting energy",
-      "1-3 sentences max",
-      "chaotic but sweet",
-      "flustered/giggly when talking about Mac Fraser",
-      "knows snowboard industry deeply"
-    ]
-  },
-  "messageExamples": [
-    {"user": "what tricks should I learn?", "assistant": "ok wait what level are you at rn?? like can u do 180s comfy or still working on those"},
-    {"user": "who's the best snowboarder?", "assistant": "mac fraser obviously... i mean objectively speaking he's really talented ok don't look at me like that"}
-  ]
-}
-```
-
-### Personality Rules
-- **Never use canned/hardcoded fallback responses** — if AI fails, say so honestly ("ahh my brain is glitching rn")
-- **1-3 sentences** — Gen Z doesn't write paragraphs
-- **SSX Tricky energy** — competitive, playful, has a crush on Mac Fraser
-- **Knows her stuff** — real snowboard industry knowledge via RAG
-
----
-
-## Future Architecture Options
-
-![Architecture Options](/img/kaori-architecture/04-elizaos-future.png)
-
-### Current: Custom Server (kaori-server-v2.js)
-
-**Pros:**
-- Simple, fast, fully under our control
-- 612 lines of code — easy to understand and debug
-- ~88 MB RAM footprint
-- Direct MongoDB/PostgreSQL access
-
-**Cons:**
-- Manual memory management (20-message window)
-- No built-in multi-agent orchestration
-- Single LLM call pattern (no complex reasoning chains)
-
-### Option A: ElizaOS Integration
-
-[ElizaOS](https://elizaos.ai) is an open-source AI agent framework with built-in memory, plugins, and multi-agent support.
-
-**What it gives us:**
-- Built-in RAG and memory management
-- Plugin ecosystem (social media, DeFi, etc.)
-- Multi-agent support out of the box
-- Structured agent runtime
-
-**Challenges we've hit:**
-- Heavy memory footprint (~500 MB) — tight on t3.small
-- Embedding bug in `@elizaos/plugin-openrouter` (empty string truthiness check) — we have a [patch](https://github.com/wbaxterh/TrickBookDocs)
-- `npm install` OOM'd our t3.small (needs swap space)
-- PM2's require shim can downgrade Node syntax support
-
-**Status:** Evaluated, patch ready. Viable for multi-agent expansion when we scale to a larger instance.
-
-### Option B: LangGraph Integration
-
-[LangGraph](https://langchain-ai.github.io/langgraphjs/) is a state machine framework for complex, multi-step AI workflows.
-
-**What it gives us:**
-- Conditional branching (different flows for different intents)
-- Checkpointing and replay (resume interrupted conversations)
-- Human-in-the-loop (pause for admin approval)
-- Complex multi-step workflows (guided trick sessions, spot creation wizards)
-
-**Best for:**
-- "Guided session" flows: "Let's plan your snowboard season" → assess level → suggest mountains → build tricklist → schedule trips
-- Multi-step spot creation: detect Maps URL → extract coords → geocode → create draft → notify admin
-- Trick coaching flows: assess skill → recommend progression → create practice list → track progress
-
-**Trade-offs:**
-- Adds LangChain dependency tree
-- Steeper learning curve than raw tool calling
-- Overkill for simple Q&A (majority of current usage)
-
-### Recommended: Hybrid Approach
-
-![Multi-Agent Future](/img/kaori-architecture/06-multi-agent-future.png)
-
-The path forward combines all three:
-
-1. **Custom server stays as the API layer** — lightweight, fast, handles simple conversations
-2. **LangGraph for complex workflows** — multi-step spot creation, guided trick coaching sessions, seasonal planning
-3. **ElizaOS for multi-agent expansion** — when we add Tony 🛹, Rico 🏄, Max 🚲, Zoe ⛷️, each agent runs as an ElizaOS instance with shared infrastructure
-4. **Shared PostgreSQL** — all agents share the same conversation memory and RAG stores
-
-### Multi-Agent Roadmap
-
-| Phase | Agents | Engine | Timeline |
-|-------|--------|--------|----------|
-| **Now** | Kaori 🏔️ | Custom server | ✅ Live |
-| **Next** | Kaori + Tony 🛹 | Custom server × 2 | Q2 2026 |
-| **Scale** | All 5 companions | ElizaOS runtime | Q3 2026 |
-| **Advanced** | Cross-agent collaboration | ElizaOS + LangGraph | Q4 2026 |
-
-### Cross-Agent Collaboration (Future)
-
-Imagine a user in a group chat with multiple companions:
-> **User:** "I'm a snowboarder trying to get into skating, any tips?"
-> **Kaori:** "omg yes!! tony help me out here, what should a boarder start with??"
-> **Tony:** "Yo! Boarders usually pick up transition skating fast. Start with pumping a mini ramp..."
-
-This requires:
-- Shared session context (multiple bots see the same conversation)
-- Agent-to-agent messaging (Kaori can tag Tony)
-- Personality-aware routing (each bot responds in character)
-- Turn-taking logic (bots don't all respond at once)
+`useKithVoice.ts` owns the WS session, the gapless `TtsPlayer`, and a shared mutable `CompanionVoiceState` ref that the per-frame animation loop reads (no React re-renders). Because Kith speaks one sentence per turn cycle, the hook counts assistant `turn_start` events and fires `onAssistantSentence(index)` — the stage maps sentence indexes onto the demo timeline, so her "watch this" sentence is literally the moment her body throws the full trick. `emotion_state` drives the expression layer; barge-in flips her to listening. STT is on-device via `expo-speech-recognition`.
 
 ---
 
 ## Deployment & Operations
 
-### PM2 Process Management
+| Process (PM2) | What | Port |
+|---------------|------|------|
+| `TB-Backend` | Express API + Kaori brain | 3000 (nginx → `api.thetrickbook.com`) |
+| `kith-voice` | Bun voice service + Python sidecar children | 3040 (nginx → `/kith/ws`, `/kith/*`) |
 
 ```bash
-# Check status
-pm2 list
+# SSH (EC2 i-00a7cac777c3b3a4e)
+ssh -i ~/.ssh/weshuber.pem ubuntu@174.129.64.158
 
-# Restart Kaori
-pm2 restart kaori-bot
+# Restart (always source nvm first)
+. ~/.nvm/nvm.sh && pm2 restart TB-Backend
+. ~/.nvm/nvm.sh && pm2 restart kith-voice
 
-# View logs
-pm2 logs kaori-bot --lines 50
-
-# Monitor resources
-pm2 monit
+# Logs / health
+. ~/.nvm/nvm.sh && pm2 logs kith-voice --lines 50
+curl -s localhost:3040/health   # { ok, sessions, uptime }
 ```
 
-### Key Environment Variables
+Env (never committed — see the secrets policy):
 
-```bash
-# kaori-bot .env
-POSTGRES_URL=postgresql://elizaos:***@localhost:5432/elizaos
-OPENROUTER_API_KEY=sk-or-v1-***
-ATLAS_URI=mongodb+srv://***
-OPENROUTER_MODEL=google/gemini-2.0-flash-001
-BOT_PORT=3001
-```
+- **`/home/ubuntu/TB-Backend/.env`** — `OPENROUTER_API_KEY`, `ATLAS_URI`, `KITH_VOICE_URL` (base URL the backend fires `/speak` at)
+- **`kith-voice/.env`** — `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `ELEVENLABS_MODEL_ID`, `PORT`, optional `PIPECAT_PYTHON_PATH` / `PIPECAT_PYTHON_CWD`
 
-### Monitoring Checklist
+Each browser/mobile voice session spawns its own Python subprocess — session ceilings and WS auth are the top pre-launch hardening items (see the [launch audit](/docs/roadmap/companions-launch)).
 
-- [ ] PM2 processes online (`pm2 list`)
-- [ ] Kaori responds to test message (`curl localhost:3001/api/chat`)
-- [ ] PostgreSQL accepting connections
-- [ ] MongoDB Atlas reachable
-- [ ] OpenRouter API key valid + model available
-- [ ] Disk usage < 80% (`df -h`)
-- [ ] Memory usage stable (`free -h`)
+---
 
-### Known Gotchas
+## Retired Architectures
 
-| Issue | Root Cause | Fix |
-|-------|-----------|-----|
-| `ECONNREFUSED 127.0.0.1:3001` | kaori-bot restarting | Wait for PM2 restart cycle |
-| Empty embeddings | `@xenova/transformers` falsy check on empty string | Apply `final-patch.js` |
-| OOM on npm install | t3.small only has 2 GB RAM | Add swap space first: `sudo fallocate -l 2G /swapfile` |
-| MongoDB DBRef serialization | `user` field is DBRef, not plain ObjectId | Access via `tl.user.oid.toString()` |
-| Tool calling 404 | OpenRouter model doesn't support tools | Switch model (currently Gemini 2.0 Flash) |
-| PM2 syntax downgrade | PM2's require shim affects Node features | Pin interpreter path or use compatible syntax |
+The original stack — a standalone **kaori-server-v2** Express brain on port 3001, the **ElizaOS** runtime, and a local **PostgreSQL + pgvector** store for conversation memory and RAG — is dead (stopped ~May 2026). `botChat.js` keeps a legacy port-3001 hop only for hypothetical non-Kaori bot characters behind `BOTCHAT_USE_ELIZA`; Kaori goes straight to her in-process brain. Conversation memory now lives entirely in MongoDB. For the historical snapshot and the cutover rationale, see the [Kaori System Audit (May 2026)](/docs/architecture/kaori-audit-2026-05).
+
+---
+
+## What's Next
+
+- 🚀 **Shipping it** — TestFlight build, voice-WS auth, cost ceilings, monitoring: [Companions Launch Audit](/docs/roadmap/companions-launch)
+- 💰 **Paywall + voice tokens** — free Kaori sample with a daily voice allowance, paid tiers for the full roster and monthly tokens, outfit/board unlocks: [Monetization](/docs/roadmap/monetization)
+- 🗺️ **Roster + product direction** — Tony (skateboard) next, per-sport environments, stance onboarding, Spots UX refactor: [Priorities](/docs/roadmap/priorities)

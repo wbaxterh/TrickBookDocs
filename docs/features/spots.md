@@ -75,16 +75,17 @@ const SpotMap = ({ spots, center, zoom }) => {
 };
 ```
 
-### Mobile App (React Native)
+### Mobile App (React Native + Expo Router)
 
-**Location:** `/TrickList/screens/`
+**Location:** `/TrickList/app/(tabs)/spots/` (TypeScript, file-based routing)
 
 | Screen | Purpose |
 |--------|---------|
-| `SpotsScreen.js` | Browse spots with map view |
-| `SpotDetailScreen.js` | View spot details, photos, directions |
-| `SpotListsScreen.js` | User's personal spot collections |
-| `AddSpotScreen.js` | Submit new spot with location picker |
+| `index.tsx` | Browse spots with map view |
+| `[spotId].tsx` | View spot details, photos, directions |
+| `list/[listId].tsx` | User's personal spot collections |
+| `add.tsx` | Submit new spot with location picker |
+| `_layout.tsx` | Stack layout for the spots tab |
 
 **Map Library:** `react-native-maps`
 
@@ -367,3 +368,22 @@ Spot images stored in AWS S3:
 - [Chrome Extension](/docs/chrome-extension/overview) - Map scraper for bulk import
 - [API Endpoints](/docs/backend/api-endpoints) - Full API reference
 - [Database Schema](/docs/backend/database) - MongoDB collections
+
+## Planned: UX refactor (2026)
+
+Status: **📋 Planned** · July 2026
+
+Spots is slated for a UX-excellence refactor. Rather than redesigning blind, the browsing, filtering, and detail flows will be re-evaluated end-to-end — with usage analytics instrumented **first** so changes are informed by how riders actually use the feature.
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Map-pins overlay + tapped-pin card | ✅ Shipped (July 2026) | The starting point for the refactor |
+| Usage analytics instrumentation | 📋 Planned | Instrument before redesigning — data drives the changes |
+| Browsing / filtering flow re-evaluation | 📋 Planned | Part of the full-app UX audit |
+| Spot detail flow re-evaluation | 📋 Planned | Photos, directions, ratings surfaces |
+
+:::tip Related surface
+AI companions can submit spots on a user's behalf via the `create_spot_draft` tool — drafts go through admin approval before appearing on the map. See [AI Companions](/docs/features/ai-companions).
+:::
+
+See the [Roadmap Priorities](/docs/roadmap/priorities) for where this work sits in the overall plan.

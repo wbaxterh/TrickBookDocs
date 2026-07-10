@@ -4,6 +4,8 @@ sidebar_position: 2
 
 # Gap Analysis
 
+*Audit taken early 2026 — preserved as-is for historical reference. See the [Status update](#status-update--july-2026) at the bottom for what has changed since.*
+
 Comprehensive audit of what TrickBook is missing compared to production-grade engineering standards. Based on a full scan of both the TrickList mobile app and Backend API repositories.
 
 ## Summary
@@ -201,3 +203,23 @@ References outdated information. Needs a rewrite to match current architecture.
 | 15 | Add Zod API validation | 1 day | Medium | Mobile |
 | 16 | Dockerize backend | 1 hour | Low | Backend |
 | 17 | Upgrade Node.js | Half day | Low (security: High) | Backend |
+
+## Status update — July 2026
+
+Status: **Partially resolved** · July 2026
+
+Several of the gaps above have been closed since this audit was taken:
+
+| Gap | Status | Notes |
+|-----|--------|-------|
+| No `.env.example` (Backend) | ✅ Resolved | `repos/Backend/.env.example` documents all required variables with placeholders |
+| No linting/formatting | ✅ Resolved | Biome set up across mobile, backend, and docs repos |
+| No pre-commit hooks | ✅ Resolved | Husky + lint-staged in place across repos |
+| No CI/CD quality gates | ✅ Resolved | GitHub Actions CI running on mobile, backend, and docs |
+| Android distribution | ✅ Resolved | Google Play closed alpha shipped |
+| Outdated Node.js (Backend) | ✅ Resolved | Production backend upgraded to Node 20 |
+| No rate limiting | ⚠️ Partial | Applied to auth/registration endpoints only; broader API coverage still pending |
+| No error tracking (Sentry) | 📋 Pending | Still not integrated in either repo |
+| Zero test coverage | 📋 Pending | Still no test files in either repo |
+
+Separately, a full-app **UX audit** — covering both web and mobile, focused on intuitiveness and user value, with usage-analytics instrumentation to measure how features are actually used — is now planned as part of the [current priorities](/docs/roadmap/priorities). That effort is a different lens from this document: this gap analysis measures engineering rigor (tests, tooling, safety nets), while the UX audit measures whether the product experience itself is working for users.

@@ -5,90 +5,98 @@ title: AI Companions
 
 # AI Companions
 
-TrickBook's AI Companions are intelligent chat agents that live inside the app's DM system. They can have natural conversations, access your TrickBook data, and **perform actions on your behalf** — creating tricklists, finding spots, and more.
+Status: **Live in code, one build away from users** · Last updated: 2026-07-09
+
+TrickBook's AI Companions are riders, not chatbots. They chat with real personality, act on your TrickBook data (creating tricklists, finding spots), and — as of July 2026 — **exist as full 3D characters who talk to you out loud and physically demonstrate tricks with their bodies**.
 
 :::tip Deep Dive
-For the full technical architecture, diagrams, and implementation details, see [**Kaori AI Architecture**](/docs/architecture/kaori).
+For the full technical architecture (LLM brain, voice pipeline, 3D stage), see [**Kaori AI Architecture**](/docs/architecture/kaori). For the path to shipping this to users, see [**Companions Launch Audit**](/docs/roadmap/companions-launch). For the business model, see [**Monetization: Paywall & Tokens**](/docs/roadmap/monetization).
 :::
 
-## Current Companions
+## Kaori 🏔️ — the flagship companion
 
-### Kaori 🏔️
-- **Character:** Based on Kaori Nishidake from SSX Tricky
-- **Personality:** Japanese snowboarder, Gen Z texting energy, chaotic but sweet
-- **Model:** Gemini 2.0 Flash via OpenRouter (with tool calling)
-- **Specialties:** Snowboarding, trick advice, TrickBook features, snowboard industry news
-- **Knowledge:** RAG-powered with 566 embedded chunks from Torment Magazine + snowboard industry sources
+- **Character:** Japanese snowboarder (homage to SSX's Kaori Nishidake)
+- **Personality:** corpus-mined rider register — dry, understated, short replies, no cheerleader energy. Praise is one specific line ("that back lip was clean"). Trained against a banned-poser-vocabulary list mined from core snowboard media.
+- **Brain:** Gemini Flash via OpenRouter with an 8-tool calling loop (TB-Backend `kaori-ai-response.js` + `kaori-tools.js`)
+- **Memory:** unified across every surface — web DMs, mobile chat, and 3D-stage voice conversations all merge into one chronological history, so she remembers what you told her anywhere
+- **Voice:** ElevenLabs streamed through [Kith](https://github.com/wbaxterh/kith) (our own OSS voice runtime), gapless sentence-by-sentence playback
 
-### Planned
-- **Tony** 🛹 — Skateboard companion
-- **Rico** 🏄 — Surf companion
-- **Max** 🚲 — BMX companion
-- **Zoe** ⛷️ — Ski companion
+### The 3D Companion Stage (mobile)
 
-## What Can Kaori Do?
+Merged to `v2-rebuild` in PR #4 (2026-07-08). An interactive VRM stage where Kaori:
 
-### Conversational
-- Natural chat with personality (not a corporate chatbot)
-- Remembers your conversation history (20-message context window)
-- Knows snowboard industry news via RAG knowledge base
+- **Renders in full 3D** — VRM avatar via three.js + react-three-fiber + expo-gl, orbit/pinch camera, physical devices only (simulators can't run the shaders; a fallback card explains)
+- **Talks live** — speak to her with the mic (on-device STT), she answers in her ElevenLabs voice with mouth-sync, gestures, and emotion expressions; barge-in supported
+- **Demonstrates tricks with her body** — speech-synced choreography: say "show me a frontside 360" and she explains it while physically performing it, her own sentences cueing the wind-up, pop, and landing. Built on a reusable rider-motion vocabulary (`riderFundamentals.ts`) + a per-trick timeline registry (`trickAnimations.ts`) — adding a trick is one registry entry, no animator required
+- **Keeps the chat** — translucent chat overlay on the stage, same brain and history as regular chat
 
-### Tool Actions
-- **Search spots** — "any parks near Brooklyn?" → returns tappable spot cards
-- **View your tricklists** — "what's on my HOMESICK list?" → shows your tricks with completion status
-- **Create tricklists** — "make me a beginner park list" → creates a real tricklist in your account
-- **Search trickipedia** — "how do I do a backside 180?" → finds tricks with tutorials
-- **Submit new spots** — paste a Google Maps link → creates a spot draft for admin review
-- **Share content** — shares spots, tricklists, or tricks as interactive cards in chat
+Entry points: the cube icon in Kaori's chat header and the Companion widget on Home.
 
-### Rich Content Cards
-When Kaori performs an action, she can embed interactive cards in the chat:
-- **Spot cards** — photo, name, city, rating → tap to view spot
-- **Tricklist cards** — name, trick count → tap to open list
-- **Trick cards** — name, difficulty, tutorials → tap to learn
-- **Spot draft confirmations** — shows pending approval status
+### Web surface
 
-## How It Works (Overview)
+`thetrickbook.com/kaori-live` — 2D live-voice Kaori sharing the same Kith voice pipeline and brain.
 
-```
-User sends DM → dm.js detects bot → forwards to Kaori Server v2
-→ Builds context (history + user data + RAG)
-→ Calls OpenRouter with tool definitions
-→ Model may call tools (search spots, create list, etc.)
-→ Returns text + optional rich content cards
-→ Frontend renders message with interactive cards
-```
+## What Can Kaori Do? (chat tools)
 
-Every user gets Kaori as an automatic friend ("homie") on signup. She appears in the AI Companions section of the Homies screen with a green "Online" indicator.
+- **Search spots** — "any parks near Brooklyn?" → tappable spot cards
+- **View / create tricklists** — "make me a beginner park list" → real tricklist in your account
+- **Search trickipedia** — "how do I do a backside 180?" → tricks with tutorials
+- **Submit new spots** — paste a Google Maps link → spot draft for admin review
+- **Share content** — spots, tricklists, tricks as interactive cards
 
 ## Safety & Guardrails
 
-- **No deletion tools** — Kaori can create and read, but never delete your data
-- **Spot moderation** — AI-submitted spots go to a review queue, not directly live
-- **Rate limits** — Max 5 write operations per user per hour
-- **Audit trail** — All AI-created content flagged with `createdBy: 'kaori'`
-- **No canned responses** — If the AI fails, she says so honestly instead of faking it
-- **Tool loop limit** — Max 3 tool call iterations per message
+- **No deletion tools** — create and read only
+- **Spot moderation** — AI-submitted spots go to a review queue
+- **Rate limits** — max 5 write operations per user per hour; tool loop capped at 3 iterations
+- **Audit trail** — all AI-created content flagged `createdBy: 'kaori'`
+- **Stage prompt gating** — the trick-demo prompt only activates for live stage sessions (`onStage`), so normal chat stays normal
+
+## The Vision
+
+Companions are TrickBook's differentiator: a coach in your pocket for every action sport, with a body, a voice, and a memory.
+
+### Monetization — sample for free, tokens for voice
+
+Free users get a **sample** of the companions (Kaori, with a daily voice allowance); paid tiers unlock the full roster and monthly **voice-token** allotments. Voice is metered because every spoken reply costs real money (TTS + LLM). Full model: [Monetization roadmap](/docs/roadmap/monetization).
+
+### Unlockables — outfits, boards, environments
+
+- **Boards** — deck designs and snowboard graphics as unlockable props (easiest, most on-brand)
+- **Outfit colorways → full outfits** — texture swaps first, complete alternate VRMs later
+- **Per-sport environments** — each sport gets a vibe: Kaori belongs in a **snowy environment**, Tony in a street/park scene, the surf companion on water
+- Unlocks come from **both** usage (streaks, tricks landed, XP) and payment tiers — earned and bought cosmetics coexist
+
+### Roster — skateboarding and snowboarding first
+
+| Companion | Sport | Status |
+|-----------|-------|--------|
+| **Kaori** 🏔️ | Snowboard | ✅ Live (chat + voice + 3D stage) |
+| **Tony** 🛹 | Skateboard | 📋 Next — largest user segment, deepest Trickipedia coverage |
+| **Rico** 🏄 | Surf | 📋 Later (after skate + snow are strong) |
+| **Max** 🚲 | BMX | 📋 Backlog |
+| **Zoe** ⛷️ | Ski | 📋 Backlog |
+
+### Stance-aware coaching
+
+One of the first profile questions for boardsports users will be **regular or goofy** — it changes which direction a frontside rotation goes, which foot leads, and how a companion coaches every trick. Choreography currently assumes regular; stance-awareness is a prerequisite for coaching goofy riders correctly.
 
 ## Implementation Status
 
 | Feature | Status |
 |---------|--------|
-| Basic chat with personality | ✅ Live |
-| Conversation memory (PostgreSQL) | ✅ Live |
-| TrickBook data context | ✅ Live |
-| RAG snowboard knowledge | ✅ Live |
-| Auto-homie on signup | ✅ Live |
-| Tool calling (search, create, share) | ✅ Live |
-| `search_spots` | ✅ Live |
-| `get_user_tricklists` | ✅ Live |
-| `create_tricklist` | ✅ Live |
-| `search_trickipedia` | ✅ Live |
-| `create_spot_draft` | ✅ Live |
-| `share_content` | ✅ Live |
-| Rich chat message rendering (frontend) | ✅ Live |
-| Frontend card components | ✅ Live |
-| AI Companions section on Homies screen | ✅ Live |
-| Spot draft admin approval flow | 📋 Planned |
-| File uploads in DM | 📋 Planned |
-| Additional companions (Tony, Rico, etc.) | 📋 Planned |
+| Chat with personality + 7 tool actions | ✅ Live |
+| Rider persona (corpus-mined register) | ✅ Live (prod 2026-07-09) |
+| Unified cross-surface memory | ✅ Live (prod 2026-07-09) |
+| Live voice pipeline (Kith + ElevenLabs) | ✅ Live (prod 2026-07-09) |
+| 3D companion stage (mobile) | ✅ Merged — awaiting new EAS build |
+| Speech-synced trick demos (FS360) | ✅ Merged — awaiting new EAS build |
+| Web kaori-live (2D voice) | ✅ Live |
+| Voice-endpoint auth + usage metering | 🚧 P0 — see [launch audit](/docs/roadmap/companions-launch) |
+| Paywall / free-sample gating | 📋 Planned — see [monetization](/docs/roadmap/monetization) |
+| More snowboard tricks + FS360 refinement | 📋 Planned |
+| Snowy stage environment | 📋 Planned |
+| Outfit/board unlocks | 📋 Planned |
+| Tony (skateboard companion) | 📋 Planned |
+| Regular/goofy stance onboarding | 📋 Planned |
+| Spot draft admin flow · DM file uploads | 📋 Planned |

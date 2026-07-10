@@ -4,199 +4,114 @@ sidebar_position: 1
 
 # Priority Roadmap
 
-Current priorities for TrickBook. Engineering standards come first - no new features until the safety net is in place.
+Status: **Rewritten 2026-07-09** to align with what's actually built (Kaori 3D companion shipped) and the current product vision: launch the companions behind a paywall, then iterate — more tricks, more companions, better UX everywhere.
+
+## The vision in one paragraph
+
+Companions are the product's differentiator: a coach in your pocket for every action sport, with a body, a voice, and a memory. Kaori (snowboard) is built — 3D stage, live voice, speech-synced trick demos, unified memory. Next: ship her to users with a **free-sample paywall and voice-token allocation**, then iterate the companion experience (more tricks, snowy environment, outfit/board unlocks, stance-aware coaching), add the **skateboarding companion**, refactor **Spots** into a flagship-quality UX, and instrument the whole app with **usage analytics** so decisions stop being guesses. Surfing companion after skate + snow are strong.
 
 ## Priority Matrix
 
-### P0 - Engineering Standards (Next Session)
+### P0 — Ship the companions (now)
 
-These are blocking. Ship no new features until these are done.
+The feature is merged and prod-deployed; nothing installable contains it yet. Full audit: [Companions Launch](/docs/roadmap/companions-launch).
 
-| # | Task | Repo | Effort | Docs |
-|---|------|------|--------|------|
-| 1 | Add Biome (lint + format) | Both | 30 min | [Setup](/docs/engineering/linting-formatting) |
-| 2 | Add pre-commit hooks (Husky + lint-staged) | Both | 30 min | [Setup](/docs/engineering/pre-commit-hooks) |
-| 3 | Add ErrorBoundary component | Mobile | 1 hour | [Guide](/docs/engineering/error-handling) |
-| 4 | Add Sentry error tracking | Both | 1 hour | [Guide](/docs/engineering/error-handling#sentry-integration) |
-| 5 | Write first 10 tests (critical paths) | Both | Half day | [Strategy](/docs/engineering/testing) |
-| 6 | Add CI/CD with quality gates | Both | 1 hour | [Pipeline](/docs/deployment/ci-cd) |
-| 7 | Add global error handler middleware | Backend | 1 hour | [Guide](/docs/engineering/error-handling#backend-global-error-handler) |
-| 8 | Create .env.example files | Both | 15 min | [Template](/docs/engineering/code-quality#envexample-files) |
+| # | Task | Repo | Effort | Status |
+|---|------|------|--------|--------|
+| 1 | **Secure the voice WebSocket** (JWT on upgrade, session caps, text-length cap) — live exposure TODAY | Backend | 1–2 days | Pending |
+| 2 | New EAS dev-client build + physical-device validation (MToon, voice, choreography) | Mobile | 1 day | Pending |
+| 3 | v3.2.0 TestFlight + Play internal builds (version bump, store pipeline dusted off) | Mobile | 1 day | Pending |
+| 4 | Monitoring: Sentry both services, kith-voice in ecosystem.config, ElevenLabs credit alarm, uptime checks | Backend | 1–3 days | Pending |
+| 5 | Release notes `docs/releases/v3.2.0.md` when the build ships | Docs | 0.5 day | Pending |
 
-**Definition of done:** Every commit is linted, every PR runs tests, every production error is tracked.
+### P1 — Monetization foundation (before public launch)
 
-### P1 - Security Hardening (Same Sprint)
+Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 
-| Task | Repo | Status | Docs |
-|------|------|--------|------|
-| Rotate exposed credentials | Backend | Pending | [Guide](/docs/roadmap/security-fixes) |
-| Upgrade Node.js 12 to 20 LTS | Backend | Pending | [Guide](/docs/roadmap/security-fixes#critical-nodejs-upgrade) |
-| Fix JWT secret (env var + expiration) | Backend | Pending | [Guide](/docs/roadmap/security-fixes#critical-jwt-security) |
-| Add rate limiting | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-rate-limiting) |
-| Add input sanitization (NoSQL injection) | Backend | Pending | [Guide](/docs/engineering/code-quality#backend-input-sanitization) |
-| Restrict CORS whitelist | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-cors-whitelist) |
-| Update helmet to v8 | Backend | Pending | [Guide](/docs/roadmap/security-fixes#high-update-security-packages) |
-| Add health check endpoint | Backend | Pending | [Guide](/docs/engineering/error-handling#backend-health-check-endpoint) |
-| Add graceful shutdown | Backend | Pending | [Guide](/docs/engineering/error-handling#backend-graceful-shutdown) |
+| # | Task | Repo | Effort | Status |
+|---|------|------|--------|--------|
+| 1 | COGS levers: Flash-class TTS on stage + OpenRouter prompt caching | Backend | 0.5 day | Pending |
+| 2 | Token metering: `user.wallet.voiceTokens`, `usage_events`, `requireVoiceTokens` middleware, lazy daily grant | Backend | 3–5 days | Pending |
+| 3 | Free-sample gating: Kaori-only for free tier, locked companion states + upsell UI | Backend + Mobile + Web | 3–5 days | Pending |
+| 4 | Web purchases: extend Stripe `payments.js` with tier + token-pack prices, site paywall/wallet UI | Backend + Web | 3–5 days | Pending |
+| 5 | Mobile IAP via RevenueCat (fold into the companion EAS build) | Mobile + Backend | 5–10 days | Pending |
+| 6 | Basic rate caps on bot-chat (interim until metering lands) | Backend | 1 day | Pending |
 
-### P2 - Code Cleanup (Following Sprint)
+### P2 — Companion iteration + the skate companion
 
-| Task | Repo | Effort | Docs |
-|------|------|--------|------|
-| Remove 6 dead dependencies | Mobile | 30 min | [Details](/docs/engineering/code-quality#dead-dependencies) |
-| Remove aws-sdk v2 (v3 already installed) | Backend | 15 min | [Details](/docs/roadmap/gap-analysis#19-old-aws-sdk-v2-still-installed-backend) |
-| Add Zod schemas for all API responses | Mobile | 1 day | [Guide](/docs/engineering/code-quality#api-response-validation) |
-| Replace console.log with structured logger | Both | 2 hours | [Guide](/docs/engineering/logging) |
-| Centralize MongoDB connection pool | Backend | Half day | [Guide](/docs/roadmap/security-fixes#medium-centralize-database-connection) |
-| Pick one MongoDB driver (drop unused one) | Backend | Half day | [Details](/docs/engineering/code-quality#backend-mixed-mongodb-drivers) |
-| Dockerize backend | Backend | 1 hour | [Guide](/docs/engineering/code-quality#backend-dockerize) |
-| Tighten TypeScript strict settings | Mobile | 1 hour | [Details](/docs/engineering/code-quality#typescript-strictness-tricklist) |
+| # | Task | Repo | Effort | Status |
+|---|------|------|--------|--------|
+| 1 | **Regular/goofy stance onboarding** — early profile question for boardsports users; feeds stance-aware choreography + coaching | Mobile + Backend | 2–3 days | Pending |
+| 2 | Better snowboard 3D design (shape, materials, deck art) | Mobile | 1–2 days | Pending |
+| 3 | Refine FS360 + expand the snowboard TRICKS registry (bs 180, ollie, butters, grabs…) | Mobile | ~0.5–1 day per trick | Pending |
+| 4 | **Snowy stage environment for Kaori** (skybox/terrain/props; per-sport environments pattern) | Mobile | 3–5 days | Pending |
+| 5 | Companion models → CDN with device cache (kills the 14MB bundle tax; prerequisite for outfits + roster growth) | Mobile + Backend | 1–2 days | Pending |
+| 6 | Unlockables v1: boards + colorways, XP/tier/purchase `unlocks` collection | Mobile + Backend | 3–5 days | Pending |
+| 7 | **Tony — skateboarding companion**: VRM avatar, persona corpus (skate media), voice, skate TRICKS registry (ollie, kickflip, shuv…), street/park environment | All | 2–3 weeks | Pending |
+| 8 | Analytics events on all companion surfaces (demo opens, voice minutes, trick views) via `usage_events` | Mobile + Backend | 2 days | Pending |
 
-### P3 - Feature Work (After Standards Are Met)
+### P3 — Platform quality (parallel track)
 
-| Task | Repo | Notes |
-|------|------|-------|
-| Google Play submission | Mobile | Store listing, screenshots, review |
-| Push notifications | Mobile | Expo push + backend triggers |
-| Offline mode improvements | Mobile | Queue mutations, sync on reconnect |
-| Refresh tokens | Backend | Access token (15m) + refresh (7d) |
-| Expand test coverage to 40% | Both | Add tests as you touch files |
-| API versioning | Backend | `/api/v1/` prefix |
+| # | Task | Repo | Effort | Status |
+|---|------|------|--------|--------|
+| 1 | **Spots UX refactor** — browsing/filtering/detail flows re-designed to flagship quality; the map overlay work was the start | Mobile + Web | 1–2 weeks | Pending |
+| 2 | **Full-app UX audit** (web + mobile): intuitiveness/value pass on every flow, informed by analytics | All | 1 week audit + fixes | Pending |
+| 3 | Usage-analytics instrumentation app-wide (PostHog exists on web; add mobile SDK + event taxonomy) | Mobile + Web | 3–5 days | Pending |
+| 4 | Surf companion (Rico) — after skate + snow are strong | All | Later | Backlog |
+| 5 | Engineering-standards carryover: tests on critical paths, Zod API schemas, structured logging, API versioning | All | Ongoing | Partial |
+
+**Engineering-standards status (July 2026):** Biome + Husky + CI ✅ (mobile, backend, docs) · Node 20 on prod ✅ · Google Play closed alpha ✅ · Push notifications ✅ (v3.1.0) · rate limiting ⚠️ partial (auth/registration only) · Sentry, tests, health endpoint, graceful shutdown still pending — folded into P0#4 and P3#5 above.
 
 ---
 
-## Sprint Plan: Engineering Standards
+## Quarterly Plan
 
-**Goal:** Go from 0 quality gates to full CI/CD pipeline in one session.
+### Q3 2026 — Launch the companions
 
-### Hour 1: Biome + Pre-commit (Both Repos)
+- [x] Kaori 3D stage + live voice + FS360 demos (merged PR #4)
+- [x] Backend persona / unified memory / voice pipeline in prod (2fa8388)
+- [ ] Secure voice endpoint + monitoring
+- [ ] v3.2.0 TestFlight + Play internal
+- [ ] Token metering + free-sample paywall
+- [ ] Web purchases live; mobile IAP submitted
+- [ ] Public launch with paywall from day one
 
-```bash
-# TrickList
-cd TrickList
-npm install --save-dev @biomejs/biome husky lint-staged
-npx @biomejs/biome init
-npx husky init
-# Configure biome.json, lint-staged, .husky/pre-commit
-npm run lint:fix  # Auto-fix everything
-# Commit the formatting pass
+### Q4 2026 — Iterate + second companion
 
-# Backend
-cd Backend
-npm install --save-dev @biomejs/biome husky lint-staged
-npx @biomejs/biome init
-npx husky init
-npm run lint:fix
-# Commit
-```
+- [ ] Stance onboarding (regular/goofy)
+- [ ] Snowboard trick library expansion + snowy environment
+- [ ] Unlockables v1 (boards, colorways)
+- [ ] Tony (skateboard) alpha
+- [ ] Spots UX refactor
+- [ ] Full-app UX audit + analytics instrumentation
 
-### Hour 2: Error Handling + Sentry
+### 2027 — Scale the roster
 
-```bash
-# TrickList
-cd TrickList
-npx expo install @sentry/react-native
-# Create src/components/ErrorBoundary.tsx
-# Wire up in app/_layout.tsx
-# Add EXPO_PUBLIC_SENTRY_DSN to .env
-
-# Backend
-cd Backend
-npm install @sentry/node express-mongo-sanitize
-# Create middleware/errorHandler.js
-# Create utils/AppError.js
-# Add Sentry.init to index.js
-# Add graceful shutdown handlers
-# Add health check endpoint
-```
-
-### Hours 3-4: First Tests
-
-```bash
-# TrickList
-cd TrickList
-npm install --save-dev @testing-library/react-native @testing-library/jest-native
-# Write tests: client.test.ts, authStore.test.ts, trickStatus.test.ts
-# 2 screen smoke tests
-
-# Backend
-cd Backend
-npm install --save-dev jest supertest mongodb-memory-server
-# Write tests: auth.test.js, users.test.js, auth-middleware.test.js
-# trick-lists.test.js, spots.test.js
-```
-
-### Hour 5: CI/CD
-
-```bash
-# TrickList - create .github/workflows/ci.yml
-# Backend - create .github/workflows/ci.yml
-# Configure branch protection rules on GitHub
-# Create .env.example for both repos
-```
-
----
-
-## Feature Roadmap
-
-### Q1: Foundation (Current)
-
-- [x] Core trick list functionality
-- [x] User authentication (email + Google + Apple)
-- [x] iOS App Store launch
-- [x] Feed/social features
-- [x] Direct messaging
-- [x] Spot discovery with maps
-- [ ] **Engineering standards** (this sprint)
-- [ ] Security hardening (this sprint)
-- [ ] Google Play launch
-
-### Q2: Growth
-
-- [ ] Push notifications
-- [ ] Offline mode
-- [ ] Analytics dashboard
-- [ ] Performance optimization
-- [ ] Expand test coverage to 60%
-
-### Q3: Expansion
-
-- [ ] Community features
-- [ ] Premium feature expansion
-- [ ] API versioning
-- [ ] International expansion
-
-### Q4: Scale
-
-- [ ] Additional sport support
-- [ ] Partner integrations
-- [ ] Automated E2E testing
+- [ ] Tony launch + skate trick library
+- [ ] Outfit VRM variants + per-sport environments
+- [ ] Surf companion (Rico) exploration
+- [ ] Community/social growth features informed by analytics
 
 ---
 
 ## Metrics to Track
 
-### Engineering Health
+### Companion & business
+
+| Metric | Why |
+|--------|-----|
+| Stage opens / DAU | Is the flagship discoverable? |
+| Voice replies per user per day | Token-tier tuning input (from `usage_events`) |
+| Free → paid conversion | The paywall's whole job |
+| Voice COGS per user per month | Must stay under tier price; alarm on drift |
+| Demo → "Learning" trick status lift | Does coaching actually work? |
+| D1/D7/D30 retention, companion users vs not | The differentiation hypothesis |
+
+### Engineering health
 
 | Metric | Current | Target |
 |--------|---------|--------|
-| Test coverage | 0% | 40% (Q1), 70% (Q2) |
-| Lint errors | Unknown (no linter) | 0 |
-| CI pass rate | N/A (no CI) | >95% |
+| Crash-free sessions | Unknown (no Sentry) | >99.5% |
 | Mean time to detect error | Days (user report) | Minutes (Sentry alert) |
-| Crash-free sessions | Unknown | >99.5% |
-
-### App Metrics
-
-- Daily Active Users (DAU)
-- Monthly Active Users (MAU)
-- Retention (Day 1, 7, 30)
-- Session duration
-- Tricks completed per user
-
-### Business Metrics
-
-- Downloads (iOS vs Android)
-- Premium conversion rate
-- Revenue per user
-- App Store rating
+| CI pass rate | Green on all repos | >95% |
+| Test coverage | ~0% | 40% on critical paths |
