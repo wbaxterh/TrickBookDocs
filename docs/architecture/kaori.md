@@ -11,6 +11,8 @@ Status: **Current — live in prod** · Last updated: 2026-07-09
 
 :::tip Related pages
 Feature overview: [AI Companions](/docs/features/ai-companions) · Path to users: [Companions Launch Audit](/docs/roadmap/companions-launch) · Business model: [Monetization](/docs/roadmap/monetization)
+
+Surface-level deep-dives (audited 2026-07-12): [Mobile App](/docs/features/ai-companions/mobile-app) · [Web App](/docs/features/ai-companions/web-app) · [Animation System](/docs/features/ai-companions/animation-system) · [Board Model](/docs/features/ai-companions/board-model) · [Motion Capture Pipeline](/docs/features/ai-companions/motion-pipeline) · [RAG & Internal Tools](/docs/features/ai-companions/rag-and-tools)
 :::
 
 ## System Overview
