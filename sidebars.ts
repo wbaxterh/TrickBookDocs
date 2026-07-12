@@ -70,6 +70,7 @@ const sidebars: SidebarsConfig = {
         'features/overview',
         'features/trickbook',
         'features/spots',
+        'features/spots-map',
         'features/homies',
         'features/media',
         'features/ai-companions',
