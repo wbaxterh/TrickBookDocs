@@ -1,5 +1,6 @@
 import type * as Preset from '@docusaurus/preset-classic';
 import type { Config } from '@docusaurus/types';
+import type { PokedocsPresetOptions } from '@pokedocs/preset';
 import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
@@ -26,30 +27,33 @@ const config: Config = {
     locales: ['en'],
   },
 
-  // Mermaid markdown support
   markdown: {
-    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'warn',
     },
   },
 
-  // Add Mermaid theme
-  themes: ['@docusaurus/theme-mermaid'],
-
+  // PokeDocs preset: build-time mermaid (no client renderer), per-mode
+  // branded theme, local search, and the agent surface (llms.txt +
+  // markdown twins) — all from this one entry.
   presets: [
     [
-      'classic',
+      '@pokedocs/preset',
       {
+        branding: {
+          // Brand yellow fails contrast on white, so light mode keeps the
+          // dark gold this site always used — per-mode primaries.
+          brandColor: { light: '#806d00', dark: '#FCF150' },
+        },
         docs: {
+          routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
           editUrl: 'https://github.com/wbaxterh/TrickBookDocs/tree/main/',
         },
-        blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
-      } satisfies Preset.Options,
+      } satisfies PokedocsPresetOptions,
     ],
   ],
 
@@ -58,13 +62,6 @@ const config: Config = {
     colorMode: {
       defaultMode: 'dark',
       respectPrefersColorScheme: true,
-    },
-    // Mermaid configuration
-    mermaid: {
-      theme: {
-        light: 'neutral',
-        dark: 'dark',
-      },
     },
     navbar: {
       title: 'TrickBook',

@@ -1,36 +1,38 @@
 /**
  * TrickBook Documentation Custom Styles
  * Brand colors: Yellow (#FCF150) + Dark (#1f1f1f)
+ *
+ * The Infima primary ladders are gone: @pokedocs/theme compiles them
+ * from `brandColor: { light: '#806d00', dark: '#FCF150' }` in
+ * docusaurus.config.ts. This file is site personality only.
  */
 
-/* Light mode colors - dark gold for readable links on white */
 :root {
-  --ifm-color-primary: #806d00;
-  --ifm-color-primary-dark: #735f00;
-  --ifm-color-primary-darker: #6b5900;
-  --ifm-color-primary-darkest: #584900;
-  --ifm-color-primary-light: #8d7a00;
-  --ifm-color-primary-lighter: #958100;
-  --ifm-color-primary-lightest: #af9800;
   --ifm-code-font-size: 95%;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
   --ifm-font-family-base:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, sans-serif;
   --tb-yellow: #fcf150;
   --tb-dark: #1f1f1f;
 }
 
-/* Dark mode colors - brand yellow for links/accents on dark backgrounds */
 [data-theme="dark"] {
-  --ifm-color-primary: #fcf150;
-  --ifm-color-primary-dark: #fbe91e;
-  --ifm-color-primary-darker: #fbe505;
-  --ifm-color-primary-darkest: #d4c100;
-  --ifm-color-primary-light: #fdf582;
-  --ifm-color-primary-lighter: #fdf79b;
-  --ifm-color-primary-lightest: #fefacc;
-  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
   --ifm-background-color: #121212;
+}
+
+/* Build-time mermaid (PokeDocs): inline SVG rendered with the light
+   theme — a light card keeps diagrams legible on the dark background. */
+.pokedocs-mermaid {
+  text-align: center;
+  margin: 1rem 0;
+}
+.pokedocs-mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+[data-theme="dark"] .pokedocs-mermaid {
+  background: #fffdf8;
+  border-radius: 8px;
+  padding: 0.75rem;
 }
 
 /* Navbar - dark with yellow title */
