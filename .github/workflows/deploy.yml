@@ -37,6 +37,16 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Cache playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      # PokeDocs renders mermaid at build time via chromium
+      - name: Install chromium for build-time mermaid
+        run: npx playwright install --with-deps chromium
+
       - name: Build website
         run: npm run build
 
