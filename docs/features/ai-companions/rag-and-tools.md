@@ -51,7 +51,7 @@ Cross-surface history merges the last 8 `dm_messages` + last 8 `bot_chats` chron
 
 No per-user rate limiting on the AI endpoints, no usage metering (`requireVoiceTokens` from the [monetization plan](/docs/roadmap/monetization) is not built), no OpenRouter spend tracking. Non-Kaori bots have **no working brain** — `botChat.js` routes them to the dead ElizaOS hop and a canned fallback; `dm.js` answers every bot as Kaori regardless of character. Multi-companion = the brain needs a persona/character parameter.
 
-## Tool-call targets — the REST surface companions can grow into {#tool-call-targets}
+## Tool-call targets — the REST surface companions can grow into
 
 The backend already exposes everything the vision needs. Inventory by area (all JWT-auth'd via `x-auth-token` unless noted):
 

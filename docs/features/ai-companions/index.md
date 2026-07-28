@@ -122,7 +122,7 @@ One of the first profile questions for boardsports users will be **regular or go
 | Mobile rich-content card renderer | ✅ Shipped — dormant (backend never sends `richContent` yet) |
 | Voice-endpoint auth + usage metering | 🚧 P0 — see [launch audit](/docs/roadmap/companions-launch) |
 | Real RAG on our knowledgebase | 📋 Planned — [architecture](/docs/features/ai-companions/rag-and-tools) |
-| Expanded internal tool calls (spots/videos/feed) | 📋 Planned — [inventory](/docs/features/ai-companions/rag-and-tools#tool-call-targets) |
+| Expanded internal tool calls (spots/videos/feed) | 📋 Planned — [inventory](/docs/features/ai-companions/rag-and-tools#tool-call-targets--the-rest-surface-companions-can-grow-into) |
 | Mocap-driven trick clip library | 📋 Planned — [pipeline](/docs/features/ai-companions/motion-pipeline) |
 | Paywall / free-sample gating | 📋 Planned — see [monetization](/docs/roadmap/monetization) |
 | Snowy stage environment · board/outfit unlocks | 📋 Planned |

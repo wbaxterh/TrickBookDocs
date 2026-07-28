@@ -114,7 +114,7 @@ So "watch this" is literally the moment her body throws the trick. Two coupling 
 - The client splits sentences with a regex that must match Kith's server-side chunker 1:1; divergence silently mis-indexes cues.
 - The cue regexes are **global, not per-trick** — "pop" appears in almost every trick explanation, and "spin" would fire the full trick on non-spin tricks. Fine at 1 trick; collides at 20. Per-trick cue tables (or cue markers emitted by the brain) are the fix.
 
-## Direction audit — is this the right foundation? {#direction-audit}
+## Direction audit — is this the right foundation?
 
 **Verdict: yes for what it is, with a known ceiling.** The audit's conclusions:
 
@@ -130,7 +130,7 @@ So "watch this" is literally the moment her body throws the trick. Two coupling 
 
 **The recommended evolution** (detailed in [Motion Capture Pipeline](/docs/features/ai-companions/motion-pipeline)): keep the procedural system for coaching segments and stance idles, and grow the registry into a discriminated union — `{ kind: 'procedural', poseAt } | { kind: 'clip', vrmaUrl, totalSpin, phaseMarkers }` — where full-trick showcases come from CDN-hosted `.vrma` clips and `phaseMarkers` keep the sentence cues and board renderer working against clips.
 
-## What's hardcoded {#whats-hardcoded}
+## What's hardcoded
 
 The parameterization debt to burn down before more tricks/companions ship:
 
