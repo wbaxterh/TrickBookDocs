@@ -1,4 +1,5 @@
 ---
+unlisted: true
 title: Kaori Live Handoff (2026-04-13)
 description: Deployment/debug handoff for Kaori Live VRM + voice stack
 ---

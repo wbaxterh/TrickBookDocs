@@ -153,7 +153,7 @@ WebSocket server providing real-time features via namespaces.
 
 TrickBook uses a dual-database architecture: MongoDB for application data and PostgreSQL for vector search (RAG).
 
-:::tip Dual-database rationale
+:::tip[Dual-database rationale]
 MongoDB handles all transactional application data (users, tricks, spots, feed, messages). PostgreSQL with pgvector provides embedding-based semantic search for the Kaori AI knowledge base, which requires vector similarity queries that MongoDB does not natively support.
 :::
 

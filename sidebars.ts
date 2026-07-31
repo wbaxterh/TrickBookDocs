@@ -8,6 +8,7 @@ const sidebars: SidebarsConfig = {
       label: 'Engineering Standards',
       items: [
         'engineering/overview',
+        'engineering/development-workflow',
         'engineering/linting-formatting',
         'engineering/testing',
         'engineering/pre-commit-hooks',
@@ -81,6 +82,7 @@ const sidebars: SidebarsConfig = {
             'features/ai-companions/mobile-app',
             'features/ai-companions/web-app',
             'features/ai-companions/animation-system',
+            'features/ai-companions/motion-framework',
             'features/ai-companions/board-model',
             'features/ai-companions/motion-pipeline',
             'features/ai-companions/rag-and-tools',

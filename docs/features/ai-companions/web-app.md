@@ -9,7 +9,7 @@ Status: **Audited against code 2026-07-12** · repo `TrickBookWebsite` (Next.js,
 
 What the website ships for companions today: a full 3D Kaori stage at `/kaori-live`, companion DMs on `/messages`, and the honest parity picture against mobile.
 
-:::tip Related pages
+:::tip[Related pages]
 Hub: [AI Companions](/docs/features/ai-companions) · Mobile equivalent: [Mobile App Surfaces](/docs/features/ai-companions/mobile-app) · Backend brain: [Kaori AI Architecture](/docs/architecture/kaori)
 :::
 

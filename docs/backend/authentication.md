@@ -82,7 +82,7 @@ const token = jwt.sign(
 );
 ```
 
-:::danger Security Issue
+:::danger[Security Issue]
 The JWT secret is currently hardcoded as `"jwtPrivateKey"`. This must be changed to use `process.env.JWT_SECRET`.
 :::
 
@@ -98,7 +98,7 @@ The JWT secret is currently hardcoded as `"jwtPrivateKey"`. This must be changed
 }
 ```
 
-:::warning Missing Expiration
+:::warning[Missing Expiration]
 Tokens currently have no expiration. Should add:
 ```javascript
 jwt.sign(payload, secret, { expiresIn: '1h' });
@@ -169,7 +169,7 @@ const authAdmin = async (req, res, next) => {
 };
 ```
 
-:::note Performance Issue
+:::note[Performance Issue]
 Admin check queries the database on every request. Consider caching or including role in JWT payload with short expiration.
 :::
 

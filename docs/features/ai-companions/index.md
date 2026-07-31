@@ -11,11 +11,11 @@ TrickBook's AI Companions are riders, not chatbots. They chat with real personal
 
 This is the hub for the companions documentation. The deep-dives below were written from a full code audit of the mobile app, the web app, and the backend (2026-07-12).
 
-:::tip This section
+:::tip[This section]
 [**Mobile App Surfaces**](/docs/features/ai-companions/mobile-app) — roster, widget, bot chat, rich cards, voice stack · [**Web App Surfaces**](/docs/features/ai-companions/web-app) — the Kaori Live 3D stage, DMs, parity matrix · [**Animation System**](/docs/features/ai-companions/animation-system) — rider fundamentals, trick timelines, speech-synced choreography, scaling audit · [**The Board Model**](/docs/features/ai-companions/board-model) — how the board is generated and where per-design boards fit · [**Motion Capture Pipeline**](/docs/features/ai-companions/motion-pipeline) — how we'll learn real trick movements from video · [**RAG & Internal Tools**](/docs/features/ai-companions/rag-and-tools) — the knowledge/tool architecture today and the plan to make companions truly smart
 :::
 
-:::tip Related pages
+:::tip[Related pages]
 Technical architecture: [**Kaori AI Architecture**](/docs/architecture/kaori) · Path to users: [**Companions Launch Audit**](/docs/roadmap/companions-launch) · Business model: [**Monetization: Paywall & Tokens**](/docs/roadmap/monetization)
 :::
 

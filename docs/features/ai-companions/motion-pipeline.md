@@ -9,7 +9,7 @@ Status: **Researched 2026-07-12** · sources cited inline; costs verified agains
 
 The question this page answers: *"We need some way to easily learn and model the proper movements for each trick — should I green-screen videos of people performing them?"* Short answer: **film video, yes; green screen, no** — and deliver the results as `.vrma` clips layered over the procedural fundamentals we already have.
 
-:::tip Related pages
+:::tip[Related pages]
 Current system + scaling audit: [Animation System](/docs/features/ai-companions/animation-system) · Board tracks: [Board Model](/docs/features/ai-companions/board-model) · Hub: [AI Companions](/docs/features/ai-companions)
 :::
 

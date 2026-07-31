@@ -22,7 +22,7 @@ await client.connect();
 const db = client.db("TrickList2");
 ```
 
-:::warning Current Anti-Pattern
+:::warning[Current Anti-Pattern]
 Each route file creates its own connection. Should use a centralized connection pool.
 :::
 

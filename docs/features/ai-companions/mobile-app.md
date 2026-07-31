@@ -9,7 +9,7 @@ Status: **Audited against code 2026-07-12** · repo `TrickList`, branch `v2-rebu
 
 Everything the mobile app ships for companions: where they appear, how chat and voice work, and the exact plumbing between screens, the Kith voice sidecar, and the backend brain.
 
-:::tip Related pages
+:::tip[Related pages]
 Hub: [AI Companions](/docs/features/ai-companions) · 3D internals: [Animation System](/docs/features/ai-companions/animation-system) · Backend brain: [Kaori AI Architecture](/docs/architecture/kaori)
 :::
 

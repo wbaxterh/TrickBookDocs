@@ -9,7 +9,7 @@ Status: **Current state audited + architecture researched 2026-07-12**
 
 The goal: companions that **RAG on our own knowledgebase** (Trickipedia, coaching content, the docs) and **operate TrickBook itself** through internal tool calls — tricklists, spots, videos, feed. This page documents exactly what exists today, the full inventory of tool-call targets, and the recommended architecture.
 
-:::tip Related pages
+:::tip[Related pages]
 Hub: [AI Companions](/docs/features/ai-companions) · Brain internals: [Kaori AI Architecture](/docs/architecture/kaori) · Original plan (historical): [AI Companion Tool Calling](/docs/roadmap/ai-companion-tools)
 :::
 
