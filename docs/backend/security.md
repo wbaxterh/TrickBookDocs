@@ -8,7 +8,7 @@ Current security status and required improvements for the TrickBook backend.
 
 ## Critical Issues
 
-:::danger Immediate Action Required
+:::danger[Immediate Action Required]
 The following issues must be addressed before any further development.
 :::
 

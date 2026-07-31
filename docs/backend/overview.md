@@ -128,7 +128,7 @@ FRONTEND_URL=https://thetrickbook.com
 PORT=9000
 ```
 
-:::danger Security Warning
+:::danger[Security Warning]
 Never commit `.env` files to version control. The current repository has exposed credentials that need to be rotated.
 :::
 
@@ -201,7 +201,7 @@ await client.connect();
 const db = client.db("TrickList2");
 ```
 
-:::tip Improvement Needed
+:::tip[Improvement Needed]
 Should use a centralized connection pool. See [Efficiency Improvements](/docs/roadmap/efficiency-improvements).
 :::
 

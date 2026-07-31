@@ -11,7 +11,7 @@ Status: **✅ Live** · Last updated: 2026-07-11
 
 This page is the source of truth for the Spots **Map** specifically — the map UI on both mobile and web, the flows that hang off it, the deliberate UX/architecture decisions behind the mobile map (which is unusual for a good reason), the backend that powers it, and the QA plan that keeps it from crashing. For the broader Spots feature (schema, list/detail pages, ratings, resort UI, Chrome Extension), see [Spots](/docs/features/spots).
 
-:::tip Related surfaces
+:::tip[Related surfaces]
 - [Spots](/docs/features/spots) — parent feature: browse/list, spot detail, ratings, resort info, Chrome Extension bulk import.
 - [Media](/docs/features/media) — the feed/upload surface where a spot gets tagged onto a video or post.
 - [AI Companions](/docs/features/ai-companions) — Kaori can search spots and submit spot drafts (admin-reviewed) via chat tools.
@@ -64,7 +64,7 @@ Discovery is the top of the funnel for the whole app. A rider who can instantly 
 | Report a photo (auto-hide at 3) | ✅ Live | 🚧 Backend supports it; web UI not wired |
 | Submit a trick to a spot's history | 🚧 Not on map surface | ✅ Live (spot detail) |
 
-:::note Mobile and web are deliberately different map stacks
+:::note[Mobile and web are deliberately different map stacks]
 The web map uses the ordinary Google Maps JavaScript SDK. The **mobile** map uses a custom projected-overlay marker system that looks over-engineered until you know it exists to dodge a native crash under React Native's New Architecture. Section 3 explains exactly why. The two stacks share the **same backend** (Section 4), so the data model is identical.
 :::
 
@@ -104,7 +104,7 @@ This is the flow that matters most. Get it right and everything else follows.
 4. Click **"View Details →"** → the spot detail page at `/spots/{state}/{spotSlug}?id={id}`.
 5. The footer under the map shows a **"`{n}` spots worldwide"** count and a category color legend (park=green, street=amber, indoor=blue, diy=red, other=purple).
 
-:::note Web loads everything, mobile loads the viewport
+:::note[Web loads everything, mobile loads the viewport]
 Web fetches all pins once and filters/clusters client-side. Mobile fetches only what's in the current viewport and re-queries on pan/zoom. Both are correct for their platform, but note the web behavior means very large datasets can produce a large single payload — see Known Issues.
 :::
 
@@ -128,7 +128,7 @@ Web fetches all pins once and filters/clusters client-side. Mobile fetches only 
 4. Check **"Submit for public listing"** to send it to admin review (`pending`), or leave it unchecked to keep it **private**.
 5. Submit → on success you're redirected to the new spot's detail page.
 
-:::warning Web add-spot takes an image URL, not file uploads
+:::warning[Web add-spot takes an image URL, not file uploads]
 The public web add form (`/spots/add`) accepts a single **image URL** string, not uploaded photo files. Multi-photo contribution with gallery/camera is a **mobile-only** capability today. The web detail-page carousel is populated from `spot.images` / Google photos, not from a web file-upload path.
 :::
 
@@ -172,7 +172,7 @@ TrickBook uses a **flat "My Spots"** model: the things you **created** and the t
 
 - On a spot detail page, the **"Add to My Lists"** button (logged-in only) links to **`/my-spots`**, which manages your Spot Lists (named collections). One-tap save from a map pin is a mobile-first affordance.
 
-:::note One-tap save is intentionally frictionless
+:::note[One-tap save is intentionally frictionless]
 Saving writes to a **hidden per-user default list** (`isDefaultSaved: true`) that's excluded from the normal Collections view and has **no free-tier limit** — unlike named Collections, which enforce subscription limits. This keeps "save this, I'll come back" a zero-friction gesture. See Section 3 and Section 4.
 :::
 
@@ -217,7 +217,7 @@ The mobile map's architecture is unusual. Every choice below traces back to a ha
 - **Deferred `onPress`.** Tap handlers defer their work (via `requestAnimationFrame`) so a press that lands as a marker is repositioning doesn't fire mid-reconcile.
 - **`patch-package` `RCTAssert` safety net.** A patched assertion prevents a hard crash if the registry ever does desync — belt and suspenders.
 
-:::warning The load-bearing invariant
+:::warning[The load-bearing invariant]
 **Never unmount a touch target during an active gesture.** `projectToScreenXY` hides off-screen markers instead of unmounting them precisely to hold this invariant. Any refactor of the marker layer must preserve it or the RN #53303 crash comes back — and it only reproduces reliably on **physical iOS with dense data under aggressive panning** (see Section 5).
 :::
 
@@ -267,7 +267,7 @@ Photos are **public on upload** (no pre-moderation queue) to maximize contributi
 | Detail | `app/(tabs)/spots/[spotId].tsx` — merges `userPhotos` + `googlePhotos`; Add Photo (any user), Report/Delete (user photos), Google read-only; owner Edit/Delete |
 | Tag | `media/upload.tsx` — `searchSpots` picker attaches `spotId` to the post |
 
-:::note `add.tsx` is the one place the mobile app still uses a native `<Marker>`
+:::note[`add.tsx` is the one place the mobile app still uses a native `<Marker>`]
 The main map avoids `<Marker>` entirely, but the **add-spot** screen still uses a native `<Marker>` for the drop-pin (guarded by an in-code warning). Migrating this to the projected-overlay approach is a tracked follow-up (Section 6). It hasn't crashed in practice because the add screen shows a single marker with no aggressive panning, but it's the last inconsistency in the marker story.
 :::
 
@@ -322,7 +322,7 @@ Three Express routers, all in prod, mounted in `Backend/index.js`: `/api/spots` 
 | — | `/spotlists/*` | JWT (owner-scoped) | Named collections CRUD; default saved bucket excluded from list view; subscription limits enforced |
 | POST | `/feed/:postId/link-spot` | JWT (owner) | Attach/clear a `spotId` on a post; enriched onto posts via `populatePostUsers` |
 
-:::note map-pins is uncapped
+:::note[map-pins is uncapped]
 `GET /spots/map-pins` returns **all** matching approved pins in the bbox with **no server-side limit or clustering**. Mobile keeps payloads small by querying only the visible viewport; web fetches everything once. A very large viewport / very dense region can therefore return a large payload — tracked in Known Issues.
 :::
 
@@ -388,7 +388,7 @@ This suite reproduces the RN #53303 touch-registry crash and the `AIRGoogleMap` 
 | C6 | Confirm off-screen markers are **hidden, not unmounted** (instrument/inspect) | Touch targets never destroyed mid-gesture |
 | C7 | Confirm `patch-package` `RCTAssert` patch present in the build | Safety net in place |
 
-:::warning Physical device only, dense data only
+:::warning[Physical device only, dense data only]
 The crash does **not** reproduce on the iOS Simulator or with sparse data. Every marker-layer change must be validated on a real iOS 26 device against a dense dataset with aggressive gestures. A "works on simulator" result proves nothing here.
 :::
 
@@ -440,6 +440,6 @@ The crash does **not** reproduce on the iOS Simulator or with sparse data. Every
 | `POST /spots/bulk` has no admin gate / no owner/status | 🚧 Risk | Bulk-inserted spots set no `userId`/`approvalStatus`, so they're unowned and invisible on approved-only endpoints unless the payload pre-sets `approvalStatus: 'approved'` |
 | `feed.js` stores `userId` as string vs `spots.js` ObjectId | 🚧 Inconsistency | Cross-collection type mismatch in ownership comparisons; harmonize to avoid subtle auth bugs |
 
-:::tip Where this sits on the roadmap
+:::tip[Where this sits on the roadmap]
 The Spots surface (including this map) is slated for a broader UX-excellence pass with analytics instrumented first. See [Spots → Planned UX refactor](/docs/features/spots) and [Roadmap Priorities](/docs/roadmap/priorities).
 :::

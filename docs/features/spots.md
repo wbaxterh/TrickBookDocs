@@ -382,7 +382,7 @@ Spots is slated for a UX-excellence refactor. Rather than redesigning blind, the
 | Browsing / filtering flow re-evaluation | 📋 Planned | Part of the full-app UX audit |
 | Spot detail flow re-evaluation | 📋 Planned | Photos, directions, ratings surfaces |
 
-:::tip Related surface
+:::tip[Related surface]
 AI companions can submit spots on a user's behalf via the `create_spot_draft` tool — drafts go through admin approval before appearing on the map. See [AI Companions](/docs/features/ai-companions).
 :::
 

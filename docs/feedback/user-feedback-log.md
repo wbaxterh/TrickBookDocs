@@ -7,7 +7,7 @@ title: "User Feedback Log"
 
 Real feedback from TrickBook users. This log helps us prioritize features and track what users actually want.
 
-:::info Contributing
+:::info[Contributing]
 If you have feedback, email **wesleybaxterhuber@gmail.com** or DM us on [Instagram](https://instagram.com/thetrickbook).
 :::
 

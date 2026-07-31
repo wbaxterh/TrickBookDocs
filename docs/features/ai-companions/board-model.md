@@ -9,7 +9,7 @@ Status: **Audited against code 2026-07-12** · file: `TrickList/src/components/c
 
 How Kaori's snowboard is generated, how it moves during tricks, and the path to per-design board files (which is also the path to board unlockables and to skateboarding).
 
-:::tip Related pages
+:::tip[Related pages]
 Animation internals: [Animation System](/docs/features/ai-companions/animation-system) · Board unlocks in the business model: [Monetization](/docs/roadmap/monetization) · Board tracks for mocap clips: [Motion Capture Pipeline](/docs/features/ai-companions/motion-pipeline)
 :::
 

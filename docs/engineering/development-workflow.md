@@ -97,7 +97,7 @@ After review/approval:
 gh pr merge <pr-number> --repo wbaxterh/TrickBookFrontend --squash --delete-branch
 ```
 
-:::tip Auto-close Issues
+:::tip[Auto-close Issues]
 The issue will auto-close if you included `Fixes #<issue-number>` in the PR body.
 :::
 
