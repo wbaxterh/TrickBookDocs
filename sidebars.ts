@@ -33,6 +33,7 @@ const sidebars: SidebarsConfig = {
           items: [
             'architecture/adrs/native-google-signin',
             'architecture/adrs/kaori-fallback-chain',
+            'architecture/adrs/kaori-agent-architecture',
           ],
         },
       ],
