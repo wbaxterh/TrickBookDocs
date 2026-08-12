@@ -2,7 +2,7 @@
 
 /**
  * Combined PDF Generator for TrickBook Documentation
- * Generates a single PDF containing all documentation
+ * Generates a single PDF containing a curated set of documentation
  */
 
 const { mdToPdf } = require('md-to-pdf');
@@ -11,7 +11,7 @@ const path = require('node:path');
 
 const DOCS_DIR = path.join(__dirname, '..', 'docs');
 const OUTPUT_DIR = path.join(__dirname, '..', 'pdf-exports');
-const OUTPUT_FILE = path.join(OUTPUT_DIR, 'TrickBook-Documentation-Complete.pdf');
+const OUTPUT_FILE = path.join(OUTPUT_DIR, 'TrickBook-Documentation-Curated.pdf');
 
 // Order of sections for combined PDF
 const SECTION_ORDER = [
@@ -132,17 +132,18 @@ ${SECTION_ORDER.map((file, i) => {
 
 `;
 
+  const missingFiles = SECTION_ORDER.filter((file) => !fs.existsSync(path.join(DOCS_DIR, file)));
+
+  if (missingFiles.length > 0) {
+    throw new Error(`Missing curated PDF sources:\n${missingFiles.join('\n')}`);
+  }
+
   for (const file of SECTION_ORDER) {
     const filePath = path.join(DOCS_DIR, file);
-
-    if (fs.existsSync(filePath)) {
-      console.log(`  Adding: ${file}`);
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const cleanContent = stripFrontmatter(content);
-      combinedContent += `${cleanContent}\n\n---\n\n`;
-    } else {
-      console.log(`  ⚠ Missing: ${file}`);
-    }
+    console.log(`  Adding: ${file}`);
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const cleanContent = stripFrontmatter(content);
+    combinedContent += `${cleanContent}\n\n---\n\n`;
   }
 
   // Write temporary combined markdown
@@ -155,16 +156,22 @@ ${SECTION_ORDER.map((file, i) => {
   try {
     const pdf = await mdToPdf({ path: tempFile }, PDF_CONFIG);
 
-    if (pdf) {
-      fs.writeFileSync(OUTPUT_FILE, pdf.content);
-      console.log(`\n✓ Generated: ${OUTPUT_FILE}`);
+    if (!pdf) {
+      throw new Error('PDF converter returned no output');
     }
-  } catch (_error) {}
 
-  // Clean up temp file
-  fs.unlinkSync(tempFile);
+    fs.writeFileSync(OUTPUT_FILE, pdf.content);
+    console.log(`\n✓ Generated: ${OUTPUT_FILE}`);
+  } finally {
+    if (fs.existsSync(tempFile)) {
+      fs.unlinkSync(tempFile);
+    }
+  }
 
   console.log('');
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
