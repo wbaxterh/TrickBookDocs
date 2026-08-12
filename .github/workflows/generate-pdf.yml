@@ -38,6 +38,7 @@ jobs:
         with:
           name: documentation-pdfs
           path: pdf-exports/
+          if-no-files-found: error
           retention-days: 30
 
       - name: Upload to release (if release event)
@@ -45,4 +46,4 @@ jobs:
         uses: softprops/action-gh-release@26994186c0ac3ef5cae75ac16aa32e8153525f77 # v1
         with:
           files: |
-            pdf-exports/TrickBook-Documentation-Complete.pdf
+            pdf-exports/TrickBook-Documentation-Curated.pdf

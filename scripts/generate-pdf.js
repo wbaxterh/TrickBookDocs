@@ -74,12 +74,16 @@ async function generatePdf(inputPath, outputPath) {
 
     const pdf = await mdToPdf({ path: inputPath }, PDF_CONFIG);
 
-    if (pdf) {
-      fs.writeFileSync(outputPath, pdf.content);
-      console.log(`  ✓ Generated: ${path.basename(outputPath)}`);
-      return true;
+    if (!pdf) {
+      throw new Error('PDF converter returned no output');
     }
-  } catch (_error) {
+
+    fs.writeFileSync(outputPath, pdf.content);
+    console.log(`  ✓ Generated: ${path.basename(outputPath)}`);
+    return true;
+  } catch (error) {
+    console.error(`  ✗ Failed: ${inputPath}`);
+    console.error(`    ${error instanceof Error ? error.message : String(error)}`);
     return false;
   }
 }
@@ -132,7 +136,7 @@ async function main() {
 
   for (const file of filesToProcess) {
     const relativePath = path.relative(DOCS_DIR, file);
-    const outputFileName = relativePath.replace(/\//g, '_').replace('.md', '.pdf');
+    const outputFileName = relativePath.split(path.sep).join('_').replace(/\.md$/, '.pdf');
     const outputPath = path.join(OUTPUT_DIR, outputFileName);
 
     const result = await generatePdf(file, outputPath);
@@ -142,6 +146,13 @@ async function main() {
 
   console.log(`\n✓ Complete: ${success} succeeded, ${failed} failed`);
   console.log(`  Output directory: ${OUTPUT_DIR}\n`);
+
+  if (failed > 0) {
+    process.exitCode = 1;
+  }
 }
 
-main().catch(console.error);
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

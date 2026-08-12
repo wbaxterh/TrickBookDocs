@@ -50,7 +50,7 @@ npm run serve      # serve the production build locally
 | `npm run validate` | Full gate: Biome check + typecheck + production build |
 | `npm run pdf` / `pdf:all` | Generate one PDF per Markdown file in `docs/` into `pdf-exports/` (`scripts/generate-pdf.js`) |
 | `npm run pdf:section <path>` | Same script, scoped to a single file or section, e.g. `npm run pdf:section docs/backend/` |
-| `npm run pdf:combined` | Generate a single `TrickBook-Documentation-Complete.pdf` with cover page and table of contents, in a curated section order (`scripts/generate-combined-pdf.js`) |
+| `npm run pdf:combined` | Generate a single `TrickBook-Documentation-Curated.pdf` with cover page and table of contents, in a curated section order (`scripts/generate-combined-pdf.js`) |
 
 Pre-commit hooks (Husky + lint-staged) run Biome on staged `.ts`/`.tsx`/`.css` files automatically.
 
