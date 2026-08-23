@@ -17,6 +17,7 @@ flowchart LR
         SP[📍 Spots]
         HM[🤝 Homies]
         MD[🎬 Media]
+        EV[📅 Events]
     end
 
     subgraph TB_Sub["Trick System"]
@@ -42,6 +43,13 @@ flowchart LR
         MD --> Feed["User Feed"]
         MD --> Comments["Comments"]
     end
+
+    subgraph EV_Sub["Event System"]
+        EV --> Nearby["Nearby Discovery"]
+        EV --> Enter["Registration Links"]
+        EV --> Watch["Tickets and Livestreams"]
+        EV --> Alerts["Saved Events and Alerts"]
+    end
 ```
 
 ## Feature Summary
@@ -52,6 +60,7 @@ flowchart LR
 | [Spots](/docs/features/spots) | Skate spot database with maps | ✅ Live |
 | [Homies](/docs/features/homies) | Social connections and messaging | ✅ Live |
 | [Media](/docs/features/media) | Video streaming and user content | ✅ Live |
+| [Events](/docs/features/events) | Multi-sport discovery, registration/watch links, and alerts | 📋 Planned |
 
 ## Recent Updates (March 2026)
 

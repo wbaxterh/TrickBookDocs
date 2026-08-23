@@ -25,6 +25,7 @@ const sidebars: SidebarsConfig = {
         'architecture/repo-dependency-map',
         'architecture/tech-stack',
         'architecture/data-flow',
+        'architecture/openclaw-operations',
         'architecture/kaori',
         'architecture/kaori-audit-2026-05',
         {
@@ -76,6 +77,8 @@ const sidebars: SidebarsConfig = {
         'features/spots-map',
         'features/homies',
         'features/media',
+        'features/events',
+        'features/event-sources',
         {
           type: 'category',
           label: 'AI Companions',
@@ -128,6 +131,7 @@ const sidebars: SidebarsConfig = {
         'roadmap/mobile-app-rebuild',
         'roadmap/mobile-design-prompt',
         'roadmap/ai-companion-tools',
+        'roadmap/mobile-spots-parity',
       ],
     },
   ],
