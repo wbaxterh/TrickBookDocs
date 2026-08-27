@@ -122,6 +122,7 @@ const sidebars: SidebarsConfig = {
       label: 'Roadmap',
       items: [
         'roadmap/priorities',
+        'roadmap/signup-onboarding-audit',
         'roadmap/companions-launch',
         'roadmap/monetization',
         'roadmap/gap-analysis',
