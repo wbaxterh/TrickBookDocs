@@ -61,11 +61,12 @@ Two things initially looked like bugs but check out on closer inspection:
 
 ## Implemented from this audit
 
+- **Account created at step 1** ✅ — the single biggest fix. Step 1 now registers + logs in, then steps 2–4 become **skippable post-signup profile setup** (saved via `PUT /api/user/:id`, best-effort). A drop-off during setup now still leaves a real, re-engageable account. "Skip for now" / "Finish" both save what's collected and land on `/spots`.
 - **Social-first step 1** — "Continue with Google / Apple" now lead, above the email form.
 - **Single password field** with a show/hide toggle (removed the confirm-password field + its error state).
 - **Activation landing** — new users go to `/spots` (the map) instead of an empty `/profile`.
 
-Still open (larger): **create the account at step 1** (make steps 2–4 skippable post-signup onboarding), trim the 16-field rider card, and add a value/proof hero to the signup page.
+Still open: **trim the 16-field rider card** to a few high-signal fields (collect the rest via progressive in-app prompts), add a **value/proof hero** to the signup page, and **wire the avatar photo upload** (still stubbed — the icon path works via `riderProfile.avatarIcon`).
 
 ## Retention recommendations
 
