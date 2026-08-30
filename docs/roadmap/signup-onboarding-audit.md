@@ -65,8 +65,10 @@ Two things initially looked like bugs but check out on closer inspection:
 - **Social-first step 1** — "Continue with Google / Apple" now lead, above the email form.
 - **Single password field** with a show/hide toggle (removed the confirm-password field + its error state).
 - **Activation landing** — new users go to `/spots` (the map) instead of an empty `/profile`.
+- **Rider card trimmed** ✅ — step 4 went from ~16 vanity fields to **4 high-signal ones** (Nickname, Rider Style, Sickest Trick, Home Spot). The rest of the rider card is now filled progressively from the user's profile, so the last onboarding step no longer reads as a wall of work.
+- **Prominent signup CTA** ✅ — logged-out users now see a subtle "Log in" link next to a prominent yellow **"Sign up free"** button (→ `/signup`) in the nav, instead of a single low-key "Login / Register" link. The primary conversion action is now obvious on every page.
 
-Still open: **trim the 16-field rider card** to a few high-signal fields (collect the rest via progressive in-app prompts), add a **value/proof hero** to the signup page, and **wire the avatar photo upload** (still stubbed — the icon path works via `riderProfile.avatarIcon`).
+Still open: add a **value/proof hero** to the signup page (headline + social proof above the form), and **wire the avatar photo upload** (still stubbed — the icon path works via `riderProfile.avatarIcon`).
 
 ## Retention recommendations
 
