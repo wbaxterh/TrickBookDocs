@@ -95,6 +95,7 @@ const sidebars: SidebarsConfig = {
           ],
         },
         'features/notifications',
+        'features/localization',
       ],
     },
     {
