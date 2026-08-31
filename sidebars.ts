@@ -75,6 +75,7 @@ const sidebars: SidebarsConfig = {
         'features/trickbook',
         'features/spots',
         'features/spots-map',
+        'features/spots-inventory-automation',
         'features/homies',
         'features/media',
         'features/events',
