@@ -133,6 +133,7 @@ const sidebars: SidebarsConfig = {
         'roadmap/mobile-design-prompt',
         'roadmap/ai-companion-tools',
         'roadmap/mobile-spots-parity',
+        'roadmap/trickipedia-network-first-pass',
       ],
     },
   ],
