@@ -35,6 +35,7 @@ const sidebars: SidebarsConfig = {
             'architecture/adrs/native-google-signin',
             'architecture/adrs/kaori-fallback-chain',
             'architecture/adrs/kaori-agent-architecture',
+            'architecture/adrs/midnight-sealed-claims',
           ],
         },
       ],
@@ -96,6 +97,16 @@ const sidebars: SidebarsConfig = {
         },
         'features/notifications',
         'features/localization',
+        {
+          type: 'category',
+          label: 'Sealed Claims (Midnight)',
+          link: { type: 'doc', id: 'features/sealed-claims/index' },
+          items: [
+            'features/sealed-claims/architecture',
+            'features/sealed-claims/verification-pipeline',
+            'features/sealed-claims/formal-spec',
+          ],
+        },
       ],
     },
     {
