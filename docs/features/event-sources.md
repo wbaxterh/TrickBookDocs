@@ -6,6 +6,40 @@ sidebar_position: 8
 
 Action-sports events are fragmented across governing bodies, professional tours, registration/scoring platforms, regional series, resorts and parks, and media or energy-drink brands. TrickBook needs all of these layers rather than treating one global brand calendar as complete coverage.
 
+## Current Source Inventory
+
+As of August 31, 2026, X Games and The Boardr produce production records. This page is otherwise a source strategy and research backlog, not a list of completed integrations.
+
+| Source | State | Current output | Main limitation |
+|---|---|---|---|
+| X Games | Active | 13 historical/completed records | Sports and location are inferred; no timezone, disciplines, registration, tickets, or streams |
+| The Boardr | Active | 11 upcoming records | U.S.-heavy coverage; no authoritative timezone, coordinates, images, ticketing, or livestream data |
+| Development fixtures | Local only | 5 curated future examples | Enabled only by a frontend environment flag; never ingested |
+| All other sources below | Research/planned | 0 records | No production connector or persisted source configuration |
+
+There is currently no `eventSources` collection, connector health dashboard, persisted cursor, licensing registry, raw source snapshot store, or source-level retry state. Each production event carries only `source`, `sourceId`, and `sourceUrl`, plus ingestion timestamps on the canonical record.
+
+### Active X Games Feed
+
+- Endpoint: `https://www.xgames.com/wp-json/xgames/v1/events`
+- Transport: public JSON containing HTML event cards
+- Pagination cap: six pages per run
+- Identity: URL slug in `sourceId`; normalized title/date/city in `dedupeKey`
+- Refresh behavior: idempotent MongoDB upsert; `lastSeenAt` is refreshed on every successful record
+- Failure behavior: page failures are logged and stop further X Games pagination; one source failure does not abort the overall ingestion run
+
+Each new source should follow the tested connector contract: fetch, normalize, stable external identity, provenance, freshness, and fixture-based parser tests. Persisted source health and raw snapshots are the next shared ingestion-layer gaps.
+
+### Active The Boardr Feed
+
+- Endpoint: `https://www.theboardr.com/events`
+- Transport: server-rendered Next.js `__NEXT_DATA__` JSON
+- Identity: numeric `EventID` in `sourceId` and the stable detail URL
+- Coverage at launch: 11 upcoming U.S. events from September 2026 through April 2027
+- Normalization: calendar dates are stored at noon UTC with `timeTba: true`; city and state are split from the published location text
+- Classification: conservative title/description inference for competition, community, festival, exhibition, BMX inclusion, open entry, and invite-only status
+- Failure behavior: missing or changed `__NEXT_DATA__`/`eventList` structure throws an ingestion error and is covered by parser tests
+
 ## Source Roles
 
 | Role | What it provides | Examples |
@@ -203,4 +237,3 @@ This order optimizes usable event volume and registration data before brand enri
 - [Monster Energy events](https://www.monsterenergy.com/en-us/events/)
 - [Red Bull live events](https://www.redbull.tv/events)
 - [Rockstar Energy Open](https://www.rockstarenergy.com/pages/rseo)
-
