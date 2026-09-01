@@ -3,9 +3,9 @@ sidebar_position: 2
 title: "Architecture"
 ---
 
-# Sealed Claims: Architecture
+# Claimed: Architecture
 
-How a clip becomes a commitment on Midnight, how it is revealed, and what runs where. Read the [PRD](/docs/features/sealed-claims) first for the why. The contract in this page is a sketch derived from the working `vouched` contract; it has to be compiled against the current Compact compiler before any of it is treated as final.
+How a clip becomes a commitment on Midnight, how it is revealed, and what runs where. Read the [PRD](/docs/features/claimed) first for the why. The contract in this page is a sketch derived from the working `vouched` contract; it has to be compiled against the current Compact compiler before any of it is treated as final.
 
 ## 1. Components
 
@@ -54,7 +54,7 @@ flowchart LR
 | Sealing service | No. The pattern exists in vouched's demo backend (`server.ts`), which wraps wallet, proof provider, indexer provider, and private state behind a small HTTP API so the client never touches Midnight libraries. | New process, same pattern, production hardening |
 | Verifier service | No | New, see [Verification pipeline](./verification-pipeline) |
 | Proof server | No | New container next to the API, or a dedicated box |
-| Spot trick history | Yes, admin-verified | Reveals create entries with `source: "sealed-claim"` |
+| Spot trick history | Yes, admin-verified | Reveals create entries with `source: "claimed"` |
 
 ## 2. Trust boundaries
 
@@ -129,7 +129,7 @@ The rider proves "a claim for trick T at spot S was sealed no later than block B
 This is the part of the design that matters most. **Priority is established by chain time, not by the device clock.** `capturedAt` is a self-reported field bound into the commitment for later evidence; the thing that cannot be faked is the block at which the root existed.
 
 :::warning[Verify before relying on it]
-The retention rule for historic roots in `HistoricMerkleTree` must be confirmed against the current ledger ADT documentation. If the tree keeps a bounded window of roots, the service must snapshot roots per block off-chain and the priority proof design needs a checkpoint circuit. This is the first item in the M1 exit criteria.
+The retention rule for historic roots in `HistoricMerkleTree` must be confirmed against the current ledger ADT documentation. If the tree keeps a bounded window of roots, the service must snapshot roots per block off-chain and the priority proof design needs a checkpoint circuit. This is the first item in the M2 exit criteria.
 :::
 
 ## 6. Contract
@@ -137,7 +137,7 @@ The retention rule for historic roots in `HistoricMerkleTree` must be confirmed 
 Sketch, Compact 0.23 style, ported from `vouched.compact`. Tree depth 16 gives 65,536 leaves, which is years of seals at current scale; pick the depth against proving cost with the Nite ZK profiler before deploy.
 
 ```compact
-// sealed-claims: proof of priority for creative work on Midnight
+// claimed: proof of priority for creative work on Midnight
 pragma language_version 0.23;
 
 import CompactStandardLibrary;
@@ -316,7 +316,7 @@ New collections in the existing MongoDB.
 Changes to existing collections:
 
 - `feed` posts gain `claimId`.
-- `spot_trick_history` entries gain `claimId`, `evidenceTier`, and use `source: "sealed-claim"`; `verified` becomes derived (tier 3 or higher, or admin override).
+- `spot_trick_history` entries gain `claimId`, `evidenceTier`, and use `source: "claimed"`; `verified` becomes derived (tier 3 or higher, or admin override).
 
 ## 9. API surface
 
@@ -354,8 +354,8 @@ TrickBook is proprietary. The awesome-dapps submission rules require an open-sou
 
 | Repository | Visibility | Contents |
 |------------|------------|----------|
-| `sealed-claims` (new) | Public | `contract/` (Compact, witnesses, tests), `service/` (sealing and proving service with a generic HTTP API), `demo/` (minimal web UI: seal a file, reveal, prove priority), README with fresh-clone instructions, e2e against the standalone devnet |
-| `TB-Backend` | Private | `routes/claims.js`, evidence pipeline, integration with feed and spot trick history; depends on `sealed-claims/service` as a package |
+| `claimed` (new) | Public | `contract/` (Compact, witnesses, tests), `service/` (sealing and proving service with a generic HTTP API), `demo/` (minimal web UI: seal a file, reveal, prove priority), README with fresh-clone instructions, e2e against the standalone devnet |
+| `TB-Backend` | Private | `routes/claims.js`, evidence pipeline, integration with feed and spot trick history; depends on `claimed/service` as a package |
 | `TrickBookFrontend` | Private | Capture, hashing, keychain, attestation, seal and reveal UI |
 
 The public repository is the thing reviewed for the Midnight quests and the Aliit dossier; TrickBook is its first, and for now only, production integrator.

@@ -150,9 +150,9 @@ Copy rules, because a wrong badge costs more trust than no badge.
 
 ## 9. Build order
 
-1. Tier 1 and the evidence record schema (M3, M4). This is where the product value and the security live.
-2. Tier 2 with a commercial detector and sidecar consistency (M4). One API call, one afternoon of integration.
-3. Tier 4 spot matching (M4). We already own the gallery data; the models are off the shelf.
+1. Tier 1 and the evidence record schema (M1). This is where the product value and the security live, and it is what the Verified badge stands on.
+2. Tier 2 with a commercial detector and sidecar consistency (M1). One API call, one afternoon of integration.
+3. Tier 4 spot matching (M5). We already own the gallery data; the models are off the shelf.
 4. Tier 3 (M5). Start with reference similarity over pose tracks and the landing heuristic; add the fine-tuned classifier once the labeled TrickBook set is large enough to hold out a test split. Measure and publish accuracy before turning the badge on.
 5. Tier 5 co-sign (M6). Reuses the seal path.
 
@@ -163,5 +163,6 @@ Copy rules, because a wrong badge costs more trust than no badge.
 - Skateboard trick classification with I3D plus audio: https://github.com/michaelnation26/skateboard_trick_classification
 - Hive AI-generated image and video detection: https://docs.thehive.ai/docs/ai-image-and-video-detection
 - Reality Defender developer API: https://www.realitydefender.com/insights/reality-defender-launches-free-access-to-deepfake-detection-api
-- Content Credentials on smartphones, 2026 status: https://c2pa.ai/smartphone-guide
+- Content Credentials (C2PA), official site: https://contentcredentials.org/
+- Which phones sign captures with Content Credentials in 2026: https://www.lumethic.com/en/articles/smartphones-c2pa-content-credentials
 - Midnight smart contract security guidance: https://docs.midnight.network/compact/smart-contract-security
