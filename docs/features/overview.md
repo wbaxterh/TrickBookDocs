@@ -60,7 +60,7 @@ flowchart LR
 | [Spots](/docs/features/spots) | Skate spot database with maps | ✅ Live |
 | [Homies](/docs/features/homies) | Social connections and messaging | ✅ Live |
 | [Media](/docs/features/media) | Video streaming and user content | ✅ Live |
-| [Events](/docs/features/events) | Multi-sport discovery, registration/watch links, and alerts | 📋 Planned |
+| [Events](/docs/features/events) | Multi-sport discovery and registration/watch links; alerts remain planned | 🟡 Partial MVP |
 
 ## Recent Updates (March 2026)
 
