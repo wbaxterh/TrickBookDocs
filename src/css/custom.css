@@ -125,6 +125,7 @@ table th {
 
 [data-theme="dark"] table th {
   background-color: var(--ifm-color-primary-darkest);
+  color: var(--tb-dark);
 }
 
 /* Admonitions */

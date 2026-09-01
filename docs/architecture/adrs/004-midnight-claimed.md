@@ -1,6 +1,6 @@
 ---
 sidebar_position: 4
-title: "ADR-004: Midnight for Sealed Claims"
+title: "ADR-004: Midnight for Claimed"
 ---
 
 # ADR-004: Seal Trick Claims on Midnight with a Custodial Backend Wallet
@@ -11,7 +11,7 @@ title: "ADR-004: Midnight for Sealed Claims"
 | **Date** | September 2026 |
 | **Deciders** | Wes Huber |
 | **Supersedes** | None |
-| **Related** | [Sealed Claims PRD](/docs/features/sealed-claims) · [Architecture](/docs/features/sealed-claims/architecture) · [Formal spec](/docs/features/sealed-claims/formal-spec) |
+| **Related** | [Claimed PRD](/docs/features/claimed) · [Architecture](/docs/features/claimed/architecture) · [Formal spec](/docs/features/claimed/formal-spec) |
 
 ## Context
 
@@ -61,7 +61,7 @@ TrickBook's constraints: 315 registered users who will not install a crypto wall
 **Neutral**
 
 - App Store review: the feature is timestamping with no token, purchase, or wallet UI. Apple's guidelines permit that; the submission notes should say so up front.
-- Tree depth, proving cost, and historic-root retention must be measured and confirmed against current Midnight documentation before the contract is final (listed as M1 exit criteria in the PRD).
+- Tree depth, proving cost, and historic-root retention must be measured and confirmed against current Midnight documentation before the contract is final (listed as M2 exit criteria in the PRD).
 
 ## Follow-ups
 

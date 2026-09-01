@@ -3,7 +3,7 @@ sidebar_position: 4
 title: "Formal specification"
 ---
 
-# Sealed Claims: Formal Specification
+# Claimed: Formal Specification
 
 A precise statement of what the protocol guarantees, a model-checkable specification of its state machine, the obligations each circuit discharges, the threat model, and the test plan that ties them together. Written so a reviewer can find the load-bearing assumption in under five minutes.
 
@@ -55,7 +55,7 @@ Only three transitions touch the chain: `seal`, `reveal`, `attest`. `provePriori
 | I5 | Ownership | Only the holder of `k_r` can reveal or prove priority for a claim sealed with `k_r` | Commitment recomputation requires `k_r` as witness; ZK soundness |
 | I6 | Unlinkability | Two claims by the same rider, and a priority proof and its later reveal, are unlinkable on-chain | Fresh salt per claim; only the root is disclosed in membership proofs; nullifier appears only at reveal |
 | I7 | Attestation authority | Only `V` can write `attestations` | `assert(H(tag_v, verifierSecret()) == verifierKeyHash)`; `verifierKeyHash` is a sealed ledger field |
-| I8 | Attestation targets | An attestation can only be anchored to an existing commitment | Enforced off-chain in v1 (service checks the leaf exists); on-chain enforcement would require a membership proof in `attest`, listed as an M1 decision |
+| I8 | Attestation targets | An attestation can only be anchored to an existing commitment | Enforced off-chain in v1 (service checks the leaf exists); on-chain enforcement would require a membership proof in `attest`, listed as an M2 decision |
 | I9 | No silent failure | The UI never shows Sealed unless a transaction with the commitment is confirmed | Sealing service sets `sealed` only from an indexer-confirmed inclusion |
 
 I8 is the one invariant the sketch does not fully enforce on-chain. It is called out rather than hidden.
@@ -75,7 +75,7 @@ Everything above reduces to these. If one fails, the corresponding invariant fai
 The model abstracts hashing away (a claim is an opaque id, ownership is a field) so that TLC can check the state machine's safety properties: no double reveal, no reveal without seal, priority proofs only against roots that postdate the seal, attestations only on sealed claims. The cryptographic properties are assumptions, listed above; the model checks that the protocol logic does not break the guarantees the cryptography provides.
 
 ```tla
----------------------------- MODULE SealedClaims ----------------------------
+---------------------------- MODULE Claimed ----------------------------
 EXTENDS Naturals, FiniteSets, Sequences
 
 CONSTANTS Riders, ClaimIds, MaxBlock, Tiers
