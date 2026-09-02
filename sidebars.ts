@@ -156,6 +156,7 @@ const sidebars: SidebarsConfig = {
         'roadmap/ai-companion-tools',
         'roadmap/mobile-spots-parity',
         'roadmap/trickipedia-network-first-pass',
+        'roadmap/rider-encyclopedia-pilot',
       ],
     },
   ],
