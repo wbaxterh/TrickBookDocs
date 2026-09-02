@@ -107,6 +107,15 @@ const sidebars: SidebarsConfig = {
             'features/claimed/formal-spec',
           ],
         },
+        {
+          type: 'category',
+          label: 'Instructor Outcomes',
+          link: { type: 'doc', id: 'features/instructor-outcomes/index' },
+          items: [
+            'features/instructor-outcomes/architecture',
+            'features/instructor-outcomes/formal-spec',
+          ],
+        },
       ],
     },
     {

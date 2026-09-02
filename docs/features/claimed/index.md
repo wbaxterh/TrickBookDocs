@@ -90,6 +90,8 @@ TrickBook has 315 registered users, 6,261 spots, and 504 trick lists as of Septe
 - **Replacing the feed.** Verified, First, and Vault attach to capture and to existing posts. They are not a new content surface.
 - **Content moderation.** Reveals go through the same moderation as feed posts.
 
+Instructor/tutorial attribution, expanded rider and instructor profiles, private mastery credentials, and outcome-based creator incentives are specified separately in [Instructor Outcomes](/docs/features/instructor-outcomes). That feature consumes eligible Claimed results; it does not weaken or reinterpret the evidence tiers defined here.
+
 ## 8. Success metrics
 
 Rider-facing first, plumbing second.
