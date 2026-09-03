@@ -5,8 +5,14 @@ sidebar_position: 19
 # Rider Encyclopedia: Ten-Profile Pilot
 
 **Plan date:** 2026-09-02  
-**Status:** Proposed  
+**Status:** Superseded as a standalone feature  
 **Pilot scope:** Public skateboarder profiles, beginning with ten notable riders
+
+:::warning Current direction
+
+[ADR-005](/docs/architecture/adrs/riders-directory) replaces the standalone encyclopedia direction with a unified **Riders** directory. The roster and editorial standards below remain useful for the first ten editorial rider profiles, but Riders now includes members, editorial profiles, and AI riders. **Homie** remains the relationship between eligible member riders.
+
+:::
 
 ## Product vision
 

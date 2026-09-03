@@ -36,6 +36,7 @@ const sidebars: SidebarsConfig = {
             'architecture/adrs/kaori-fallback-chain',
             'architecture/adrs/kaori-agent-architecture',
             'architecture/adrs/midnight-claimed',
+            'architecture/adrs/riders-directory',
           ],
         },
       ],
