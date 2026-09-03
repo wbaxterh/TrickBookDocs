@@ -7,7 +7,7 @@ title: "ADR-005: Riders Directory and Homie Relationships"
 
 | Field | Value |
 |-------|-------|
-| **Status** | Accepted |
+| **Status** | Accepted (amended September 3, 2026) |
 | **Date** | September 2026 |
 | **Deciders** | Wes Huber |
 | **Supersedes** | The standalone rider-encyclopedia direction in the original ten-profile pilot |
@@ -46,7 +46,7 @@ Existing `homies`, `homieRequests`, homie-only visibility values, endpoints, ana
 - `/riders` is the canonical people-directory route.
 - `/homies` remains a backward-compatible route during migration.
 - The primary navigation label is **Riders**.
-- **My Homies** remains a tab/filter within Riders.
+- **Homies** moves into the authenticated profile dropdown and remains the relationship-management surface.
 - **Find Riders** searches the directory.
 - **Add Homie**, **Remove Homie**, and **Homie Requests** remain relationship actions.
 
@@ -60,14 +60,26 @@ The implementation may begin with a read model that normalizes existing users in
 
 ### Graph technology
 
-Neo4j is deferred, not rejected. MongoDB remains the system of record for the first Riders directory slice. A graph projection should be introduced only when TrickBook has:
+MongoDB remains the system of record. Neo4j will be introduced incrementally as a derived relationship projection once the first Rider entities and relationships are available. It is not authoritative for accounts, profiles, permissions, or homie mutations.
+
+The initial graph model is:
+
+- `(Rider)-[:HOMIE_WITH]->(Rider)`
+- `(Rider)-[:LANDED]->(Trick)`
+- `(Rider)-[:RIDES_AT]->(Spot)`
+- `(Rider)-[:APPEARS_IN]->(Media)`
+- `(Rider)-[:ATTENDED]->(Event)`
+
+Mongo writes append an idempotent event to a MongoDB outbox in the same logical operation. A worker projects those events into Neo4j. Every graph node stores its Mongo identifier as `sourceId`; duplicated biography and media payloads are deliberately avoided. A full rebuild command must be available before Neo4j serves production recommendations.
+
+Neo4j-powered product queries require:
 
 1. substantive rider-to-trick, brand, board, video, spot, or event relationships;
 2. named multi-hop product queries or recommendation use cases;
 3. enough curated data to evaluate relevance; and
 4. an operational plan for synchronization, backups, and failure handling.
 
-If adopted, Neo4j is initially an intelligence/read layer rather than a second writer for accounts or homie relationships.
+Neo4j is an intelligence/read layer rather than a second writer for accounts or homie relationships. Projection lag or failure must degrade graph recommendations, never core profile or Homies functionality.
 
 ## Consequences
 
@@ -94,7 +106,7 @@ If adopted, Neo4j is initially an intelligence/read layer rather than a second w
 
 **Require every rider to be a user:** rejected because the purpose of the feature is to represent notable riders who have not joined TrickBook.
 
-**Adopt Neo4j before the directory slice:** rejected for now because the first release is primarily identity normalization and filtering, not a multi-hop graph workload.
+**Make Neo4j authoritative:** rejected because cross-database writes would make account and social mutations fragile.
 
 ## Rollout
 
@@ -104,12 +116,12 @@ If adopted, Neo4j is initially an intelligence/read layer rather than a second w
 4. Define the normalized Rider result and `profileType`/social-eligibility contract.
 5. Add editorial riders and a protected editorial workflow.
 6. Add claim/link verification and duplicate resolution.
-7. Evaluate Neo4j against concrete graph queries after relationship data exists.
+7. Add the outbox, projection worker, rebuild command, and concrete recommendation queries on staging.
 
 ## Acceptance criteria for the first slice
 
 - Riders is the primary web destination and page title.
 - Existing bookmarks to `/homies` still work.
-- My Homies, requests, messages, and Add/Remove Homie behavior are unchanged.
+- Homies is available from the authenticated profile dropdown; requests, messages, and Add/Remove Homie behavior are unchanged.
 - No database field, endpoint, or visibility migration is required.
 - Automated checks cover both routes and the unchanged relationship actions.

@@ -79,6 +79,7 @@ const sidebars: SidebarsConfig = {
         'features/spots-map',
         'features/spots-inventory-automation',
         'features/homies',
+        'features/riders',
         'features/media',
         'features/events',
         'features/event-sources',
@@ -128,6 +129,7 @@ const sidebars: SidebarsConfig = {
         'deployment/backend',
         'deployment/infrastructure',
         'deployment/ci-cd',
+        'deployment/staging-and-promotion',
       ],
     },
     {
