@@ -6,6 +6,10 @@ sidebar_position: 3
 
 TrickBook uses JWT-based authentication with Google SSO and Apple Sign-In.
 
+## Staging authentication
+
+SSO registrations are origin- and callback-specific. Creating an Amplify branch and copying client secrets does not make Google or Apple work automatically. Staging requires registered callback URLs, staging-specific session/JWT secrets, an isolated user database, and end-to-end provider tests. See [Staging and Production Promotion](/docs/deployment/staging-and-promotion#phase-2-authentication-parity) for the implementation and readiness plan.
+
 ## Authentication Methods
 
 ### 1. Email/Password
