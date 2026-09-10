@@ -135,6 +135,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Integrations',
+      items: ['integrations/mcp'],
+    },
+    {
+      type: 'category',
       label: 'Release Notes',
       items: ['releases/v3.1.0', 'releases/v3.0.0', 'releases/v2.0.0'],
     },
