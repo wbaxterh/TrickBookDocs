@@ -81,6 +81,7 @@ const sidebars: SidebarsConfig = {
         'features/homies',
         'features/riders',
         'features/media',
+        'features/creator-challenges',
         'features/events',
         'features/event-sources',
         {
