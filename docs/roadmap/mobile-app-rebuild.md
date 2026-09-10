@@ -6,7 +6,7 @@ description: Historical implementation plan for the TrickBook v2.0.0 mobile app 
 
 # TrickBook Mobile App Rebuild Plan
 
-Status: **Done — shipped as [v2.0.0](/docs/releases/v2.0.0) in February 2026** · This page is retained as historical implementation notes.
+Status: **Shipped as v2.0.0 (February 2026)** — rebuild complete; `v2-rebuild` is now the main development branch. See [v2.0.0 release notes](/docs/releases/v2.0.0). This document is preserved as the original plan. · Closed out: 2026-09-10
 
 **Document Type:** Technical Implementation Plan
 **Date:** January 2026
