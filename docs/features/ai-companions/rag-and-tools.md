@@ -5,15 +5,19 @@ title: "RAG & Internal Tools"
 
 # Making Companions Smart — RAG & Internal Tool Calls
 
-Status: **Current state audited + architecture researched 2026-07-12**
+Status: **Atlas RAG and graph retrieval live in production** · Last updated: 2026-09-10
 
-The goal: companions that **RAG on our own knowledgebase** (Trickipedia, coaching content, the docs) and **operate TrickBook itself** through internal tool calls — tricklists, spots, videos, feed. This page documents exactly what exists today, the full inventory of tool-call targets, and the recommended architecture.
+The goal: companions that **RAG on our own knowledgebase** and **operate TrickBook itself** through internal tool calls. Atlas retrieval over Trickipedia, films, spots, and events is now shipped, as are graph traversals across tricks, films, spots, and riders. The detailed deployment record and remaining work live in [Companion Intelligence Progress](/docs/roadmap/companions-intelligence-progress).
 
 :::tip[Related pages]
 Hub: [AI Companions](/docs/features/ai-companions) · Brain internals: [Kaori AI Architecture](/docs/architecture/kaori) · Original plan (historical): [AI Companion Tool Calling](/docs/roadmap/ai-companion-tools)
 :::
 
 ## What exists today
+
+:::info[September 2026 production update]
+The July audit below identified the missing retrieval layer and informed the implementation. The dead `kaori-rag` hook, 8-tool count, static-only knowledge limitation, and Kaori-only backend statements are now historical: production has a working Atlas RAG module, **14 tools**, graph traversal, and a registry-driven response engine. The sections after this notice retain design rationale and the inventory of future tool targets.
+:::
 
 ### The tool loop
 
@@ -32,16 +36,16 @@ Hub: [AI Companions](/docs/features/ai-companions) · Brain internals: [Kaori AI
 
 No `richContent` mechanism exists on the backend — tool results are plain JSON fed back to the model, replies are plain text. (Mobile already ships the [card renderer](/docs/features/ai-companions/mobile-app#rich-content-cards) waiting for this.)
 
-### The "knowledgebase" — and why it must be replaced
+### The knowledgebase
 
-`kaori-knowledge.json` is the entire knowledge layer: **~1,570 words** of hand-curated JSON across 5 sports (magazines / instagram / events / culture each). "Retrieval" is exact enum-key dictionary access — `topic: 'all'` dumps a whole sport object into context. Its limits, precisely:
+`kaori-knowledge.json` remains available to the legacy knowledge tool, but it is no longer the entire knowledge layer. `kaori-rag/` normalizes platform documents, creates stable content hashes, embeds them in batches, and retrieves from MongoDB Atlas Vector Search with lexical fallback.
 
 - **No search** — the tool schema's enums are the only retrieval mechanism
 - **No article content** — despite the system prompt claiming knowledge of "Torment Mag articles"
 - **Factually corrupted** — many Instagram handles are hallucinated/garbled (e.g. `@toraboramag` for what should be Torment's handle); do not treat its contents as verified
 - **Frozen** — event dates/venues are static text with no update path
 
-**The RAG hook exists but is dead code:** `queryRAGContext()` requires `./kaori-rag/kaori-query` inside a try/catch — the directory does not exist (a remnant of the retired pgvector setup), so `ragContext` is always empty and silently so. The system-prompt injection slot it feeds is a useful hook to keep.
+The indexed source set currently covers Trickipedia, published films, approved spots, and events. Results preserve source metadata and TrickBook links. Query and document vectors use the same pinned embedding model and normalized dimensions.
 
 ### Memory (working today, worth knowing)
 
@@ -49,7 +53,7 @@ Cross-surface history merges the last 8 `dm_messages` + last 8 `bot_chats` chron
 
 ### What doesn't exist yet
 
-No per-user rate limiting on the AI endpoints, no usage metering (`requireVoiceTokens` from the [monetization plan](/docs/roadmap/monetization) is not built), no OpenRouter spend tracking. Non-Kaori bots have **no working brain** — `botChat.js` routes them to the dead ElizaOS hop and a canned fallback; `dm.js` answers every bot as Kaori regardless of character. Multi-companion = the brain needs a persona/character parameter.
+No per-user rate limiting on the AI endpoints, no usage metering (`requireVoiceTokens` from the [monetization plan](/docs/roadmap/monetization) is not built), and no OpenRouter spend dashboard. The backend is now multi-companion capable, but only Kaori has a production character definition; client-side model, stage, voice, environment, and roster assumptions still need parameterizing before a second companion ships.
 
 ## Tool-call targets — the REST surface companions can grow into
 
@@ -71,7 +75,7 @@ The backend already exposes everything the vision needs. Inventory by area (all 
 
 `repos/trickbook-mcp` is a **devops MCP server** (query API, PM2 status/restart, SSH logs, project list over stdio) — not a companion tool layer. It's also unmaintained: not a git repo, not registered in any MCP config, stale hardcoded project paths, and its `query_api` sends `Authorization: Bearer` where the backend expects `x-auth-token`. Treat it as a from-scratch rebuild candidate, not a foundation.
 
-## Recommended architecture
+## Implemented architecture and retained design notes
 
 ### 1. Vector store: MongoDB Atlas Vector Search
 

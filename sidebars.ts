@@ -149,6 +149,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'roadmap/priorities',
         'roadmap/signup-onboarding-audit',
+        'roadmap/companions-intelligence-progress',
         'roadmap/companions-launch',
         'roadmap/monetization',
         'roadmap/gap-analysis',

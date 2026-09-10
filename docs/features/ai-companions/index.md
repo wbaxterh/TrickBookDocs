@@ -5,7 +5,7 @@ title: AI Companions
 
 # AI Companions
 
-Status: **Live in code, one build away from users** · Last updated: 2026-07-12
+Status: **Backend intelligence Phases 1–3 live in production** · Last updated: 2026-09-10
 
 TrickBook's AI Companions are riders, not chatbots. They chat with real personality, act on your TrickBook data through tool calls, and — as of July 2026 — **exist as full 3D characters who talk to you out loud and physically demonstrate tricks with their bodies**.
 
@@ -17,13 +17,15 @@ This is the hub for the companions documentation. The deep-dives below were writ
 
 :::tip[Related pages]
 Technical architecture: [**Kaori AI Architecture**](/docs/architecture/kaori) · Path to users: [**Companions Launch Audit**](/docs/roadmap/companions-launch) · Business model: [**Monetization: Paywall & Tokens**](/docs/roadmap/monetization)
+
+Implementation record: [**Companion Intelligence Progress**](/docs/roadmap/companions-intelligence-progress) — shipped platform tools, Atlas RAG, relationship graph, multi-companion foundation, and remaining work
 :::
 
 ## Kaori 🏔️ — the flagship companion
 
 - **Character:** Japanese snowboarder (homage to SSX's Kaori Nishidake) — 18, from Sapporo, youngest rider on the SSX circuit
 - **Personality:** corpus-mined rider register — dry, understated, short replies, no cheerleader energy. Praise is one specific line ("that back lip was clean"). Trained against a banned-poser-vocabulary list mined from core snowboard media.
-- **Brain:** Gemini Flash via OpenRouter with an 8-tool calling loop (TB-Backend `kaori-ai-response.js` + `kaori-tools.js`)
+- **Brain:** Gemini Flash via OpenRouter with a 14-tool calling loop, Atlas retrieval, and graph traversal (TB-Backend `kaori-ai-response.js` + `kaori-tools.js`)
 - **Memory:** unified across every surface — web DMs, mobile chat, and 3D-stage voice conversations merge into one chronological history, plus a relationship profile (stranger → bestie) that grows with interaction count
 - **Voice:** ElevenLabs streamed through [Kith](https://github.com/wbaxterh/kith) (our own OSS voice runtime), gapless sentence-by-sentence playback
 
@@ -44,12 +46,18 @@ Entry points: the cube icon in Kaori's chat header and the Companion widget on H
 
 ## What Can Kaori Do? (the shipped tool registry)
 
-The 8 tools actually live in production (`kaori-tools.js`):
+The 14 tools actually live in production (`kaori-tools.js`):
 
 | Tool | What it does |
 |------|--------------|
 | `search_spots` | Find approved skateparks / resorts / breaks — "any parks near Brooklyn?" |
 | `search_trickipedia` | Look up tricks by name — "how do I do a backside 180?" |
+| `search_films` | Search TrickBook films by title, rider, producer, sport, or year |
+| `recommend_next_trick` | Recommend a next trick from user progress and TrickBook progression data |
+| `films_featuring_trick` | Traverse the graph from a trick to films that feature it |
+| `tricks_at_spot` | Find evidenced tricks performed at a TrickBook spot |
+| `similar_tricks` | Find related tricks using progression and catalog signals |
+| `learning_path` | Build an ordered progression path toward a target trick |
 | `get_user_tricklists` | Read the user's real lists with resolved trick names |
 | `create_tricklist` | Create a list in the user's account (flagged `createdBy: 'kaori'`) |
 | `add_trick_to_list` | Add a trickipedia trick to one of the user's lists |
@@ -76,8 +84,8 @@ What's **not** built yet (open items in the [launch audit](/docs/roadmap/compani
 
 Companions are TrickBook's differentiator: a coach in your pocket for every action sport, with a body, a voice, and a memory. Two capability tracks make them genuinely smart rather than chat-deep:
 
-1. **Knowledge (RAG)** — companions grounded in our own knowledgebase: Trickipedia, coaching content, the docs. Today's knowledge is a 1,500-word static JSON; the migration plan to real retrieval is in [RAG & Internal Tools](/docs/features/ai-companions/rag-and-tools).
-2. **Action (internal tool calls)** — companions operating the whole product: tricklists, spots, videos, feed. The backend already exposes the REST surface for all of it; the tool registry needs to grow into it. Inventory and architecture in [RAG & Internal Tools](/docs/features/ai-companions/rag-and-tools).
+1. **Knowledge (RAG)** — Atlas Vector Search now retrieves Trickipedia, films, spots, and events with lexical fallback, source metadata, and deep links. See [RAG & Internal Tools](/docs/features/ai-companions/rag-and-tools).
+2. **Action and relationships** — 14 tools now cover platform search, tricklists, progression recommendations, and graph traversal. Rich cards and the remaining write/read actions are next. See the [implementation record](/docs/roadmap/companions-intelligence-progress).
 
 And one embodiment track:
 
@@ -112,7 +120,7 @@ One of the first profile questions for boardsports users will be **regular or go
 
 | Feature | Status |
 |---------|--------|
-| Chat with personality + 8 shipped tools | ✅ Live |
+| Chat with personality + 14 shipped tools | ✅ Live |
 | Rider persona (corpus-mined register) | ✅ Live (prod 2026-07-09) |
 | Unified cross-surface memory + relationship profile | ✅ Live (prod 2026-07-09) |
 | Live voice pipeline (Kith + ElevenLabs) | ✅ Live (prod 2026-07-09) |
@@ -121,8 +129,10 @@ One of the first profile questions for boardsports users will be **regular or go
 | Speech-synced trick demos (FS360) | ✅ Merged — awaiting new EAS build |
 | Mobile rich-content card renderer | ✅ Shipped — dormant (backend never sends `richContent` yet) |
 | Voice-endpoint auth + usage metering | 🚧 P0 — see [launch audit](/docs/roadmap/companions-launch) |
-| Real RAG on our knowledgebase | 📋 Planned — [architecture](/docs/features/ai-companions/rag-and-tools) |
-| Expanded internal tool calls (spots/videos/feed) | 📋 Planned — [inventory](/docs/features/ai-companions/rag-and-tools#tool-call-targets--the-rest-surface-companions-can-grow-into) |
+| Atlas RAG over Trickipedia, films, spots, and events | ✅ Live (prod 2026-09-10) |
+| Trick/film/spot/rider relationship graph + traversal tools | ✅ Live (prod 2026-09-10) |
+| Registry-driven multi-companion backend | ✅ Live; Kaori registered, next persona pending |
+| Expanded action tools and rich response cards | 📋 Next — [remaining work](/docs/roadmap/companions-intelligence-progress#what-remains) |
 | Mocap-driven trick clip library | 📋 Planned — [pipeline](/docs/features/ai-companions/motion-pipeline) |
 | Paywall / free-sample gating | 📋 Planned — see [monetization](/docs/roadmap/monetization) |
 | Snowy stage environment · board/outfit unlocks | 📋 Planned |

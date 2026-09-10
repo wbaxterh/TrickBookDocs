@@ -7,7 +7,7 @@ title: "Kaori AI Architecture"
 
 Deep-dive into how TrickBook's AI companion system works — one LLM brain serving three surfaces, a streaming voice sidecar, and a 3D body that acts out what she says.
 
-Status: **Current — live in prod** · Last updated: 2026-07-09
+Status: **Current — live in prod** · Last updated: 2026-09-10
 
 :::tip[Related pages]
 Feature overview: [AI Companions](/docs/features/ai-companions) · Path to users: [Companions Launch Audit](/docs/roadmap/companions-launch) · Business model: [Monetization](/docs/roadmap/monetization)
@@ -48,8 +48,11 @@ Kaori is TrickBook's flagship AI companion — a dry, understated snowboarder (h
 | Component | Tech | Purpose |
 |-----------|------|---------|
 | **TB-Backend** | Express.js, PM2 `TB-Backend` | API server, DM + bot-chat routing, Kaori brain |
-| **kaori-ai-response.js** | Node, OpenRouter | Persona, memory merge, tool-calling loop |
-| **kaori-tools.js** | Node | Tool registry + MongoDB execution |
+| **kaori-ai-response.js** | Node, OpenRouter | Registry-driven persona, memory merge, tool-calling loop |
+| **companion-registry.js** | Node + JSON definitions | Companion identity, model, voice, prompt, and stage configuration |
+| **kaori-tools.js** | Node | Shared 14-tool registry + MongoDB execution |
+| **kaori-rag/** | Node, Atlas Vector Search | Document ingestion, embeddings, semantic/lexical retrieval |
+| **companion-graph/** | Node, MongoDB | Relationship building and traversal across platform entities |
 | **kith-voice** | Bun + [Kith](https://github.com/wbaxterh/kith), PM2 `kith-voice` :3040 | Voice sessions, WS event stream, `/speak` API |
 | **Python sidecar** | Pipecat (vendored) | Streaming ElevenLabs TTS pipeline |
 | **MongoDB Atlas** | TrickList2 database | App data + all conversation memory |
@@ -60,7 +63,7 @@ Kith is our own OSS voice runtime ([github.com/wbaxterh/kith](https://github.com
 
 ## The Brain: TB-Backend
 
-Both entry points — `routes/dm.js` (web DMs / Kaori Live) and `routes/botChat.js` (mobile chat + 3D stage) — persist the user message, then call `generateKaoriResponse()` in `kaori-ai-response.js`. There is no separate AI server: the brain is an in-process module.
+Both entry points — `routes/dm.js` (web DMs / Kaori Live) and `routes/botChat.js` (mobile chat + 3D stage) — persist the user message, then call the registry-driven `generateCompanionResponse()` in `kaori-ai-response.js`. `generateKaoriResponse()` remains as a compatibility wrapper. There is no separate AI server: the brain is an in-process module.
 
 ### Persona
 
@@ -79,7 +82,7 @@ On top of that, a **relationship profile** (`companion_profiles` collection) tra
 
 ### Tool-calling loop
 
-The brain calls OpenRouter (**Gemini Flash**, `google/gemini-3.5-flash`) with the full tool registry, `tool_choice: auto`, max 3 iterations. Tool results are fed back as `role: tool` messages until the model produces text. Registry (`kaori-tools.js`):
+The brain calls OpenRouter (**Gemini Flash**, `google/gemini-3.5-flash`) with the full tool registry, `tool_choice: auto`, max 3 iterations. Tool results are fed back as `role: tool` messages until the model produces text. The registry now exposes **14 tools**, including film search, progression recommendations, and four graph traversals. See the current inventory in [AI Companions](/docs/features/ai-companions#what-can-kaori-do-the-shipped-tool-registry).
 
 | Tool | Purpose |
 |------|---------|
@@ -92,7 +95,7 @@ The brain calls OpenRouter (**Gemini Flash**, `google/gemini-3.5-flash`) with th
 | `lookup_boardsport_knowledge` | Curated boardsport knowledge base (`kaori-knowledge.json`) |
 | `remember_user_info` | Persist name / sports / facts to the relationship profile |
 
-The prompt is explicit that saying "I added it" without calling the tool means it didn't happen — no hallucinated writes. A pgvector RAG lookup (`kaori-rag/`) is a **silent-optional** path: wrapped in try/catch, injected only if the module exists and returns hits.
+The prompt is explicit that saying "I added it" without calling the tool means it didn't happen—no hallucinated writes. `kaori-rag/` now performs real Atlas retrieval over Trickipedia, films, spots, and events, combining semantic vector results with lexical matches and retaining source links. The graph layer supplies relationship answers that retrieval alone cannot infer safely.
 
 ### onStage gating
 
@@ -186,12 +189,14 @@ Each browser/mobile voice session spawns its own Python subprocess — session c
 
 ## Retired Architectures
 
-The original stack — a standalone **kaori-server-v2** Express brain on port 3001, the **ElizaOS** runtime, and a local **PostgreSQL + pgvector** store for conversation memory and RAG — is dead (stopped ~May 2026). `botChat.js` keeps a legacy port-3001 hop only for hypothetical non-Kaori bot characters behind `BOTCHAT_USE_ELIZA`; Kaori goes straight to her in-process brain. Conversation memory now lives entirely in MongoDB. For the historical snapshot and the cutover rationale, see the [Kaori System Audit (May 2026)](/docs/architecture/kaori-audit-2026-05).
+The original stack—a standalone **kaori-server-v2** Express brain on port 3001, the **ElizaOS** runtime, and local **PostgreSQL + pgvector**—is retired. Registered companions now use the in-process response engine; unknown legacy characters may still use the Eliza fallback during migration. Conversation memory and vector retrieval live in MongoDB Atlas. For the historical snapshot and cutover rationale, see the [Kaori System Audit (May 2026)](/docs/architecture/kaori-audit-2026-05).
 
 ---
 
 ## What's Next
 
+- 🧪 **Evaluation + observability** — golden retrieval/tool-choice tests, link-grounding metrics, cost telemetry, freshness monitoring
+- 🧑‍🤝‍🧑 **Second production companion** — author Tony's definition, parameterize the clients, and validate memory/persona isolation end to end
 - 🚀 **Shipping it** — TestFlight build, voice-WS auth, cost ceilings, monitoring: [Companions Launch Audit](/docs/roadmap/companions-launch)
 - 💰 **Paywall + voice tokens** — free Kaori sample with a daily voice allowance, paid tiers for the full roster and monthly tokens, outfit/board unlocks: [Monetization](/docs/roadmap/monetization)
 - 🗺️ **Roster + product direction** — Tony (skateboard) next, per-sport environments, stance onboarding, Spots UX refactor: [Priorities](/docs/roadmap/priorities)
