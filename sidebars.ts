@@ -74,7 +74,12 @@ const sidebars: SidebarsConfig = {
       label: 'Features',
       items: [
         'features/overview',
-        'features/trickbook',
+        {
+          type: 'category',
+          label: 'Trickipedia',
+          link: { type: 'doc', id: 'features/trickipedia/index' },
+          items: ['features/trickipedia/formal-spec'],
+        },
         'features/spots',
         'features/spots-map',
         'features/spots-inventory-automation',

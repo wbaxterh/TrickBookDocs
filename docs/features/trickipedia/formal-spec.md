@@ -1,8 +1,8 @@
 ---
-sidebar_position: 4
+sidebar_position: 2
 ---
 
-# Trickipedia: Data Model & Formal Verification
+# Formal Verification (TLA+)
 
 A formal-methods treatment of the Trickipedia progression network: the data model as deployed, its relationships to the rest of the app, a TLA+ specification of the design, and the results of model checking it with TLC plus a conformance check of the live production data — which found (and led to the fix of) a real prerequisite cycle.
 
@@ -51,7 +51,7 @@ An **Edge** carries editorial provenance, not just a pointer:
 | Relationship | Mechanism |
 |---|---|
 | **Network API** | `GET /api/trickipedia/:id/network` returns `foundations` (prerequisites), `nextSteps`, `related`. Only edges with `research.status ∈ {reviewed, published}` are exposed; the hydrate step silently **drops edges whose `trickId` no longer resolves** (deletions leave dangling references in place). |
-| **Trick pages** | `/trickipedia/[category]/[trick]` renders the three network rails ("Learn these first", "Try next", "Related variations") with each edge's `reason`. |
+| **Trick pages** | The network UI (three rails: "Learn these first", "Try next", "Related variations") is designed but **not yet rendered** by the website or mobile trick pages — the endpoint is live, the clients don't call it yet. See the [rollout plan](/docs/roadmap/trickipedia-network-first-pass). |
 | **Trick lists** | The "Add to TrickList" button writes into the user's `tricklists` documents; completion is tracked per list. Deleting a Trickipedia document does **not** touch list entries. |
 | **Categories** | Edges only ever link tricks within the same category (a skateboarding trick never lists a snowboarding prerequisite). |
 
