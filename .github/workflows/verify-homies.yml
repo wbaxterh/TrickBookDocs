@@ -1,0 +1,56 @@
+name: Verify Homies formal models
+
+# Runs TLC on the Homies TLA+ models whenever the specs, configs, runner,
+# or this workflow change. NOTE: this docs-repo job cannot detect changes
+# to TB-Backend — the models are pinned to the backend revision recorded
+# in formal/homies/README.md; backend changes to the homies handlers must
+# trigger a manual model review.
+on:
+  pull_request:
+    paths:
+      - 'formal/homies/**'
+      - '.github/workflows/verify-homies.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'formal/homies/**'
+      - '.github/workflows/verify-homies.yml'
+  workflow_dispatch:
+
+jobs:
+  tlc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Fetch pinned TLA+ tools (sha256-verified)
+        run: bash formal/homies/tools/fetch-tla2tools.sh
+
+      # The runner asserts each config's expected outcome: expected-pass
+      # configs must complete with no error; expected-fail configs must
+      # report the exact named invariant violation (anything else —
+      # parse error, timeout, different invariant — fails the job).
+      - name: Run TLC on all Homies models
+        run: node formal/homies/run.js
+
+      - name: Upload TLC logs and counterexample traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homies-tlc-logs
+          path: formal/homies/out/*.log
+          retention-days: 90

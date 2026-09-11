@@ -6,6 +6,15 @@ sidebar_position: 3
 
 Social networking and friend connections for action sports riders.
 
+:::info[Formal verification available]
+The connection lifecycle (send / accept / decline / remove) now has a
+machine-checked specification: see the
+[formal specification](./formal-spec.mdx) and the actual
+[verification results](./verification-results.md). Note that some code
+snippets below predate that work and differ from the inspected backend
+source (documented on the formal-spec page).
+:::
+
 ## Overview
 
 Homies is TrickBook's social feature that allows users to connect with other riders, follow their progress, and communicate directly. Users can send homie requests, exchange direct messages, and see their friends' activity in the feed.

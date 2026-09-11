@@ -83,7 +83,12 @@ const sidebars: SidebarsConfig = {
         'features/spots',
         'features/spots-map',
         'features/spots-inventory-automation',
-        'features/homies',
+        {
+          type: 'category',
+          label: 'Homies',
+          link: { type: 'doc', id: 'features/homies/index' },
+          items: ['features/homies/formal-spec', 'features/homies/verification-results'],
+        },
         'features/riders',
         'features/media',
         'features/creator-challenges',
