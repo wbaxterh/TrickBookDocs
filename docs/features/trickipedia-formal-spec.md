@@ -235,6 +235,8 @@ The cycles — `ollie-snowboard → tail-press-snowboard → 50-50-snowboard →
 
 This is the useful lesson of the exercise: **TLC predicted the exact bug class from the unguarded design, and the data audit found a live instance of it.**
 
+> **Remediation applied 2026‑09‑11.** The edge was reclassified in production and the conformance check now reports zero violations across all five static invariants (144 tricks, 807 edges, `cycles: []`).
+
 ## Recommendations
 
 1. **Write-time guard** *(mirrors `ProposeEdge` in the spec)*: any code path that writes `progression.prerequisites` — admin tools and migration scripts alike — should reject writes that create a cycle among active prerequisite edges. The check is a transitive-closure test over at most a few hundred edges per category.
