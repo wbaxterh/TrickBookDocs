@@ -1,15 +1,16 @@
 ---
 sidebar_position: 5
 title: Mobile App Rebuild Plan
-description: Complete plan for rebuilding the TrickBook mobile app with new design
+description: Historical implementation plan for the TrickBook v2.0.0 mobile app rebuild (shipped February 2026)
 ---
 
 # TrickBook Mobile App Rebuild Plan
 
+Status: **Shipped as v2.0.0 (February 2026)** — rebuild complete; `v2-rebuild` is now the main development branch. See [v2.0.0 release notes](/docs/releases/v2.0.0). This document is preserved as the original plan. · Closed out: 2026-09-10
+
 **Document Type:** Technical Implementation Plan
 **Date:** January 2026
-**Current Version:** 1.0.8
-**Target Version:** 2.0.0
+**Shipped Version:** 2.0.0
 
 ---
 
@@ -184,77 +185,79 @@ export const colors = {
 
 ## Screen Implementation Checklist
 
+*All phases completed in the v2.0.0 rebuild.*
+
 ### Phase 1: Core Infrastructure
-- [ ] Initialize Expo Router project
-- [ ] Configure NativeWind
-- [ ] Set up Zustand stores
-- [ ] Set up React Query
-- [ ] Create base UI components
-- [ ] Implement theme system (light/dark)
-- [ ] Configure API client
+- [x] Initialize Expo Router project
+- [x] Configure NativeWind
+- [x] Set up Zustand stores
+- [x] Set up React Query
+- [x] Create base UI components
+- [x] Implement theme system (light/dark)
+- [x] Configure API client
 
 ### Phase 2: Authentication
-- [ ] Welcome screen
-- [ ] Login screen
-- [ ] Register screen
-- [ ] Auth flow with secure storage
-- [ ] Google Sign-In
+- [x] Welcome screen
+- [x] Login screen
+- [x] Register screen
+- [x] Auth flow with secure storage
+- [x] Google Sign-In
 
 ### Phase 3: Home Tab
-- [ ] Home dashboard layout
-- [ ] Current Goals section
-- [ ] Progress Stats section
-- [ ] Quick Actions grid
-- [ ] Homie Activity feed
-- [ ] Notifications screen
-- [ ] Settings screen
+- [x] Home dashboard layout
+- [x] Current Goals section
+- [x] Progress Stats section
+- [x] Quick Actions grid
+- [x] Homie Activity feed
+- [x] Notifications screen
+- [x] Settings screen
 
 ### Phase 4: TrickBook Tab
-- [ ] Trickipedia browser
-- [ ] Trick detail screen
-- [ ] My TrickLists screen
-- [ ] TrickList detail screen
-- [ ] Add trick to list
-- [ ] Update trick status
-- [ ] Homie TrickLists view
+- [x] Trickipedia browser
+- [x] Trick detail screen
+- [x] My TrickLists screen
+- [x] TrickList detail screen
+- [x] Add trick to list
+- [x] Update trick status
+- [x] Homie TrickLists view
 
 ### Phase 5: Spots Tab
-- [ ] Spots map view
-- [ ] Spots list view
-- [ ] Spot detail screen
-- [ ] My Spot Lists
-- [ ] SpotList detail
-- [ ] Add spot form
-- [ ] Category/tag filtering
+- [x] Spots map view
+- [x] Spots list view
+- [x] Spot detail screen
+- [x] My Spot Lists
+- [x] SpotList detail
+- [x] Add spot form
+- [x] Category/tag filtering
 
 ### Phase 6: Homies Tab
-- [ ] My Homies list
-- [ ] Find Riders search
-- [ ] Pending requests
-- [ ] User profile view
-- [ ] Messages list
-- [ ] Chat screen (WebSocket)
-- [ ] Share spot/trick in chat
+- [x] My Homies list
+- [x] Find Riders search
+- [x] Pending requests
+- [x] User profile view
+- [x] Messages list
+- [ ] Chat screen (WebSocket) — real-time messaging via Socket.io in progress (see [v2.0.0 known issues](/docs/releases/v2.0.0#known-issues))
+- [x] Share spot/trick in chat
 
 ### Phase 7: Media Tab
-- [ ] The Couch (video library)
-- [ ] Video player screen
-- [ ] Collection detail
-- [ ] The Feed (vertical scroll)
-- [ ] Feed post detail
-- [ ] Comments bottom sheet
-- [ ] Upload content flow
+- [x] The Couch (video library)
+- [x] Video player screen
+- [x] Collection detail
+- [x] The Feed (vertical scroll)
+- [x] Feed post detail
+- [x] Comments bottom sheet
+- [x] Upload content flow
 
 ### Phase 8: Profile & Polish
-- [ ] My profile screen
-- [ ] Edit profile screen
-- [ ] Full settings screen
-- [ ] Subscription/billing
-- [ ] Push notifications
-- [ ] Loading states
-- [ ] Error states
-- [ ] Empty states
-- [ ] Animations
+- [x] My profile screen
+- [x] Edit profile screen
+- [x] Full settings screen
+- [x] Subscription/billing
+- [x] Push notifications
+- [x] Loading states
+- [x] Error states
+- [x] Empty states
+- [x] Animations
 
 ---
 
