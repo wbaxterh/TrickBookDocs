@@ -56,7 +56,7 @@ flowchart LR
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| [Trickipedia](/docs/features/trickipedia/) | Trick encyclopedia and personal lists | ✅ Live |
+| [Trickipedia](/docs/features/trickipedia) | Trick encyclopedia and personal lists | ✅ Live |
 | [Spots](/docs/features/spots) | Skate spot database with maps | ✅ Live |
 | [Homies](/docs/features/homies) | Social connections and messaging | ✅ Live |
 | [Media](/docs/features/media) | Video streaming and user content | ✅ Live |
