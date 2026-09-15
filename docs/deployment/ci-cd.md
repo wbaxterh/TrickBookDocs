@@ -4,7 +4,7 @@ sidebar_position: 4
 
 # CI/CD Pipeline
 
-Automated quality gates and deployment for all TrickBook repositories. Every PR must pass lint, typecheck, and tests before merge. Every merge to main triggers deployment.
+Automated quality gates and deployment status for TrickBook repositories. The website and documentation deploy automatically from their production branches. The backend currently requires a guarded EC2 deployment after its production promotion; OIDC/SSM automation is planned.
 
 ## Pipeline Overview
 
@@ -25,7 +25,7 @@ graph TD
     D --> D1[Biome Check]
     D1 --> D2[Jest Tests]
     D2 --> D3{Merge to main?}
-    D3 -->|Yes| D4[Deploy API]
+    D3 -->|Yes| D4[Manual EC2 deploy today]
 
     E --> E1[Build Docusaurus]
     E1 --> E2[Deploy to GitHub Pages]
@@ -116,7 +116,7 @@ jobs:
         run: eas build --platform android --profile playstore --non-interactive
 ```
 
-### Backend (`Backend/.github/workflows/ci.yml`)
+### Backend (`TB-Backend/.github/workflows/ci.yml`)
 
 ```yaml
 name: Backend CI
@@ -159,26 +159,8 @@ jobs:
           name: coverage
           path: coverage/
 
-  deploy:
-    needs: validate
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-
-      # Deploy to your hosting provider
-      # Option 1: Railway
-      - name: Deploy to Railway
-        uses: bervProject/railway-deploy@main
-        with:
-          railway_token: ${{ secrets.RAILWAY_TOKEN }}
-          service: trickbook-api
-
-      # Option 2: Docker deploy
-      # - name: Build and Push Docker Image
-      #   run: |
-      #     docker build -t trickbook-api .
-      #     docker push $REGISTRY/trickbook-api:latest
+  # Deployment is currently a separate guarded EC2 procedure after
+  # staging -> master promotion. OIDC + SSM automation is planned.
 ```
 
 ### Docs Site (already deployed)
@@ -190,7 +172,6 @@ The docs site CI/CD is already configured and deploying to GitHub Pages at `docs
 | Secret | Repo | Description |
 |--------|------|-------------|
 | `EXPO_TOKEN` | TrickList | Expo access token for EAS builds |
-| `RAILWAY_TOKEN` | Backend | Railway deployment token |
 | `SENTRY_DSN` | Both | Sentry error tracking DSN |
 
 ### Getting Tokens
@@ -199,9 +180,6 @@ The docs site CI/CD is already configured and deploying to GitHub Pages at `docs
 # Expo token
 # Go to: https://expo.dev/accounts/[username]/settings/access-tokens
 
-# Railway token
-railway login
-railway token
 ```
 
 ## Branch Protection Rules
@@ -241,7 +219,7 @@ gh pr create
 
 # 5. CI runs automatically on PR
 # 6. After review + CI pass, merge to main
-# 7. Deploy triggers automatically
+# 7. Follow the platform runbook; backend deployment is currently manual
 ```
 
 ## Monitoring Deployments
