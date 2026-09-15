@@ -162,6 +162,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Marketing',
+      items: ['marketing/content-and-value-ladder', 'marketing/instagram-automation'],
+    },
+    {
+      type: 'category',
       label: 'Roadmap',
       items: [
         'roadmap/priorities',

@@ -57,6 +57,21 @@ const config: Config = {
     ],
   ],
 
+  plugins: [
+    function tlaSourcePlugin() {
+      return {
+        name: 'tla-source-plugin',
+        configureWebpack() {
+          return {
+            module: {
+              rules: [{ test: /\.tla$/, type: 'asset/source' }],
+            },
+          };
+        },
+      };
+    },
+  ],
+
   themeConfig: {
     image: 'img/trickbook-social-card.jpg',
     colorMode: {
