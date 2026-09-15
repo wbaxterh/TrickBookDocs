@@ -4,6 +4,12 @@ sidebar_position: 4
 
 # Chrome Extension Integration Plan
 
+:::warning Deprecated
+
+This integration plan is **deprecated for now**. The Chrome extension is on hold and not actively being developed; spot discovery is handled via the [spots inventory automation](/docs/features/spots-inventory-automation) pipeline. Retained for reference.
+
+:::
+
 This document outlines the plan to fully integrate the Map Scraper Chrome extension into the TrickBook ecosystem, enabling seamless spot discovery and sharing across all platforms.
 
 ## Current State

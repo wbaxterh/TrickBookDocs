@@ -4,6 +4,12 @@ sidebar_position: 2
 
 # Data Model
 
+:::warning Deprecated
+
+The Chrome extension is **deprecated for now**. See the [overview](/docs/chrome-extension/overview) for context. Documentation below is retained for reference.
+
+:::
+
 Understanding the data structures used by the Chrome extension and how they map to the TrickBook API.
 
 ## Extracted Spot Data

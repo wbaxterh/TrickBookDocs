@@ -66,7 +66,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
-      label: 'Chrome Extension',
+      label: 'Chrome Extension (Deprecated)',
       items: ['chrome-extension/overview', 'chrome-extension/data-model'],
     },
     {
@@ -83,6 +83,7 @@ const sidebars: SidebarsConfig = {
         'features/spots',
         'features/spots-map',
         'features/spots-inventory-automation',
+        'features/shops',
         {
           type: 'category',
           label: 'Homies',
@@ -129,6 +130,7 @@ const sidebars: SidebarsConfig = {
             'features/instructor-outcomes/formal-spec',
           ],
         },
+        'features/profile-marketplace/index',
       ],
     },
     {
@@ -170,7 +172,11 @@ const sidebars: SidebarsConfig = {
         'roadmap/gap-analysis',
         'roadmap/security-fixes',
         'roadmap/efficiency-improvements',
-        'roadmap/chrome-extension-integration',
+        {
+          type: 'doc',
+          id: 'roadmap/chrome-extension-integration',
+          label: 'Chrome Extension Integration (Deprecated)',
+        },
         'roadmap/mobile-app-rebuild',
         'roadmap/mobile-design-prompt',
         'roadmap/ai-companion-tools',
