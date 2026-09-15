@@ -165,9 +165,9 @@ Expo Application Services builds the React Native mobile app for distribution:
 
 ```mermaid
 flowchart LR
-    A[Push to GitHub] --> B[SSH to EC2]
+    A[Merge staging into backend master] --> B[SSH to EC2]
     B --> C[cd /home/ubuntu/TB-Backend]
-    C --> D[git pull origin main]
+    C --> D[git fetch + fast-forward origin/master]
     D --> E[npm install]
     E --> F[pm2 restart TB-Backend]
 ```
@@ -182,10 +182,11 @@ ssh -i ~/.ssh/weshuber.pem ubuntu@174.129.64.158
 cd /home/ubuntu/TB-Backend
 
 # 3. Pull latest changes
-git pull origin main
+git fetch origin master
+git merge --ff-only origin/master
 
 # 4. Install any new dependencies
-npm install
+npm ci --omit=dev # only when package manifests changed
 
 # 5. Source NVM and restart
 . ~/.nvm/nvm.sh && pm2 restart TB-Backend

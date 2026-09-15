@@ -137,9 +137,11 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Deployment',
       items: [
+        'deployment/index',
+        'deployment/backend',
+        'deployment/web-app',
         'deployment/app-store',
         'deployment/google-play',
-        'deployment/backend',
         'deployment/infrastructure',
         'deployment/ci-cd',
         'deployment/staging-and-promotion',

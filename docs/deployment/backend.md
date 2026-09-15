@@ -1,10 +1,10 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
 
 # Backend Deployment
 
-Guide for deploying the TrickBook backend API.
+Runbook for the production TrickBook backend API on AWS EC2.
 
 ## Current Setup
 
@@ -14,10 +14,66 @@ Guide for deploying the TrickBook backend API.
 | Database | MongoDB Atlas |
 | File Storage | AWS S3 |
 | Payments | Stripe |
+| Production branch | `master` |
+| EC2 instance | `i-00a7cac777c3b3a4e` (`174.129.64.158`) |
+| Checkout | `/home/ubuntu/TB-Backend` |
+| PM2 process | `TB-Backend` (port 9000) |
 
-## Recommended Hosting Options
+:::warning Current deployment status
 
-### Option 1: Railway (Recommended)
+GitHub Actions validates production promotions but does **not** currently deploy the backend. After merging `staging` into `master`, production must be fast-forwarded on EC2 and the `TB-Backend` process restarted. Do not restart `TB-Backend-staging` or unrelated PM2 services.
+
+The production checkout currently contains operational files and a local `index.js` customization. Never use `git reset --hard`, `git clean`, or a forced checkout during deployment.
+
+:::
+
+## Current production procedure
+
+Before deployment, confirm the promotion PR passed CI and record the expected `master` SHA.
+
+```bash
+ssh -i ~/.ssh/weshuber.pem ubuntu@api.thetrickbook.com
+cd /home/ubuntu/TB-Backend
+
+git fetch origin master
+git status --short
+git diff --name-only HEAD..origin/master
+git merge --ff-only origin/master
+
+. ~/.nvm/nvm.sh
+npm ci --omit=dev # only when package manifests changed
+pm2 restart TB-Backend --update-env
+pm2 show TB-Backend
+pm2 logs TB-Backend --lines 50 --nostream
+```
+
+The deployment must stop if an incoming file overlaps a local tracked modification. Preserve and reconcile the server change through source control before continuing.
+
+After restart, compare `git rev-parse HEAD` with the expected production SHA and smoke-test `https://api.thetrickbook.com/api` plus the changed endpoint.
+
+## Planned automatic deployment: GitHub OIDC + SSM
+
+Do not create an IAM user or store long-lived AWS keys/SSH keys in GitHub. The target design is:
+
+1. Attach an EC2 instance profile with `AmazonSSMManagedInstanceCore` to `i-00a7cac777c3b3a4e`.
+2. Confirm the instance appears as an online Systems Manager managed node.
+3. Add the GitHub OIDC provider in AWS IAM with audience `sts.amazonaws.com`.
+4. Create a deployment role whose trust policy is restricted to `wbaxterh/TB-Backend` and the protected `production` GitHub Environment.
+5. Grant only the Systems Manager document/instance permissions required to send the deploy command and read its result.
+6. Give the workflow `id-token: write` and `contents: read`; assume the role with `aws-actions/configure-aws-credentials`.
+7. Run a guarded fast-forward/restart command through SSM, wait for completion, then smoke-test the API.
+
+The production Environment should require approval. The command must refuse non-fast-forward updates, verify the expected commit, restart only `TB-Backend`, and fail the workflow when the health check fails.
+
+Longer term, move runtime code to a clean release checkout and keep operational/import scripts outside it. This makes automated rollback and dirty-worktree protection reliable.
+
+## Alternative hosting reference
+
+The options below are historical/future alternatives, not the current production topology.
+
+## Hosting Options
+
+### Option 1: Railway
 
 Quick deployment with automatic scaling.
 
