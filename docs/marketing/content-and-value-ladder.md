@@ -26,6 +26,19 @@ The paid proposition is not "more videos." It is structured progression, persona
 
 Free tutorials must deliver a real result. Deliberately incomplete instruction weakens trust and makes the subscription feel like a toll rather than a better system.
 
+## Daily cross-platform slideshows
+
+Swipeable tutorials are a primary acquisition format, not an occasional Instagram-only asset. TrickBook should publish one core slideshow story per day when the quality bar can be maintained, then adapt it for TikTok, Instagram, and YouTube.
+
+- Write 6-8 slides around one rider problem, correction, progression, or practice plan.
+- Design a 1080 x 1920 master with essential content inside a centered 1080 x 1350 safe region.
+- Export 9:16 for TikTok and YouTube, and a clean 4:5 crop for Instagram.
+- Use a different first-slide hook, caption, audio choice, and call to action for each platform.
+- Keep exports watermark-free and add platform-native audio during publishing.
+- Where YouTube image posts are unavailable, render the same slides as a lightly animated vertical Short with voiceover.
+
+TikTok should emphasize curiosity and comments, Instagram should emphasize saves and shares, and YouTube should emphasize searchable phrasing and subscription. The underlying lesson stays consistent while the packaging changes.
+
 ## Weekly publishing schedule
 
 | Day | Primary format | Purpose | Default call to action |
