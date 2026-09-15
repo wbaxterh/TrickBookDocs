@@ -4,6 +4,12 @@ sidebar_position: 1
 
 # Chrome Extension Overview
 
+:::warning Deprecated
+
+The Chrome extension is **deprecated for now** and is not actively maintained or published to the Chrome Web Store. Spot discovery and inventory work is being handled through the [spots inventory automation](/docs/features/spots-inventory-automation) pipeline instead. Documentation below is retained for reference.
+
+:::
+
 The **Skatepark Extractor for Google Maps** is a Chrome extension that enables users to extract skate spot information directly from Google Maps and sync it to their TrickBook account.
 
 ## Purpose
