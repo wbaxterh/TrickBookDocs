@@ -4,6 +4,10 @@ sidebar_position: 7
 
 # Events
 
+:::info[Organic growth work]
+The indexing, conversion, attribution, and internal-linking execution plan is tracked in [Events Organic Growth Plan](/docs/roadmap/events-organic-growth).
+:::
+
 Events is a multi-sport discovery feature for competitions, demos, community sessions, clinics, premieres, and live broadcasts. A narrow web MVP and production API are live; alerts, map/calendar discovery, source administration, and the broader ingestion model remain planned.
 
 :::warning[Implementation status: partial MVP]
