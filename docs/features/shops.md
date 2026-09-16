@@ -291,6 +291,7 @@ Keep public reads separate from authenticated submissions and admin inventory op
 - `GET /api/shops/search` — name, city, specialty, service, and brand search
 - `GET /api/shops/:slugOrId` — detail record plus freshness and attribution
 - `GET /api/shops/:id/nearby-spots` — second phase; reuse geospatial Spot queries
+- `GET /api/shops/:slugOrId/comments` — paginated comment list
 
 Use `bbox` for map movement and `lat`, `lng`, `radius` for “near me.” Cap radius and result counts. Return only projected fields from `map-pins`.
 
@@ -300,6 +301,8 @@ Use `bbox` for map movement and `lat`, `lng`, `radius` for “near me.” Cap ra
 - `POST /api/shops/:id/save` and `DELETE /api/shops/:id/save`
 - `POST /api/shops/:id/claims` — begin claim verification
 - `PATCH /api/shops/:id/claimed-profile` — edit business-owned fields through moderation
+- `POST /api/shops/:slugOrId/comments` — create a comment
+- `DELETE /api/shops/:slugOrId/comments/:commentId` — delete own comment
 
 ### Admin and ingestion
 
@@ -427,6 +430,43 @@ The scheduled job must be idempotent, bounded to one metro/batch per run, and un
 - Saved shops
 
 Do not combine Shop and Spot pins by default. Add an explicit map layer toggle after both layers perform well independently.
+
+### Website Shop Detail (Live and Upcoming)
+
+The public website shop detail page (`/shops/[slug]`) renders enriched content from the backend enrichment contract in `feat/shop-content-enrichment` (TB-Backend PR #44).
+
+**Storefront hero and images**
+
+- Full-bleed storefront hero sourced from `imageUrl` with `imageAlt` for accessibility and `imageSourceUrl` for attribution review.
+- Card thumbnails in the gallery from the `images[]` array, filtered by `kind` (storefront, interior, service, team, logo).
+
+**Enrichment fields surfaced on detail pages**
+
+| Field | Display behavior |
+|-------|------------------|
+| `reviewSummary` | Aggregated Google rating, review count, and original theme summary with source attribution and `asOf` date. |
+| `teamRiders` | Shop team roster when the shop provides sponsored or flow riders; links to TrickBook rider profiles when matched. |
+| `faqs` | Accordion of verified Q&A pairs (hours, services, repairs, rentals, location). |
+| `pressFeatures` | Editorial coverage from established skate/snow/surf media with publisher, title, and link. |
+| `socialLinks` | Icon row linking to official Instagram, Facebook, YouTube, TikTok, etc. |
+
+**Conversion CTA**
+
+A sport-specific TrickBook module appears after the shop summary, patterned after the Events conversion CTA (`EventConversionCta`). The module highlights relevant TrickBook features (nearby spots, trick tracking, community) and provides App Store / signup actions without obscuring the shop's primary contact or directions controls.
+
+**Comments**
+
+:::info[Shipping]
+Shop comments are in flight (TB-Backend comments API PR). The endpoints below are planned to land shortly.
+:::
+
+Authenticated users can post, view, and delete comments on shop detail pages:
+
+- `GET /api/shops/:slugOrId/comments` — paginated comment list
+- `POST /api/shops/:slugOrId/comments` — create a comment (authenticated)
+- `DELETE /api/shops/:slugOrId/comments/:commentId` — delete own comment (authenticated)
+
+Comments follow the same moderation and anti-spam policies as Feed and Couch comments. The detail page displays comments below the enrichment content and conversion CTA.
 
 ### Later phases
 
