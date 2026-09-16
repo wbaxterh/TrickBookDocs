@@ -144,6 +144,126 @@ Do not copy Google ratings, reviews, photos, hours, or other Places content into
 
 `name`, at least one `sportTypes` value, `location`, country/city address data, `operationalStatus`, `verificationStatus`, `lastVerifiedAt`, one authoritative or corroborating source record, and a deterministic dedupe key.
 
+## Grokbot Research Handoff Contract
+
+Use this contract when an external research agent gathers shop records for the guarded TrickBook importer. The research agent produces one JSON object per physical storefront; it does not publish records, contact shops, or invent missing values. An importer operator must still check for duplicates, run a dry run, apply the validated record, and verify the public API response.
+
+The field names and limits below match the backend enrichment contract in `feat/shop-content-enrichment` (TB-Backend PR #44). Until that backend change is merged and deployed, the enrichment fields may be collected but must not be assumed to be live in production.
+
+### Exact accepted fields
+
+- `name` — required string, 2–120 characters. Use the public storefront name.
+- `slug` — required lowercase kebab-case string matching `^[a-z0-9]+(?:-[a-z0-9]+)*$`. Include city or neighborhood when needed to distinguish branches.
+- `description` — original factual summary, at most 1,200 characters. State what the shop is, where it is, supported sports, and distinctive verified products or services. Never copy marketing text.
+- `sports` — required non-empty unique array. Allowed values: `skateboarding`, `snowboarding`, `skiing`, `surfing`, `bmx`, `mtb`, `scooter`, `rollerblading`, `wakeboarding`.
+- `services` — unique array. Allowed values: `gear`, `apparel`, `repairs`, `rentals`, `lessons`, `online`. Include only services supported by a current source.
+- `address` — required object containing required `city` and `country`; optional `street`, `region`, `postalCode`, `lat`, and `lng`. Coordinates are decimal degrees; latitude must be −90 to 90 and longitude −180 to 180.
+- `website` — official `http` or `https` URL, or an empty string when unavailable.
+- `phone` — public shop phone, at most 40 characters, or an empty string.
+- `hours` — published hours as a string or object. Preserve clear day/time meaning and record only current shop-published hours.
+- `socialLinks` — object whose values are official `http` or `https` profile URLs. Use recognizable keys such as `instagram`, `facebook`, `youtube`, or `tiktok`.
+- `verified` — set to `true` only when a current official website or official social profile supports the shop identity and physical location.
+- `featured` — normally `false`; research agents do not make merchandising decisions.
+- `status` — `published` only when all required facts pass verification; otherwise `draft`.
+- `sourceUrl` — required authoritative `http` or `https` page supporting the shop identity and location. Prefer an official store/location or contact page over a homepage.
+
+Unknown fields are stripped by the importer. Do not submit notes, guesses, confidence prose, or alternative field names inside the shop object.
+
+### Storefront photo — required research deliverable
+
+Every Grokbot handoff must attempt to find a clear, location-specific exterior/storefront photograph and return all three fields together:
+
+- `imageUrl` — direct `http` or `https` URL for the image asset.
+- `imageSourceUrl` — public page where the image and its provenance can be reviewed. This must not merely repeat the image URL unless the source genuinely publishes the image that way.
+- `imageAlt` — factual description, at most 240 characters, identifying the shop and visible location context. Example: `Street-level exterior of Labor Skate Shop on Canal Street in New York, with the black Labor storefront sign above the entrance.`
+
+Photo rules:
+
+1. Prefer the shop’s official website, official location page, official press/media page, or official social account.
+2. Confirm that the photograph depicts the exact storefront being submitted, not another branch, a logo, a product, or a generic interior.
+3. Preserve the reviewable source page and any visible creator/rights credit in research notes outside the import object.
+4. Never scrape or reuse Google Maps/Places photos, customer review photos, aggregator thumbnails, or images with uncertain storefront identity or reuse provenance.
+5. Do not substitute a logo for a storefront photo. If no safe image is found, set `imageUrl`, `imageSourceUrl`, and `imageAlt` to empty strings and flag the record for human image review; never guess.
+6. Before handoff, confirm the direct image URL resolves and the source page still displays or clearly references the same image.
+
+### Review summary
+
+`reviewSummary` is optional. Include it only when current Google business evidence is available and all required child fields can be supplied:
+
+```json
+{
+  "source": "Google",
+  "rating": 4.8,
+  "reviewCount": 127,
+  "summary": "Customers repeatedly mention knowledgeable skateboard setup advice, a well-curated deck selection, and friendly service. A smaller recurring theme concerns limited space during busy periods.",
+  "sourceUrl": "https://www.google.com/maps/...",
+  "asOf": "2026-09-16T00:00:00.000Z"
+}
+```
+
+The summary must be original language describing recurring themes. Never copy review sentences, reviewer names, or isolated allegations. `rating` is 0–5, `reviewCount` is a non-negative integer, `summary` is 20–1,200 characters, and `asOf` is an ISO date/time. Omit the whole object when evidence is unavailable or too thin.
+
+### FAQs and editorial coverage
+
+- `faqs` — up to eight unique question/answer objects. Questions must be 10–180 characters and answers 10–600 characters. Use only verified facts such as supported sports, repairs, rentals, location, or published hours. Two to five strong FAQs is preferred.
+- `pressFeatures` — up to 20 unique editorial features. Each object requires `title`, `publisher`, and canonical `url`; `publishedAt` is an optional ISO date and `summary` is an optional original relevance summary of at most 600 characters. Accept substantive coverage from established skate/snow media or industry publications. Reject product listings, scraped directories, passing social mentions, press-release mirrors, and the shop’s own posts.
+
+A legitimate search that finds no editorial coverage should return an empty `pressFeatures` array, not invented coverage.
+
+### Grokbot output template
+
+Return raw JSON only when handing data to automation. Use empty strings or empty arrays for allowed but unavailable scalar/list fields; omit `reviewSummary` when it cannot be fully verified.
+
+```json
+{
+  "name": "Example Skate Shop",
+  "slug": "example-skate-shop-los-angeles",
+  "description": "Original, source-supported description of the physical shop, its city, sports, and services.",
+  "sports": ["skateboarding"],
+  "services": ["gear", "apparel", "repairs"],
+  "address": {
+    "street": "123 Example Street",
+    "city": "Los Angeles",
+    "region": "CA",
+    "postalCode": "90000",
+    "country": "USA",
+    "lat": 34.000000,
+    "lng": -118.000000
+  },
+  "website": "https://example.com/store",
+  "phone": "+1 000-000-0000",
+  "imageUrl": "https://example.com/images/los-angeles-storefront.jpg",
+  "imageAlt": "Street-level exterior of Example Skate Shop in Los Angeles, with its storefront sign above the entrance.",
+  "imageSourceUrl": "https://example.com/pages/los-angeles-store",
+  "faqs": [
+    {
+      "question": "Does Example Skate Shop offer skateboard repairs?",
+      "answer": "Yes. The official store page lists skateboard repair services at the Los Angeles location."
+    }
+  ],
+  "pressFeatures": [],
+  "hours": "Use the current shop-published schedule",
+  "socialLinks": {
+    "instagram": "https://www.instagram.com/example/"
+  },
+  "verified": true,
+  "featured": false,
+  "status": "published",
+  "sourceUrl": "https://example.com/pages/los-angeles-store"
+}
+```
+
+### Pre-handoff checklist
+
+1. Confirm it is a currently operating public storefront, not online-only, closed, a warehouse, or a temporary vendor.
+2. Check the production Shops API by slug/name/address and flag possible duplicates; never assume name alone identifies a branch.
+3. Verify every included service, sport, address, phone, hour, coordinate, and social profile against a cited current source.
+4. Complete the storefront-photo attempt and provide `imageUrl`, `imageSourceUrl`, and `imageAlt` together, or explicitly flag human image review.
+5. Write an original description, review-theme summary, FAQ answers, and press summaries. Do not copy source language.
+6. Validate URLs as `http` or `https`, ISO-format dates, enum values, character limits, and coordinate order.
+7. Provide a separate research evidence list mapping each material claim to its source URL and observation date. The importer object remains clean JSON.
+8. Stop at research handoff. Only the guarded importer operator may dry-run, apply, and verify production.
+
 ### Indexes
 
 ```js
