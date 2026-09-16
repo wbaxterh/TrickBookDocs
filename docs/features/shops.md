@@ -148,7 +148,7 @@ Do not copy Google ratings, reviews, photos, hours, or other Places content into
 
 Use this contract when an external research agent gathers shop records for the guarded TrickBook importer. The research agent produces one JSON object per physical storefront; it does not publish records, contact shops, or invent missing values. An importer operator must still check for duplicates, run a dry run, apply the validated record, and verify the public API response.
 
-The field names and limits below match the backend enrichment contract in `feat/shop-content-enrichment` (TB-Backend PR #44). Until that backend change is merged and deployed, the enrichment fields may be collected but must not be assumed to be live in production.
+The field names and limits below match the live backend enrichment contract (enrichment shipped to production via staging→master promotions).
 
 ### Exact accepted fields
 
@@ -433,22 +433,21 @@ Do not combine Shop and Spot pins by default. Add an explicit map layer toggle a
 
 ### Website Shop Detail (Live and Upcoming)
 
-The public website shop detail page (`/shops/[slug]`) renders enriched content from the backend enrichment contract in `feat/shop-content-enrichment` (TB-Backend PR #44).
+The public website shop detail page (`/shops/[slug]`) renders enriched content from the live production API.
 
-**Storefront hero and images**
+**Storefront hero**
 
-- Full-bleed storefront hero sourced from `imageUrl` with `imageAlt` for accessibility and `imageSourceUrl` for attribution review.
-- Card thumbnails in the gallery from the `images[]` array, filtered by `kind` (storefront, interior, service, team, logo).
+Full-bleed storefront hero sourced from `imageUrl` with `imageAlt` for accessibility and `imageSourceUrl` for attribution review.
 
 **Enrichment fields surfaced on detail pages**
 
-| Field | Display behavior |
-|-------|------------------|
-| `reviewSummary` | Aggregated Google rating, review count, and original theme summary with source attribution and `asOf` date. |
-| `teamRiders` | Shop team roster when the shop provides sponsored or flow riders; links to TrickBook rider profiles when matched. |
-| `faqs` | Accordion of verified Q&A pairs (hours, services, repairs, rentals, location). |
-| `pressFeatures` | Editorial coverage from established skate/snow/surf media with publisher, title, and link. |
-| `socialLinks` | Icon row linking to official Instagram, Facebook, YouTube, TikTok, etc. |
+| Field | Shape | Display behavior |
+|-------|-------|------------------|
+| `reviewSummary` | `{ source, rating, reviewCount, summary, sourceUrl, asOf }` | Aggregated Google rating (0–5), review count, and original theme summary with source attribution and `asOf` date. |
+| `teamRiders` | `[{ name, role?, sourceUrl?, profileUrl?, imageUrl? }]` | Shop team roster; links to TrickBook rider profiles via `profileUrl` when matched. |
+| `faqs` | `[{ question, answer }]` | Accordion of verified Q&A pairs (hours, services, repairs, rentals, location). |
+| `pressFeatures` | `[{ title, publisher, url, publishedAt?, summary? }]` | Editorial coverage from established skate/snow/surf media. |
+| `socialLinks` | `{ platform: url, ... }` | Icon row linking to official Instagram, Facebook, YouTube, TikTok, etc. |
 
 **Conversion CTA**
 
