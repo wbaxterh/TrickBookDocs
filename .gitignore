@@ -25,3 +25,6 @@ pdf-exports/
 # TLA+ verification (formal/): pinned tools + TLC scratch output stay untracked
 formal/**/tools/*.jar
 formal/**/out/
+
+# Local disposable runtimes used to execute verification on machines without Java
+.verification-tools/
