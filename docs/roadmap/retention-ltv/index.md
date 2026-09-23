@@ -283,5 +283,5 @@ canonical ledger; the backend event store can forward a privacy-safe projection.
   timezone, and freshness.
 - All implementation PRs link back to this specification and the formal model.
 
-See [Formal Specification](./formal-spec) and
-[Verification Results](./verification-results).
+See [Formal Specification](/docs/roadmap/retention-ltv/formal-spec) and
+[Verification Results](/docs/roadmap/retention-ltv/verification-results).
