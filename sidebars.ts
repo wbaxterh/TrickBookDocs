@@ -176,6 +176,15 @@ const sidebars: SidebarsConfig = {
         'roadmap/companions-intelligence-progress',
         'roadmap/companions-launch',
         'roadmap/monetization',
+        {
+          type: 'category',
+          label: 'Retention & LTV System',
+          link: { type: 'doc', id: 'roadmap/retention-ltv/index' },
+          items: [
+            'roadmap/retention-ltv/formal-spec',
+            'roadmap/retention-ltv/verification-results',
+          ],
+        },
         'roadmap/gap-analysis',
         'roadmap/security-fixes',
         'roadmap/efficiency-improvements',

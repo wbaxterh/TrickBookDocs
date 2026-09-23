@@ -20,6 +20,7 @@
     "typecheck": "tsc",
     "validate": "biome check . && tsc --noEmit && npm run build",
     "verify:homies": "node formal/homies/run.js",
+    "verify:retention": "node formal/retention-ltv/run.js",
     "pdf": "node scripts/generate-pdf.js",
     "pdf:all": "node scripts/generate-pdf.js",
     "pdf:combined": "node scripts/generate-combined-pdf.js",

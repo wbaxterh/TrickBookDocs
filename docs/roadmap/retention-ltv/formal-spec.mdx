@@ -1,0 +1,86 @@
+---
+title: Formal Specification (TLA+)
+sidebar_position: 2
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import RetentionSpec from '@site/formal/retention-ltv/RetentionLTV.tla';
+
+# Retention/LTV Control Plane: Formal Specification
+
+The TLA+ model verifies the safety logic that must hold across concurrent app
+sessions, retries, analytics processing, version prompts, and monetized actions.
+It is a model of the **proposed design**, not a claim about current production.
+
+## What is modeled
+
+- Two clients on different versions: one below minimum and one supported but old.
+- A remotely configured minimum and latest version.
+- Required and optional update states, followed by upgrade.
+- Free core actions and token/pro-authorized premium actions.
+- Subscription activation and allowance refresh.
+- At-least-once client delivery into exactly-once accepted-event accounting.
+- A finite pool of unique event IDs representing idempotency keys.
+
+The analytics queue and accepted sets are disjoint. Processing moves an event
+between them; it cannot create a second accepted copy. Derived retention and LTV
+aggregates are intentionally not stored as mutable model variables: they are pure
+queries over accepted immutable facts in the implementation design.
+
+## Safety properties
+
+- `PolicyIsConsistent`: required means below minimum; optional means supported but
+  behind latest; no prompt means current.
+- `NoUnsupportedAction`: no core/premium action begins behind a required update.
+- `NoUnauthorizedPremium`: premium work never begins without Pro or credit.
+- `CoreRemainsFree`: core actions never debit AI credit.
+- `TokensNeverNegative`: concurrent usage cannot overdraw the bounded wallet.
+- `ExactlyOnceAccounting`: queued and accepted events partition issued event IDs,
+  and every issued ID has a meaningful payload.
+
+`NoUnsupportedAction`, `NoUnauthorizedPremium`, and `CoreRemainsFree` are latched
+ghost observations. They do not influence transitions; once a prohibited effect
+occurs they remain true, so TLC cannot miss a transient violation.
+
+## Reachability and non-vacuity
+
+Four deliberately false invariants prove the important flows are reachable:
+
+- a below-minimum client reaches a required prompt;
+- a supported old client reaches an optional prompt;
+- a core action is accepted;
+- a token-authorized premium action is accepted.
+
+Without these checks, a model could “prove” action safety simply by making every
+action impossible.
+
+## Bounds and omissions
+
+The checked configuration uses two clients, versions 1–3, four event IDs, one
+initial credit, and a maximum allowance of two. This is exhaustive inside those
+bounds, not a proof over an unbounded production deployment.
+
+The model does not prove causal retention lift, optimal prices, correct copy,
+privacy-law compliance, store-policy compliance, network availability, or the
+accuracy of client-generated timestamps. Those need experiments, review, tests,
+and production monitoring. It also abstracts safe-point UI timing: the invariant
+is that no new action starts once a required policy is applied.
+
+## Reproduce
+
+```bash
+# Java 11+ and the checksum-pinned TLA+ tools v1.7.4 jar are required
+mkdir -p formal/retention-ltv/tools
+cp formal/homies/tools/tla2tools.jar formal/retention-ltv/tools/
+npm run verify:retention
+```
+
+The runner requires clean completion for the main model and the exact expected
+invariant violation for each reachability probe.
+
+## Checked specification
+
+This block is imported from the executable file, so the published text cannot
+drift from the model TLC reads.
+
+<CodeBlock language="tla" title="formal/retention-ltv/RetentionLTV.tla">{RetentionSpec}</CodeBlock>
