@@ -14,6 +14,10 @@ Base URL: `https://api.thetrickbook.com/api`
 - Some route files include admin/account checks in middleware; see the route file for exact authorization rules.
 - This page documents implemented signatures (method + path), not payload schema details.
 
+## Health (`/health`, `/api/health`)
+
+- `GET /health`: liveness and readiness probe, no auth, not rate limited. Pings the database and answers `200 { status: "ok" }` or `503 { status: "degraded" }`. The body carries `version` (set `APP_VERSION` to the deployed SHA), `uptimeSeconds`, `db`, `dbLatencyMs` and `timestamp`, nothing else. Point uptime checks and the deploy smoke test at this route.
+
 ## Auth (`/api/auth`)
 
 - `POST /api/auth`
@@ -249,8 +253,8 @@ Base URL: `https://api.thetrickbook.com/api`
 
 ### Profile Image (`/api/image`)
 
-- `GET /api/image`
-- `POST /api/image`
+- `GET /api/image`: default avatar
+- `POST /api/image`: sets the caller's own avatar (auth required; multipart field `file`, image types only, 25 MB max). The target is the token holder, never a body field.
 
 ### Trick Images (`/api/trickImage`)
 

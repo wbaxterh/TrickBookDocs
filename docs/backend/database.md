@@ -22,8 +22,29 @@ await client.connect();
 const db = client.db("TrickList2");
 ```
 
-:::warning[Current Anti-Pattern]
-Each route file creates its own connection. Should use a centralized connection pool.
+:::info[Connection pooling]
+`db.js` opens one pooled `MongoClient` at boot and every route factory receives the shared `db` handle. Route files do not open their own connections.
+:::
+
+## Schema layer
+
+The backend uses the raw driver, not Mongoose, so for a long time a collection's shape was whatever each `insertOne` wrote. Since September 2026 every collection the code touches has a declared `$jsonSchema` in `schemas/collections/*.js` (49 collections, grouped by domain: identity, tricks, spots, feed, media, social, community).
+
+How it works:
+
+- `schemas/index.js` loads the files into a registry. `test/schema-registry.test.js` fails CI when any `collection('name')` call in the code has no schema, so the registry cannot drift silently.
+- On every boot `schemas/apply.js` pushes each schema to Atlas as a collection validator with `collMod`. It never creates a collection, and a failing `collMod` is logged, not fatal.
+- `SCHEMA_VALIDATION_ACTION` is `warn` by default (violations go to the server log only), `error` rejects non-conforming writes, `off` skips the apply. `SCHEMA_VALIDATION_LEVEL` is `moderate` (inserts and updates to already-valid documents) or `strict`.
+- `npm run schema:report` samples the newest documents in each collection and validates them app-side with `schemas/validate.js`. This is the feedback loop on the free Atlas tier, where the server's warn log cannot be read. Promote a collection to `error` only after the report is clean for it.
+
+Every schema is open (`additionalProperties` is never false) because production holds fields the current code no longer writes. Each entry carries `writers` (the files that insert or `$set` it) and `notes` that record where writers disagree.
+
+### User id shapes
+
+`req.user.userId` comes out of the JWT as a 24-character hex string. Some writers store it as that string, some convert it with `new ObjectId()`, and rows from the original app hold a DBRef (`tricklists.user`). The schemas list every shape that exists per field rather than the shape we wish existed. `utils/ids.js` (`toObjectId`, `idEquals`, `anyIdShape`) reads and queries across them. New code stores ObjectId; converging the existing data is a separate migration.
+
+:::warning[Reading the collection sketches below]
+The field lists that follow predate the schema layer and are illustrative. The files under `schemas/collections/` are the source of truth for field names and types.
 :::
 
 ## Collections
