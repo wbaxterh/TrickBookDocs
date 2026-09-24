@@ -166,8 +166,8 @@ Trick demos are data, not baked animations:
 | `kith-voice` | Bun voice service + Python sidecar children | 3040 (nginx → `/kith/ws`, `/kith/*`) |
 
 ```bash
-# SSH (EC2 i-00a7cac777c3b3a4e)
-ssh -i ~/.ssh/weshuber.pem ubuntu@174.129.64.158
+# SSH (host identifiers, command and key name: internal runbook, not in this repo)
+ssh ubuntu@<backend-host>
 
 # Restart (always source nvm first)
 . ~/.nvm/nvm.sh && pm2 restart TB-Backend

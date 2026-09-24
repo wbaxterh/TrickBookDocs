@@ -23,7 +23,7 @@ flowchart TB
         DocsDns[docs.thetrickbook.com]
     end
 
-    subgraph EC2["AWS EC2 (174.129.64.158)\ni-00a7cac777c3b3a4e"]
+    subgraph EC2["AWS EC2 (single instance, nginx in front)"]
         TBBackend["TB-Backend\nExpress.js\nPort 9000"]
         KaoriBot["kaori-bot\nElizaOS\nPort 3001"]
         KithVoice["kith-voice\nPort 3040"]
@@ -64,8 +64,7 @@ flowchart TB
 
 | Property | Value |
 |----------|-------|
-| Instance ID | `i-00a7cac777c3b3a4e` |
-| Public IP | `174.129.64.158` |
+| Instance | One EC2 instance behind nginx (identifiers in the internal runbook) |
 | OS | Ubuntu |
 | App directory | `/home/ubuntu/TB-Backend/` |
 | Env file | `/home/ubuntu/TB-Backend/.env` |
@@ -83,12 +82,14 @@ Three Node.js processes run under PM2:
 ### SSH Access
 
 ```bash
-ssh -i ~/.ssh/weshuber.pem ubuntu@174.129.64.158
+ssh ubuntu@<backend-host>
 ```
+
+Host identifiers, the SSH command and key name live in the internal runbook (not in this repo).
 
 :::danger
 
-The SSH private key (`weshuber.pem`) must never be committed to any repository or shared in plaintext. Store it in `~/.ssh/` with permissions set to `600`.
+The SSH private key must never be committed to any repository or shared in plaintext. Store it in `~/.ssh/` with permissions set to `600`.
 
 :::
 
@@ -120,7 +121,7 @@ pm2 restart all
 
 | Domain | Target | Service |
 |--------|--------|---------|
-| `api.thetrickbook.com` | EC2 (`174.129.64.158`) | Backend API |
+| `api.thetrickbook.com` | EC2 (nginx reverse proxy) | Backend API |
 | `thetrickbook.com` | AWS Amplify | Website (Next.js) |
 | `docs.thetrickbook.com` | Docusaurus hosting | Documentation site |
 
@@ -175,8 +176,8 @@ flowchart LR
 Step-by-step:
 
 ```bash
-# 1. SSH into the server
-ssh -i ~/.ssh/weshuber.pem ubuntu@174.129.64.158
+# 1. SSH into the server (host and key name are in the internal runbook)
+ssh ubuntu@<backend-host>
 
 # 2. Navigate to the app directory
 cd /home/ubuntu/TB-Backend

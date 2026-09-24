@@ -14,7 +14,7 @@ Guide for deploying TrickBook to the Google Play Store via EAS Build and EAS Sub
 | Latest Version | 2.1.0 (versionCode 15) |
 | Google Play | **Submitted** -- Closed Alpha (internal track, draft) |
 | Build Profile | `playstore` (AAB, store distribution) |
-| Service Account | `trickbook-couch@trickbook.iam.gserviceaccount.com` |
+| Service Account | Play Console service account (name and key file live outside the repo) |
 | Version Source | Remote (`appVersionSource: "remote"` in eas.json) |
 
 ## Build and Submit Pipeline
