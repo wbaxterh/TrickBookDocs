@@ -15,7 +15,7 @@ Runbook for the production TrickBook backend API on AWS EC2.
 | File Storage | AWS S3 |
 | Payments | Stripe |
 | Production branch | `master` |
-| EC2 instance | `i-00a7cac777c3b3a4e` (`174.129.64.158`) |
+| EC2 instance | One instance behind nginx; identifiers live in the internal runbook (not in this repo) |
 | Checkout | `/home/ubuntu/TB-Backend` |
 | PM2 process | `TB-Backend` (port 9000) |
 
@@ -32,7 +32,7 @@ The production checkout currently contains operational files and a local `index.
 Before deployment, confirm the promotion PR passed CI and record the expected `master` SHA.
 
 ```bash
-ssh -i ~/.ssh/weshuber.pem ubuntu@api.thetrickbook.com
+ssh ubuntu@<backend-host>   # host and key name: internal runbook
 cd /home/ubuntu/TB-Backend
 
 git fetch origin master
@@ -55,7 +55,7 @@ After restart, compare `git rev-parse HEAD` with the expected production SHA and
 
 Do not create an IAM user or store long-lived AWS keys/SSH keys in GitHub. The target design is:
 
-1. Attach an EC2 instance profile with `AmazonSSMManagedInstanceCore` to `i-00a7cac777c3b3a4e`.
+1. Attach an EC2 instance profile with `AmazonSSMManagedInstanceCore` to the backend instance.
 2. Confirm the instance appears as an online Systems Manager managed node.
 3. Add the GitHub OIDC provider in AWS IAM with audience `sts.amazonaws.com`.
 4. Create a deployment role whose trust policy is restricted to `wbaxterh/TB-Backend` and the protected `production` GitHub Environment.
