@@ -12,6 +12,10 @@ The Next.js web app is hosted by AWS Amplify Web Compute.
 | Staging | `staging` | `staging` | Feature QA |
 | Production | `main` | `main` | `https://thetrickbook.com` |
 
+## Canonical host
+
+Amplify serves both `thetrickbook.com` and `www.thetrickbook.com` from `main`, and `next.config.js` sends every `www` request to the apex with a 301. Keep it that way: NextAuth builds its Google and Apple callback URLs from `NEXTAUTH_URL` (the apex), and a sign-in that starts on any other host stores its state cookie there and fails on the apex callback with `State cookie was missing`. `NEXTAUTH_URL` must always equal the host users actually sign in on; the `staging` branch has its own value.
+
 ## Production promotion
 
 1. Merge feature PRs into `staging` after the repository's `validate` check passes.
