@@ -103,6 +103,7 @@ const sidebars: SidebarsConfig = {
           items: [
             'features/ai-companions/mobile-app',
             'features/ai-companions/web-app',
+            'features/ai-companions/web-kaori-widget-plan',
             'features/ai-companions/animation-system',
             'features/ai-companions/motion-framework',
             'features/ai-companions/board-model',
