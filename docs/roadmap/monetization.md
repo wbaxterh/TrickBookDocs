@@ -5,7 +5,11 @@ title: "Monetization: Paywall & Tokens"
 
 # Monetization — Companion Paywall & Token Allocation
 
-Status: **Proposed 2026-07-09 — ready to build** · researched against July-2026 store rules and live COGS
+Status: **In progress — text metering foundation implemented locally 2026-09-30** · researched against July-2026 store rules and live COGS
+
+:::info[September 30 implementation checkpoint]
+The shared `kaoriUsage` service now covers text generation on web DM/widget and mobile bot-chat: free/Plus daily allowances, account/device short-window limits, single-generation leases, atomic reservations, settlement/refunds, and a usage-status endpoint. Voice debits are also enforced at 5/day free and 200/month Plus across Live greetings and spoken replies. The web widget displays text/voice balances and the Plus upgrade state. Signed Kith admission tickets, Stripe top-ups, and mobile IAP remain unbuilt.
+:::
 
 **The model in one paragraph:** free users get a **sample** — Kaori visible and usable with a small daily voice allowance, other companions shown locked. Paid tiers unlock the full roster plus a monthly **voice-token** allotment (1 token = 1 spoken reply). Cosmetics (boards, outfits, environments) unlock through BOTH usage (XP/streaks) and payment tiers. Web sells via our existing Stripe; mobile sells via RevenueCat IAP; the backend Mongo user doc is the single source of truth.
 
