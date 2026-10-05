@@ -18,6 +18,7 @@ flowchart LR
         HM[🤝 Homies]
         MD[🎬 Media]
         EV[📅 Events]
+        SH[🏬 Shops]
     end
 
     subgraph TB_Sub["Trick System"]
@@ -50,6 +51,11 @@ flowchart LR
         EV --> Watch["Tickets and Livestreams"]
         EV --> Alerts["Saved Events and Alerts"]
     end
+
+    subgraph SH_Sub["Shop Directory"]
+        SH --> ShopSearch["Search and Filters"]
+        SH --> ShopDetail["Ratings, Comments, Team Riders"]
+    end
 ```
 
 ## Feature Summary
@@ -61,6 +67,8 @@ flowchart LR
 | [Homies](/docs/features/homies) | Social connections and messaging | ✅ Live |
 | [Media](/docs/features/media) | Video streaming and user content | ✅ Live |
 | [Events](/docs/features/events) | Multi-sport discovery and registration/watch links; alerts remain planned | 🟡 Partial MVP |
+| [Shops](/docs/features/shops) | Directory of 206 verified action-sports shops with ratings, comments, and team riders | ✅ Live |
+| [TrickBook Plus](/docs/features/trickbook-plus) | $10/month subscription: unlimited spot lists, larger Kaori allowances, verified badge | ✅ Live |
 
 ## Recent Updates (March 2026)
 

@@ -74,6 +74,6 @@ Even with a live `x-kith-session`, the web path goes through `routes/dm.js`, whi
 | Relationship greeting | ✅ kaori-live auto-greet | ❌ |
 | Relationship profile UI | ❌ (client exists, unused) | ❌ |
 | Nav entry point to stage | ❌ hidden URL | ✅ widget + chat header cube |
-| Paywall/entitlement gating | ❌ | ❌ |
+| Paywall/entitlement gating | 🟡 allowance balances + Plus upgrade prompt in the widget | ❌ limits enforced server-side, no UI |
 
 The strategic read: web is the **materials/lighting showcase** (true MToon) and the zero-install demo surface; mobile is the **product** (demos, cards, widget). Divergence to watch: the two stages share motion values by copy-paste, not by a shared module — the third copy (Tony) is the moment to extract one.

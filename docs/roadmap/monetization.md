@@ -5,10 +5,10 @@ title: "Monetization: Paywall & Tokens"
 
 # Monetization — Companion Paywall & Token Allocation
 
-Status: **In progress — text metering foundation implemented locally 2026-09-30** · researched against July-2026 store rules and live COGS
+Status: **In progress: allowance metering live in production since 2026-09-30; tokens, packs, and mobile IAP unbuilt** · researched against July-2026 store rules and live COGS
 
-:::info[September 30 implementation checkpoint]
-The shared `kaoriUsage` service now covers text generation on web DM/widget and mobile bot-chat: free/Plus daily allowances, account/device short-window limits, single-generation leases, atomic reservations, settlement/refunds, and a usage-status endpoint. Voice debits are also enforced at 5/day free and 200/month Plus across Live greetings and spoken replies. The web widget displays text/voice balances and the Plus upgrade state. Signed Kith admission tickets, Stripe top-ups, and mobile IAP remain unbuilt.
+:::info[October 5 production checkpoint]
+What exists today is documented on [TrickBook Plus and Free-Tier Limits](/docs/features/trickbook-plus). In short: the shared `kaoriUsage` service meters text (20/day free, 250/day Plus) and voice (5/day free, 200/month Plus) on the web DM/widget and mobile bot-chat, with account and device burst caps, single-generation leases, atomic reservations, settlement and refunds, and `GET /api/companion/kaori/usage`. The web widget shows balances and the Plus upgrade prompt. TrickBook Plus itself is the pre-existing $10/month Stripe subscription. Not built: voice tokens and wallets, top-up packs, companion roster gating, signed Kith admission tickets, mobile IAP, and any mobile limit or upgrade UI.
 :::
 
 **The model in one paragraph:** free users get a **sample** — Kaori visible and usable with a small daily voice allowance, other companions shown locked. Paid tiers unlock the full roster plus a monthly **voice-token** allotment (1 token = 1 spoken reply). Cosmetics (boards, outfits, environments) unlock through BOTH usage (XP/streaks) and payment tiers. Web sells via our existing Stripe; mobile sells via RevenueCat IAP; the backend Mongo user doc is the single source of truth.
@@ -45,6 +45,17 @@ Two COGS levers to pull **before** revenue work (halves cost, better latency):
 | **Top-up packs** | — | e.g. 100 tokens | — | ~$4.99 (consumable IAP / Stripe) |
 
 *Sanity check: 200 voice tokens ≈ $5–7 COGS on Flash+caching (~40% margin before store fees). Free tier worst case ≈ $6/mo per maxed-out user — acceptable sampling cost.*
+
+### Plan versus shipped (October 5, 2026)
+
+| Element | Plan above | In production |
+|---|---|---|
+| Text allowance, free | 50 per day | 20 per day |
+| Text allowance, Plus | unlimited | 250 per day |
+| Voice allowance | 5 per day free, 200 per month Plus, as tokens with rollover | same numbers, enforced as counters; no wallet, no rollover |
+| Burst protection | not specified | 6 (free) and 12 (Plus) per minute per account; 10 and 20 per device |
+| Companion roster gating | Kaori-only sample, others locked | not built; Kaori is the only companion |
+| Top-up packs, RevenueCat, unlockables | phases 3 to 7 | not built |
 
 ## Platform rules (verified July 2026)
 

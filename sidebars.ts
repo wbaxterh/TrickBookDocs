@@ -85,6 +85,7 @@ const sidebars: SidebarsConfig = {
         'features/spots-map',
         'features/spots-inventory-automation',
         'features/shops',
+        'features/trickbook-plus',
         {
           type: 'category',
           label: 'Homies',

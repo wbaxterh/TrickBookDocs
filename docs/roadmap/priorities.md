@@ -31,11 +31,11 @@ Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 | # | Task | Repo | Effort | Status |
 |---|------|------|--------|--------|
 | 1 | COGS levers: Flash-class TTS on stage + OpenRouter prompt caching | Backend | 0.5 day | Pending |
-| 2 | Token metering: `user.wallet.voiceTokens`, `usage_events`, `requireVoiceTokens` middleware, lazy daily grant | Backend | 3–5 days | Pending |
+| 2 | Token metering: `user.wallet.voiceTokens`, `usage_events`, `requireVoiceTokens` middleware, lazy daily grant | Backend | 3–5 days | Partial: daily and monthly allowance counters shipped 2026-09-30 (TB-Backend #68); no wallet, tokens, or `usage_events` |
 | 3 | Free-sample gating: Kaori-only for free tier, locked companion states + upsell UI | Backend + Mobile + Web | 3–5 days | Pending |
-| 4 | Web purchases: extend Stripe `payments.js` with tier + token-pack prices, site paywall/wallet UI | Backend + Web | 3–5 days | Pending |
+| 4 | Web purchases: extend Stripe `payments.js` with tier + token-pack prices, site paywall/wallet UI | Backend + Web | 3–5 days | Partial: Plus subscription via Stripe is live ([details](/docs/features/trickbook-plus)); no tier or token-pack prices, paywall only in the Kaori widget |
 | 5 | Mobile IAP via RevenueCat (fold into the companion EAS build) | Mobile + Backend | 5–10 days | Pending |
-| 6 | Basic rate caps on bot-chat (interim until metering lands) | Backend | 1 day | Pending |
+| 6 | Basic rate caps on bot-chat (interim until metering lands) | Backend | 1 day | Done 2026-09-30: per-minute account and device caps in `kaoriUsage` |
 
 ### P2 — Companion iteration + the skate companion
 

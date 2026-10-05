@@ -138,6 +138,20 @@ Base URL: `https://api.thetrickbook.com/api`
 - `POST /api/spot-reviews/:reviewId/helpful`
 - `GET /api/spot-reviews/user/:userId`
 
+## Shops (`/api/shops`)
+
+- `GET /api/shops` (`q`, `location`, `sport`, `service`, `limit`, `cursor`)
+- `GET /api/shops/:slugOrId`
+- `GET /api/shops/:slugOrId/ratings`
+- `PUT /api/shops/:slugOrId/rating`
+- `DELETE /api/shops/:slugOrId/rating`
+- `GET /api/shops/:slugOrId/comments`
+- `GET /api/shops/:slugOrId/comments/:commentId/replies`
+- `POST /api/shops/:slugOrId/comments`
+- `DELETE /api/shops/:slugOrId/comments/:commentId`
+
+Feature page: [Shops](/docs/features/shops).
+
 ## Feed (`/api/feed`)
 
 - `GET /api/feed`
@@ -238,6 +252,22 @@ Base URL: `https://api.thetrickbook.com/api`
 - `POST /api/payments/cancel-subscription`
 - `POST /api/payments/reactivate-subscription`
 - `POST /api/payments/webhook`
+
+## Companion Profile (`/api/companion`)
+
+- `GET /api/companion/kaori/usage`
+- `GET /api/companion/kaori/greeting`
+- `GET /api/companion/profile/:companionId`
+- `POST /api/companion/profile/:companionId/greeting`
+- `PUT /api/companion/profile/:companionId`
+
+Allowances and limits: [TrickBook Plus and Free-Tier Limits](/docs/features/trickbook-plus).
+
+## Bot Chat (`/api/bot-chat`)
+
+- `GET /api/bot-chat/bots`
+- `GET /api/bot-chat/history/:botId`
+- `POST /api/bot-chat/message`
 
 ## Blog (`/api/blog`)
 

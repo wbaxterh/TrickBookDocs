@@ -128,13 +128,13 @@ One of the first profile questions for boardsports users will be **regular or go
 | 3D companion stage (mobile) | ✅ Merged — awaiting new EAS build |
 | Speech-synced trick demos (FS360) | ✅ Merged — awaiting new EAS build |
 | Mobile rich-content card renderer | ✅ Shipped — dormant (backend never sends `richContent` yet) |
-| Voice-endpoint auth + usage metering | 🚧 P0 — see [launch audit](/docs/roadmap/companions-launch) |
+| Voice-endpoint auth + usage metering | 🟡 Partial: usage metering live 2026-09-30 ([TrickBook Plus](/docs/features/trickbook-plus)); signed Kith admission tickets still unbuilt, see [launch audit](/docs/roadmap/companions-launch) |
 | Atlas RAG over Trickipedia, films, spots, and events | ✅ Live (prod 2026-09-10) |
 | Trick/film/spot/rider relationship graph + traversal tools | ✅ Live (prod 2026-09-10) |
 | Registry-driven multi-companion backend | ✅ Live; Kaori registered, next persona pending |
 | Expanded action tools and rich response cards | 📋 Next — [remaining work](/docs/roadmap/companions-intelligence-progress#what-remains) |
 | Mocap-driven trick clip library | 📋 Planned — [pipeline](/docs/features/ai-companions/motion-pipeline) |
-| Paywall / free-sample gating | 📋 Planned — see [monetization](/docs/roadmap/monetization) |
+| Paywall / free-sample gating | 🟡 Partial: daily text and voice allowances plus the web upgrade prompt are live; roster gating planned, see [monetization](/docs/roadmap/monetization) |
 | Snowy stage environment · board/outfit unlocks | 📋 Planned |
 | Tony (skateboard companion) | 📋 Planned |
 | Regular/goofy stance onboarding | 📋 Planned |

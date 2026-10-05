@@ -1,148 +1,94 @@
 ---
 sidebar_position: 5
+title: Shops
 ---
 
-# Shops Directory: Build and Inventory Plan
+# Shops Directory
 
-**Status:** Planned<br />
-**Planning date:** September 10, 2026<br />
-**Initial scope:** Skate, ski/snowboard, surf, and wakeboard shops
+**Status:** Live on web, API, and mobile<br />
+**Shipped:** API and website on September 15 and 16, 2026; mobile on September 27 to 29, 2026 (v2.0.0); TrickBook star ratings on October 5, 2026<br />
+**Inventory:** 206 published shops as of October 5, 2026
 
-## Product Decision
+Shops is TrickBook's directory of brick-and-mortar action-sports shops: the places riders buy, rent, and repair gear. It is a first-class `shops` resource, not a Spot category, and that decision held through delivery. The original September 10 build plan is preserved at the bottom of this page. Everything above it describes what is running.
 
-Build shops as a first-class `shops` resource and MongoDB collection. Do not add `shop` as a Spot category.
+## Current implementation
 
-Spots describe places where riders participate. Shops describe businesses where riders buy, rent, repair, demo, or receive services. The two resources share location, map, image, review, and save behavior, but shops need commerce-specific data, lifecycle rules, source provenance, and a business-claim workflow. Keeping them separate prevents the Spot filters and schemas from accumulating retail-only fields while allowing a shop to reference nearby spots later.
+| Layer | Current behavior |
+|---|---|
+| Web | `/shops` directory with text search, sport, service, location, and radius filters, "near me" geolocation, and distance sorting. `/shops/[slug]` is server-rendered with a 5-minute CDN cache and shows the storefront hero, contact and directions, hours, social links, TrickBook star rating, Google review summary, team riders, FAQs, press features, a sport-specific conversion CTA, and threaded comments. |
+| API | Public list, detail, rating summary, and comment reads. Authenticated rating upsert and delete, comment create and delete. |
+| Mobile (v2.0.0) | Shops segment inside the Spots tab (Spots · Events · Shops): search, sport chips, infinite scroll in pages of 20. Detail with directions, call, website, hours, socials, team riders, and comments. Shop pins on the Spots map under a "Shops" category, drawn in emerald so they read apart from spot pins, and included under "All". |
+| Data | `shops`, `shop_comments`, and `shop_ratings` collections in MongoDB. Shops enter only through the guarded JSON importer. |
 
-The MVP should answer three rider questions:
+### Live inventory (October 5, 2026)
 
-1. Which relevant shops are near me or near a destination?
-2. Does this shop support my sport and the service I need?
-3. Is the listing current enough that I can trust it before visiting?
+- 206 published shops, all in the USA: 197 in California, the rest spread across CO, UT, NY, MA, OR, IL, and WA.
+- Sports, counting a multi-sport shop once per sport: skateboarding 201, surfing 39, snowboarding 37, skiing 10, rollerblading 10, wakeboarding 3, BMX 2, scooter 1, MTB 1.
+- Services: gear 205, apparel 198, online 170, rentals 18, repairs 18, lessons 10.
+- Enrichment coverage: every shop is verified and carries FAQs; 48 have a storefront image, 29 have press features, 15 have a Google review summary, 7 have a team-rider roster, and 1 is featured. No TrickBook user ratings exist yet because ratings shipped today.
 
-## Scope and Qualification
+## Data model (as shipped)
 
-### Include
+The shipped record is flatter than the planned shape below. Provenance is a single `sourceUrl`, lifecycle is `status: draft | published`, and verification is a boolean. There are no `sourceRecords`, `brands`, claim fields, or operational-status enums yet.
 
-- Independent and chain retailers with a meaningful in-person action-sports offering
-- Brand-owned stores and verified authorized dealers
-- Skate shops, ski shops, snowboard shops, surf shops, and wakeboard shops
-- Hybrid shops serving more than one supported sport
-- Seasonal brick-and-mortar shops when their operating season is documented
-- Resort or marina retail locations only when they function as a public shop with a distinct identity
-- Rental, demo, repair, tuning, boot-fitting, board-shaping, and consignment businesses when tied to an eligible sport
+### `shops`
 
-### Exclude from MVP
+| Field | Shape | Notes |
+|---|---|---|
+| `name`, `slug` | string | `slug` is unique and is the importer's upsert key |
+| `description` | string | original text, at most 1,200 characters |
+| `sports` | string[] | `skateboarding`, `snowboarding`, `skiing`, `surfing`, `bmx`, `mtb`, `scooter`, `rollerblading`, `wakeboarding` |
+| `services` | string[] | `gear`, `apparel`, `repairs`, `rentals`, `lessons`, `online` |
+| `address` | object | `street`, `city`, `region`, `postalCode`, `country`, `lat`, `lng`, plus a GeoJSON `location` point on production records |
+| `website`, `phone`, `hours` | string | `hours` may also be an object |
+| `imageUrl`, `imageAlt`, `imageSourceUrl` | string | storefront photo and the page that proves its provenance |
+| `socialLinks` | object | platform to URL |
+| `teamRiders` | object[] | `name`, `role`, `sourceUrl`; `riderSlug` is attached at read time (see API) |
+| `faqs` | object[] | up to 8 `question` and `answer` pairs |
+| `pressFeatures` | object[] | `title`, `publisher`, `url`, optional `publishedAt` and `summary` |
+| `reviewSummary` | object | `source`, `rating`, `reviewCount`, `summary`, `sourceUrl`, `asOf` |
+| `userRating` | object | `averageRating` (one decimal, `null` when empty) and `ratingCount`, denormalized from `shop_ratings` |
+| `verified`, `featured` | boolean | featured shops sort first in the list |
+| `status` | string | `draft` or `published`; only published shops are served |
+| `sourceUrl`, `updatedAt` | string, date | |
 
-- Online-only stores, marketplace sellers, and general sporting-goods listings without a verified specialty department
-- Manufacturers, distributors, warehouses, private clubs, and schools with no public retail/service counter
-- Temporary event vendors and pop-ups without a stable public location
-- Permanently closed, unbuilt, or unverifiable businesses
-- Duplicate departments or map pins inside the same business unless they have separate public identities and entrances
+### `shop_ratings`
 
-The canonical classification is multi-select `sportTypes`, not a single shop type. A skate-and-snow shop is one record with two sports.
+One document per user per shop: `shopId`, `userId`, `rating` (integer 1 to 5), `createdAt`, `updatedAt`. Unique on `(shopId, userId)`. The average is rounded to one decimal and written onto `shops.userRating` on every change.
 
-## Canonical Data Shape
+### `shop_comments`
 
-Use GeoJSON as the canonical coordinate representation and retain flat `latitude` and `longitude` only during the migration if existing map components require them.
+`shopId`, `userId`, `parentCommentId` (`null` for top-level), `content` (at most 500 characters), `replyCount`, `status` (`active` or `deleted`), `createdAt`, `updatedAt`. Deletes are soft: the document stays and readers filter on `status: active`. The `user` object in API responses is populated at read time and never stored.
 
-```js
-{
-  _id: ObjectId,
-  name: String,
-  slug: String,
-  aliases: [String],
-  description: String,
+## API (as shipped)
 
-  sportTypes: [
-    // skateboarding | skiing | snowboarding | surfing | wakeboarding
-  ],
-  shopKind: String, // independent | chain | brand_store | resort_shop | marina_shop
-  specialties: [String], // decks, hardgoods, apparel, shaping, splitboard, wakesurf...
-  services: [
-    // retail | rental | demo | repair | tuning | boot_fitting | mounting |
-    // board_shaping | lessons_referral | consignment | online_order_pickup
-  ],
-  brands: [{
-    name: String,
-    relationship: String, // authorized_dealer | stocked | service_center | unknown
-    sourceUrl: String,
-    verifiedAt: Date
-  }],
+Public reads:
 
-  location: { type: 'Point', coordinates: [Number, Number] }, // [longitude, latitude]
-  address: {
-    line1: String,
-    line2: String,
-    city: String,
-    region: String,
-    postalCode: String,
-    countryCode: String
-  },
-  timezone: String, // IANA zone, for example America/Los_Angeles
-  serviceArea: String,
+- `GET /api/shops` takes `q` (matches name, description, and city), `location` (city, region, postal code, country), `sport`, `service`, `limit` (default 24, max 60), and `cursor` (an offset). It serves published shops only, sorted featured first and then by name, and returns `{ shops, nextCursor, totalCount }`.
+- `GET /api/shops/:slugOrId` returns `{ shop }`, or 404 unless the shop is published.
+- `GET /api/shops/:slugOrId/ratings` returns `{ averageRating, ratingCount, distribution, myRating }`. `myRating` is filled when an `x-auth-token` header is present.
+- `GET /api/shops/:slugOrId/comments?page&limit` returns top-level comments newest first as `{ comments, pagination }`, with `limit` defaulting to 20 and capped at 50.
+- `GET /api/shops/:slugOrId/comments/:commentId/replies`
 
-  contact: {
-    website: String,
-    phone: String,
-    email: String,
-    instagram: String,
-    facebook: String
-  },
-  hours: {
-    weekly: [{ day: Number, intervals: [{ open: String, close: String }] }],
-    note: String,
-    seasonal: Boolean,
-    temporarilyClosed: Boolean,
-    sourceUrl: String,
-    verifiedAt: Date
-  },
+Authenticated with `x-auth-token`:
 
-  images: [{
-    url: String,
-    storageKey: String,
-    alt: String,
-    kind: String, // storefront | interior | service | team | logo
-    sourceUrl: String,
-    rightsBasis: String,
-    credit: String,
-    isHero: Boolean
-  }],
+- `PUT /api/shops/:slugOrId/rating` with `{ rating }` upserts the caller's rating. `DELETE /api/shops/:slugOrId/rating` removes it and is idempotent. Both return the updated summary.
+- `POST /api/shops/:slugOrId/comments` with `{ content, parentCommentId? }`. `DELETE /api/shops/:slugOrId/comments/:commentId` is allowed for the author or an admin.
 
-  operationalStatus: String, // operating | seasonal | temporarily_closed | permanently_closed | unknown
-  verificationStatus: String, // pending | verified | disputed | rejected
-  confidence: Number, // 0-100, derived from evidence rather than manually presented as fact
-  lastVerifiedAt: Date,
-  nextReviewAt: Date,
+There is no server-side geo query. The web "near me" and radius filters are computed in the browser from `address.lat` and `address.lng` over the full published list, which is fine at the current inventory size.
 
-  sourceRecords: [{
-    sourceType: String, // official_site | brand_locator | osm | google_place_id | directory | social | manual
-    sourceName: String,
-    sourceId: String,
-    sourceUrl: String,
-    fieldsSupported: [String],
-    observedAt: Date,
-    contentHash: String
-  }],
-  dedupeKeys: [String],
-  googlePlaceId: String,
-  osmElement: { type: String, id: String },
+Team riders are linked at read time. Every published editorial rider's normalized name and aliases are matched against `teamRiders[].name`, and matches receive a `riderSlug` so the web and mobile detail pages can deep-link to `/riders/[slug]`.
 
-  claimedBy: ObjectId,
-  claimStatus: String, // unclaimed | pending | claimed | revoked
-  submittedBy: ObjectId,
-  approvedBy: ObjectId,
-  isActive: Boolean,
-  createdAt: Date,
-  updatedAt: Date
-}
+## Inventory and import
+
+Shops are written by exactly one path, the importer in TB-Backend:
+
+```bash
+npm run shops:import -- --file shops.json          # dry run: validates and prints the slugs
+npm run shops:import -- --file shops.json --apply  # upserts by slug; needs ATLAS_URI
 ```
 
-Do not copy Google ratings, reviews, photos, hours, or other Places content into the canonical record as if TrickBook owns it. Google permits Place IDs to be stored, but Places content has caching, display, and attribution restrictions. Store the Place ID and fetch permitted display data at request time behind a provider adapter when the product needs it. See [Google Places policies](https://developers.google.com/maps/documentation/places/web-service/policies) and [Place ID guidance](https://developers.google.com/maps/documentation/places/web-service/place-id).
-
-### Required MVP fields
-
-`name`, at least one `sportTypes` value, `location`, country/city address data, `operationalStatus`, `verificationStatus`, `lastVerifiedAt`, one authoritative or corroborating source record, and a deterministic dedupe key.
+The importer accepts at most 500 shops per run, rejects duplicate slugs, strips unknown fields, and validates every record against the contract in the next section. There is no admin UI, submission endpoint, or business-claim flow yet.
 
 ## Grokbot Research Handoff Contract
 
@@ -264,7 +210,161 @@ Return raw JSON only when handing data to automation. Use empty strings or empty
 7. Provide a separate research evidence list mapping each material claim to its source URL and observation date. The importer object remains clean JSON.
 8. Stop at research handoff. Only the guarded importer operator may dry-run, apply, and verify production.
 
-### Indexes
+## Analytics (as shipped)
+
+Web events: `shop_viewed`, `shop_action_clicked` (directions, website, phone, social), `shop_conversion_clicked`, `shop_comment_added`, `shop_rated`, and `shop_rating_removed`. These replace the `shops_view` and `shop_open` names in the original plan.
+
+## Open items and known gaps
+
+- The web comment "love" button posts to `/api/shops/:slugOrId/comments/:commentId/love`, which the API does not implement. The request fails. Either add the route or hide the control.
+- Shop pages are not in the website sitemap.
+- Mobile has no rating UI and does not render comment replies. The API supports both.
+- Not built: saves, corrections, business claims, admin bulk-upsert routes, a map-pins endpoint, and nearby-spots cross-links. These remain in the plan below.
+- Inventory is California-heavy and USA-only. Expansion to other metros and to snow, surf, and wake regions is still manual research work.
+
+## Original build plan (September 10, 2026)
+
+:::note
+Preserved for the decisions and for the discovery, dedupe, and verification rules that still apply. Where this plan and the sections above disagree, the sections above describe production.
+:::
+
+### Product Decision
+
+Build shops as a first-class `shops` resource and MongoDB collection. Do not add `shop` as a Spot category.
+
+Spots describe places where riders participate. Shops describe businesses where riders buy, rent, repair, demo, or receive services. The two resources share location, map, image, review, and save behavior, but shops need commerce-specific data, lifecycle rules, source provenance, and a business-claim workflow. Keeping them separate prevents the Spot filters and schemas from accumulating retail-only fields while allowing a shop to reference nearby spots later.
+
+The MVP should answer three rider questions:
+
+1. Which relevant shops are near me or near a destination?
+2. Does this shop support my sport and the service I need?
+3. Is the listing current enough that I can trust it before visiting?
+
+### Scope and Qualification
+
+#### Include
+
+- Independent and chain retailers with a meaningful in-person action-sports offering
+- Brand-owned stores and verified authorized dealers
+- Skate shops, ski shops, snowboard shops, surf shops, and wakeboard shops
+- Hybrid shops serving more than one supported sport
+- Seasonal brick-and-mortar shops when their operating season is documented
+- Resort or marina retail locations only when they function as a public shop with a distinct identity
+- Rental, demo, repair, tuning, boot-fitting, board-shaping, and consignment businesses when tied to an eligible sport
+
+#### Exclude from MVP
+
+- Online-only stores, marketplace sellers, and general sporting-goods listings without a verified specialty department
+- Manufacturers, distributors, warehouses, private clubs, and schools with no public retail/service counter
+- Temporary event vendors and pop-ups without a stable public location
+- Permanently closed, unbuilt, or unverifiable businesses
+- Duplicate departments or map pins inside the same business unless they have separate public identities and entrances
+
+The canonical classification is multi-select `sportTypes`, not a single shop type. A skate-and-snow shop is one record with two sports.
+
+### Canonical Data Shape
+
+Use GeoJSON as the canonical coordinate representation and retain flat `latitude` and `longitude` only during the migration if existing map components require them.
+
+```js
+{
+  _id: ObjectId,
+  name: String,
+  slug: String,
+  aliases: [String],
+  description: String,
+
+  sportTypes: [
+    // skateboarding | skiing | snowboarding | surfing | wakeboarding
+  ],
+  shopKind: String, // independent | chain | brand_store | resort_shop | marina_shop
+  specialties: [String], // decks, hardgoods, apparel, shaping, splitboard, wakesurf...
+  services: [
+    // retail | rental | demo | repair | tuning | boot_fitting | mounting |
+    // board_shaping | lessons_referral | consignment | online_order_pickup
+  ],
+  brands: [{
+    name: String,
+    relationship: String, // authorized_dealer | stocked | service_center | unknown
+    sourceUrl: String,
+    verifiedAt: Date
+  }],
+
+  location: { type: 'Point', coordinates: [Number, Number] }, // [longitude, latitude]
+  address: {
+    line1: String,
+    line2: String,
+    city: String,
+    region: String,
+    postalCode: String,
+    countryCode: String
+  },
+  timezone: String, // IANA zone, for example America/Los_Angeles
+  serviceArea: String,
+
+  contact: {
+    website: String,
+    phone: String,
+    email: String,
+    instagram: String,
+    facebook: String
+  },
+  hours: {
+    weekly: [{ day: Number, intervals: [{ open: String, close: String }] }],
+    note: String,
+    seasonal: Boolean,
+    temporarilyClosed: Boolean,
+    sourceUrl: String,
+    verifiedAt: Date
+  },
+
+  images: [{
+    url: String,
+    storageKey: String,
+    alt: String,
+    kind: String, // storefront | interior | service | team | logo
+    sourceUrl: String,
+    rightsBasis: String,
+    credit: String,
+    isHero: Boolean
+  }],
+
+  operationalStatus: String, // operating | seasonal | temporarily_closed | permanently_closed | unknown
+  verificationStatus: String, // pending | verified | disputed | rejected
+  confidence: Number, // 0-100, derived from evidence rather than manually presented as fact
+  lastVerifiedAt: Date,
+  nextReviewAt: Date,
+
+  sourceRecords: [{
+    sourceType: String, // official_site | brand_locator | osm | google_place_id | directory | social | manual
+    sourceName: String,
+    sourceId: String,
+    sourceUrl: String,
+    fieldsSupported: [String],
+    observedAt: Date,
+    contentHash: String
+  }],
+  dedupeKeys: [String],
+  googlePlaceId: String,
+  osmElement: { type: String, id: String },
+
+  claimedBy: ObjectId,
+  claimStatus: String, // unclaimed | pending | claimed | revoked
+  submittedBy: ObjectId,
+  approvedBy: ObjectId,
+  isActive: Boolean,
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+Do not copy Google ratings, reviews, photos, hours, or other Places content into the canonical record as if TrickBook owns it. Google permits Place IDs to be stored, but Places content has caching, display, and attribution restrictions. Store the Place ID and fetch permitted display data at request time behind a provider adapter when the product needs it. See [Google Places policies](https://developers.google.com/maps/documentation/places/web-service/policies) and [Place ID guidance](https://developers.google.com/maps/documentation/places/web-service/place-id).
+
+#### Required MVP fields
+
+`name`, at least one `sportTypes` value, `location`, country/city address data, `operationalStatus`, `verificationStatus`, `lastVerifiedAt`, one authoritative or corroborating source record, and a deterministic dedupe key.
+
+#### Indexes
 
 ```js
 db.shops.createIndex({ location: '2dsphere' });
@@ -280,11 +380,11 @@ db.shops.createIndex({ name: 'text', aliases: 'text', specialties: 'text', 'bran
 db.shops.createIndex({ nextReviewAt: 1, verificationStatus: 1 });
 ```
 
-## API Plan
+### API Plan
 
 Keep public reads separate from authenticated submissions and admin inventory operations.
 
-### Public
+#### Public
 
 - `GET /api/shops` — cursor-paginated list with bounding box, radius, sport, service, status, and text filters
 - `GET /api/shops/map-pins` — compact payload for the visible viewport
@@ -295,7 +395,7 @@ Keep public reads separate from authenticated submissions and admin inventory op
 
 Use `bbox` for map movement and `lat`, `lng`, `radius` for “near me.” Cap radius and result counts. Return only projected fields from `map-pins`.
 
-### Authenticated users and claimed businesses
+#### Authenticated users and claimed businesses
 
 - `POST /api/shops/submissions` — create a pending listing or correction
 - `POST /api/shops/:id/save` and `DELETE /api/shops/:id/save`
@@ -304,7 +404,7 @@ Use `bbox` for map movement and `lat`, `lng`, `radius` for “near me.” Cap ra
 - `POST /api/shops/:slugOrId/comments` — create a comment
 - `DELETE /api/shops/:slugOrId/comments/:commentId` — delete own comment
 
-### Admin and ingestion
+#### Admin and ingestion
 
 - `GET /api/admin/shops/pending`
 - `POST /api/admin/shops/bulk-upsert` — idempotent, validated, provenance required
@@ -314,11 +414,11 @@ Use `bbox` for map movement and `lat`, `lng`, `radius` for “near me.” Cap ra
 
 Every write should use Joi validation, field allowlists, normalized URLs/phones, and audit entries. Bulk upsert must support `dryRun: true` and return created, updated, unchanged, rejected, and ambiguous-duplicate counts.
 
-## Discovery and Scraping Strategy
+### Discovery and Scraping Strategy
 
 The inventory system should collect leads broadly, then publish narrowly. A source mentioning a shop is evidence, not permission to republish every field or image.
 
-### Source priority
+#### Source priority
 
 1. **Shop-owned sources:** official website, store page, contact page, structured data, and official social account
 2. **Brand dealer locators:** strong evidence for sport and brand relationships; for example, Burton describes its locator as its current authorized-retailer source ([Burton locator guidance](https://www.burton.com/en-us/blogs/the-burton-blog/closest-burton-dealer))
@@ -331,7 +431,7 @@ Do not build the inventory by scraping Google Maps pages or copying third-party 
 
 For OSM-scale work, use regional extracts or a controlled data provider rather than systematic Nominatim queries. The public Nominatim service prohibits systematic POI harvesting and heavily restricts scheduled bulk geocoding ([usage policy](https://operations.osmfoundation.org/policies/nominatim/)).
 
-### Sport-specific discovery queries
+#### Sport-specific discovery queries
 
 - Skate: `skate shop`, `skateshop`, `skateboard shop`, brand dealer lists, local skate media, park/shop cross-references
 - Ski/snowboard: `ski shop`, `snowboard shop`, `ski rental`, `board shop`, resort town directories, binding/tuning/boot-fitting services, brand dealer locators
@@ -340,7 +440,7 @@ For OSM-scale work, use regional extracts or a controlled data provider rather t
 
 Generic sporting-goods stores require an explicit specialty signal: an official department page, an authorized-dealer relationship, or current hardgoods/service evidence.
 
-### Connector contract
+#### Connector contract
 
 Each connector implements:
 
@@ -360,7 +460,7 @@ interface ShopSourceConnector {
 
 Store a raw snapshot or content hash only when the source terms allow it. Connector tests should use checked-in redacted fixtures, never depend on a live website in CI.
 
-### Pipeline
+#### Pipeline
 
 1. Select a bounded metro and sport scope.
 2. Run connectors and write raw candidates to a staging collection.
@@ -372,7 +472,7 @@ Store a raw snapshot or content hash only when the source terms allow it. Connec
 8. Audit API output, map placement, source URLs, image URLs, desktop/mobile rendering, and duplicate counts.
 9. Checkpoint the metro cursor and schedule a freshness review.
 
-### Dedupe rules
+#### Dedupe rules
 
 Match in descending confidence:
 
@@ -384,7 +484,7 @@ Match in descending confidence:
 
 Never auto-merge on name alone. A relocation should preserve the canonical shop identity and history when the official business is continuous; two active branches remain separate records.
 
-### Verification and freshness
+#### Verification and freshness
 
 - Operating: official site/contact source checked within 180 days
 - Seasonal: recheck before its documented opening season
@@ -394,7 +494,7 @@ Never auto-merge on name alone. A relocation should preserve the canonical shop 
 
 Confidence is calculated from evidence recency, source authority, cross-source agreement, and field completeness. It must not replace a visible `lastVerifiedAt` date.
 
-## Inventory State
+### Inventory State
 
 Mirror the proven Spot inventory pattern but use shop-specific state.
 
@@ -419,9 +519,9 @@ Mirror the proven Spot inventory pattern but use shop-specific state.
 
 The scheduled job must be idempotent, bounded to one metro/batch per run, and unable to publish when source provenance or required verification is missing. Report direct URLs for every created or changed shop.
 
-## User Experience
+### User Experience
 
-### MVP surfaces
+#### MVP surfaces
 
 - Shops landing page with list/map toggle and “near me”
 - Filters for sport and service; optional brand filter after brand data is reliable
@@ -431,43 +531,7 @@ The scheduled job must be idempotent, bounded to one metro/batch per run, and un
 
 Do not combine Shop and Spot pins by default. Add an explicit map layer toggle after both layers perform well independently.
 
-### Website Shop Detail (Live and Upcoming)
-
-The public website shop detail page (`/shops/[slug]`) renders enriched content from the live production API.
-
-**Storefront hero**
-
-Full-bleed storefront hero sourced from `imageUrl` with `imageAlt` for accessibility and `imageSourceUrl` for attribution review.
-
-**Enrichment fields surfaced on detail pages**
-
-| Field | Shape | Display behavior |
-|-------|-------|------------------|
-| `reviewSummary` | `{ source, rating, reviewCount, summary, sourceUrl, asOf }` | Aggregated Google rating (0–5), review count, and original theme summary with source attribution and `asOf` date. |
-| `teamRiders` | `[{ name, role?, sourceUrl?, profileUrl?, imageUrl? }]` | Shop team roster; links to TrickBook rider profiles via `profileUrl` when matched. |
-| `faqs` | `[{ question, answer }]` | Accordion of verified Q&A pairs (hours, services, repairs, rentals, location). |
-| `pressFeatures` | `[{ title, publisher, url, publishedAt?, summary? }]` | Editorial coverage from established skate/snow/surf media. |
-| `socialLinks` | `{ platform: url, ... }` | Icon row linking to official Instagram, Facebook, YouTube, TikTok, etc. |
-
-**Conversion CTA**
-
-A sport-specific TrickBook module appears after the shop summary, patterned after the Events conversion CTA (`EventConversionCta`). The module highlights relevant TrickBook features (nearby spots, trick tracking, community) and provides App Store / signup actions without obscuring the shop's primary contact or directions controls.
-
-**Comments**
-
-:::info[Shipping]
-Shop comments are in flight (TB-Backend comments API PR). The endpoints below are planned to land shortly.
-:::
-
-Authenticated users can post, view, and delete comments on shop detail pages:
-
-- `GET /api/shops/:slugOrId/comments` — paginated comment list
-- `POST /api/shops/:slugOrId/comments` — create a comment (authenticated)
-- `DELETE /api/shops/:slugOrId/comments/:commentId` — delete own comment (authenticated)
-
-Comments follow the same moderation and anti-spam policies as Feed and Couch comments. The detail page displays comments below the enrichment content and conversion CTA.
-
-### Later phases
+#### Later phases
 
 - Nearby Spots and nearby Events cross-links
 - Verified business claims and owner-managed profiles
@@ -475,9 +539,9 @@ Comments follow the same moderation and anti-spam policies as Feed and Couch com
 - Deals, demos, shop events, team riders, and community features
 - Reviews only after moderation, anti-spam, aggregate-rating, and business-response policies exist
 
-## Delivery Phases
+### Delivery Phases
 
-### Phase 0 — Contract and policy spike
+#### Phase 0 — Contract and policy spike
 
 - Confirm source permissions, attribution, and data-retention rules
 - Sample 50 shops across all four verticals and at least three metros
@@ -486,13 +550,13 @@ Comments follow the same moderation and anti-spam policies as Feed and Couch com
 
 **Exit:** at least 90% of the sample can be correctly included/excluded and deduplicated, with every canonical field tied to an allowed source.
 
-### Phase 1 — Backend foundation
+#### Phase 1 — Backend foundation
 
 - `shops`, `shop_submissions`, `shop_claims`, and `shop_audit_log` collections
 - Validation, indexes, public list/detail/map APIs, admin bulk dry-run/upsert, merge, and verification routes
 - Unit/integration tests for validation, geo queries, projections, auth, idempotency, and merges
 
-### Phase 2 — Inventory pilot
+#### Phase 2 — Inventory pilot
 
 - Pilot Los Angeles skate shops first: the domain is easy to evaluate and complements the current LA/Spot work
 - Add official-site, OSM-extract, and selected brand-locator connectors
@@ -501,25 +565,25 @@ Comments follow the same moderation and anti-spam policies as Feed and Couch com
 
 **Exit:** 95%+ precision in a manually audited pilot and zero unresolved high-confidence duplicates.
 
-### Phase 3 — Product MVP
+#### Phase 3 — Product MVP
 
 - Website and mobile list/map/detail views
 - Sport/service filters, directions, saves, freshness, attribution, correction submissions, analytics, and empty/error states
 - Feature flag and staged rollout
 
-### Phase 4 — Geographic and sport expansion
+#### Phase 4 — Geographic and sport expansion
 
 - Expand skate metro by metro
 - Add ski/snowboard in resort metros, surf in coastal metros, and wake around cable parks/lakes
 - Tune source packs independently; do not assume skate discovery sources work for snow, surf, or wake
 
-### Phase 5 — Claims and monetization
+#### Phase 5 — Claims and monetization
 
 - Verify owners by domain email, DNS/file challenge, official social confirmation, or manual documents
 - Separate factual corrections from promotional profile content
 - Define free versus paid features without selling ranking in organic results
 
-## Analytics and Acceptance Criteria
+### Analytics and Acceptance Criteria
 
 Instrument `shops_view`, `shops_search`, `shops_filter`, `shop_open`, `shop_directions`, `shop_website`, `shop_phone`, `shop_save`, and `shop_correction_submit`.
 
@@ -534,12 +598,13 @@ MVP acceptance requires:
 - Google/OSM/provider attribution and storage behavior pass a documented policy review
 - Accessibility includes keyboard navigation, labeled controls, non-color status cues, and descriptive image alt text
 
-## Recommended First Build Slice
+### Recommended First Build Slice
 
 The smallest end-to-end slice is **verified Los Angeles skate shops**: schema and indexes, public list/detail/map routes, admin dry-run/upsert, one bounded inventory state file, official-site plus OSM discovery, manual verification, and a web read-only UI behind a feature flag. Do not start with global multi-sport scraping. Prove precision, provenance, dedupe, and freshness in one vertical and metro, then reuse the pipeline.
 
 ## Related Documentation
 
+- [Riders](/docs/features/riders)
 - [Spots](/docs/features/spots)
 - [Spots Inventory Automation](/docs/features/spots-inventory-automation)
 - [Events](/docs/features/events)
