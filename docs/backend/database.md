@@ -213,6 +213,93 @@ Skate spot locations.
 
 ---
 
+### shops
+
+Public shop directory records. Written only by `scripts/import-shops.js`, upserted by `slug`. Feature page: [Shops](/docs/features/shops).
+
+```javascript
+{
+  _id: ObjectId,
+  name: String,
+  slug: String,              // unique, importer upsert key
+  description: String,
+  sports: [String],          // skateboarding | snowboarding | skiing | surfing | bmx | mtb | scooter | rollerblading | wakeboarding
+  services: [String],        // gear | apparel | repairs | rentals | lessons | online
+  address: {
+    street: String, city: String, region: String, postalCode: String, country: String,
+    lat: Number, lng: Number,
+    location: { type: 'Point', coordinates: [Number, Number] }  // [lng, lat]
+  },
+  website: String,
+  phone: String,
+  hours: String,             // or an object
+  imageUrl: String,
+  imageAlt: String,
+  imageSourceUrl: String,
+  socialLinks: Object,       // platform -> url
+  teamRiders: [{ name: String, role: String, sourceUrl: String }],
+  faqs: [{ question: String, answer: String }],
+  pressFeatures: [{ title: String, publisher: String, url: String, publishedAt: String, summary: String }],
+  reviewSummary: { source: String, rating: Number, reviewCount: Number, summary: String, sourceUrl: String, asOf: String },
+  userRating: { averageRating: Number, ratingCount: Number },  // denormalized from shop_ratings
+  verified: Boolean,
+  featured: Boolean,
+  status: String,            // draft | published
+  sourceUrl: String,
+  updatedAt: Date
+}
+```
+
+---
+
+### shop_ratings
+
+One star rating per user per shop.
+
+```javascript
+{
+  _id: ObjectId,
+  shopId: String,            // shops._id as string
+  userId: String,            // users._id as string
+  rating: Number,            // integer 1-5
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+Unique on `(shopId, userId)`. Every write recomputes `shops.userRating`.
+
+**Relationships:**
+- `shopId` → `shops._id`
+- `userId` → `users._id`
+
+---
+
+### shop_comments
+
+Comments and replies on shop pages. Deletes are soft.
+
+```javascript
+{
+  _id: ObjectId,
+  shopId: String,            // shops._id as string
+  userId: String,            // users._id as string
+  parentCommentId: String,   // null for top-level comments
+  content: String,           // max 500 characters
+  replyCount: Number,
+  status: String,            // active | deleted
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+**Relationships:**
+- `shopId` → `shops._id`
+- `userId` → `users._id`
+- `parentCommentId` → `shop_comments._id`
+
+---
+
 ### feed_posts
 
 Social feed posts with media content.

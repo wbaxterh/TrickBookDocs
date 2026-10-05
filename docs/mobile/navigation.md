@@ -106,6 +106,10 @@ export default function AuthLayout() {
 
 Main navigation for authenticated users with 5 tabs.
 
+:::note[Current tabs (v2.0.0, September 2026)]
+Home, TrickBook, Spots, Riders, Media. Shops and Events are segments inside the Spots tab (Spots · Events · Shops), and Riders is the renamed Homies route. The code below predates that change. See [Shops](/docs/features/shops) and [Riders](/docs/features/riders).
+:::
+
 ```typescript
 // app/(tabs)/_layout.tsx
 import { Tabs } from 'expo-router';
