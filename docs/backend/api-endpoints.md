@@ -241,6 +241,22 @@ Base URL: `https://api.thetrickbook.com/api`
 - `POST /api/payments/reconcile` (auth): applies any live Stripe subscription found for the caller's customer; never downgrades
 - `POST /api/payments/webhook` (Stripe signature over the raw body; deliveries are idempotent by event id)
 
+## Analytics (`/api/analytics`)
+
+Ingestion is public (the user is taken from `x-auth-token` when present); every dashboard route requires an admin token.
+
+- `POST /api/analytics/events`: one event in the canonical envelope
+- `POST /api/analytics/events/batch`: up to 100 events, idempotent by `eventId`
+- `GET /api/analytics/dashboard/retention?weeks=`: signups, 48 h activation, time to value, weekly retention windows W1 to W4, exclusion summary
+- `GET /api/analytics/dashboard/wpr?weeks=`: Weekly Progressing Riders per rolling week with depth (actions per rider)
+- `GET /api/analytics/dashboard/feature-value?days=`: riders and actions per meaningful event
+- `GET /api/analytics/dashboard/ltv`: plan counts and run-rate
+- `GET /api/analytics/dashboard/overview|traffic|pages|sections|scroll-depth|ctas|app-stores|funnel|referrers`: website traffic dashboards
+- `GET /api/analytics/dashboard/app-users`: DAU, WAU, MAU across content collections and events, latest activity
+- `GET /api/analytics/dashboard/downloads`: store download exports
+
+Accounts with `role: admin`, `isBot: true` or `analyticsExcluded: true` are excluded from every metric and reported in the `excluded` field.
+
 ## Blog (`/api/blog`)
 
 - `POST /api/blog`
