@@ -63,6 +63,17 @@ Supporting metrics:
 `active` must never mean merely opening the app. WPR is the strategic metric;
 DAU/MAU remains diagnostic.
 
+## Measurement update, 2026-10-06
+
+What the backend computes today, so the dashboard numbers can be read correctly:
+
+- **Windows are weekly, not exact-day.** A rider counts as retained in W1 if any meaningful action falls on days 1 to 7 after signup, W2 for days 8 to 14, W3 for 15 to 21, W4 for 22 to 28. A window is eligible only once it has fully elapsed. At the current scale an exact-day window reads zero by arithmetic, not behaviour.
+- **Weekly Progressing Riders** is served by `GET /api/analytics/dashboard/wpr`: distinct riders with at least one meaningful action per rolling seven-day window, with depth (actions per rider).
+- **Exclusions.** Accounts with `role: admin`, `isBot: true` or `analyticsExcluded: true` are left out of every metric and counted in the response's `excluded` field. Set `analyticsExcluded` by hand for QA and App Review accounts; the events stay in the collection.
+- **Signups.** Email signups are tracked by the clients; Google and Apple signups are recorded server-side when the sign-in creates the account, since a client cannot tell a first sign-in from a returning one.
+- **Event names** must match the meaningful list exactly; the web calendar event was renamed to `event_calendar_added` so it counts.
+- **Error tracking** is Sentry behind `SENTRY_DSN` on the API, `NEXT_PUBLIC_SENTRY_DSN` on the website and `EXPO_PUBLIC_SENTRY_DSN` on mobile; nothing loads until a DSN is set, and native crash capture on mobile needs the next EAS build.
+
 ## Canonical event contract
 
 Every event uses a client-generated UUID and this envelope:
