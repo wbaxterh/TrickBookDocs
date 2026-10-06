@@ -6,6 +6,10 @@ sidebar_position: 5
 
 Current security status and required improvements for the TrickBook backend.
 
+:::info[Status, 2026-10-06]
+This page is the July 2026 snapshot and several rows below are already fixed in code. Fixed since the September review: Apple sign-in identity is derived from the verified token (#65), avatar upload requires auth and targets the caller (#65), request bodies and identity tokens are no longer logged (#65, TrickBookWebsite #89), a `/health` probe exists (#65), collection validators run in warn mode (#65), and Stripe webhook deliveries verify on the raw body with idempotent handling (#75). Still open: the token check on the voice WebSocket upgrade (caps shipped 2026-09-30), the credential rotations from the September review, dependency upgrades (helmet 3, jsonwebtoken 8, joi 14), and Sentry. A rewrite of this page is tracked as the docs truth pass in [Progress: September 24 to October 6](/docs/roadmap/progress-2026-10).
+:::
+
 ## Critical Issues
 
 :::danger[Immediate Action Required]

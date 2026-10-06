@@ -5,7 +5,7 @@ title: "Companion Intelligence Progress"
 
 # Companion Intelligence Progress
 
-Status: **Phases 1–3 and the multi-companion backend foundation are live in production** · Last verified: 2026-09-10
+Status: **Phases 1–3 and the multi-companion backend foundation are live in production** · Last verified: 2026-09-10 · [Status check 2026-10-06](#status-check-2026-10-06) below
 
 This is the implementation record for grounding TrickBook companions in platform data. The objective is not merely better chat: companions should answer with TrickBook tricks, tutorials, films, spots, riders, and user progression—and expose relationships a general-purpose model cannot know.
 
@@ -71,6 +71,18 @@ Shipped and deployed after Phase 3:
 - Profiles and histories are isolated by companion/bot identity.
 - Unknown legacy characters retain the Eliza fallback path during migration.
 - Kaori is the first registered production companion; adding another brain no longer requires editing the response engine.
+
+## Status check 2026-10-06
+
+Read against the code at `master`, not re-verified on the host.
+
+- Retrieval and graph refreshes are automated: `kaori-rag-indexer` (03:15) and `companion-graph-builder` (03:30) run as PM2 cron apps in the committed ecosystem file, which closes P0 item 4 below.
+- The tool registry has 15 tools; `search_events` (2026-09-30) is the one not yet listed on the companion pages.
+- Retrieval runs on every turn and is pushed into the system prompt. The retrieval-as-a-tool pattern described in RAG & Internal Tools remains a design note, not what runs.
+- Two source adapters in `kaori-rag/documents.js` read field names older than the current ingest (events: `name`, `startDate`, `eventType`, `city`; riders: user-profile fields), so event and rider chunks index with little text. Fixing both is the first retrieval task.
+- The golden set has five queries, and nothing records whether a retrieval was used in an answer, so recall and grounding cannot be measured yet.
+- The Neo4j progression projection (`services/graph/`) is built, disabled by default, and has no client consumer; its outbox still enqueues on every trick change. Decide between a staging tenant per the runbook or removing the outbox writes.
+- Trickipedia progression data is no longer thin: 84 of the first 100 live records carry reviewed edges, so `recommend_next_trick` and `learning_path` have real material.
 
 ## What remains
 

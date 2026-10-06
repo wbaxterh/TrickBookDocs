@@ -11,6 +11,10 @@ Status: **In progress — text metering foundation implemented locally 2026-09-3
 The shared `kaoriUsage` service now covers text generation on web DM/widget and mobile bot-chat: free/Plus daily allowances, account/device short-window limits, single-generation leases, atomic reservations, settlement/refunds, and a usage-status endpoint. Voice debits are also enforced at 5/day free and 200/month Plus across Live greetings and spoken replies. The web widget displays text/voice balances and the Plus upgrade state. Signed Kith admission tickets, Stripe top-ups, and mobile IAP remain unbuilt.
 :::
 
+:::info[October 6 checkout fix]
+Web checkout could not activate Plus until 2026-10-06: the API parsed the webhook body as JSON before Stripe's signature could be checked, so every delivery was rejected and `checkout.session.completed` never set `plan: premium`. Fixed in TB-Backend #75/#76 and TrickBookWebsite #103/#104: raw-body verification, idempotent deliveries, `GET /api/payments/verify-session` on the redirect back, and `POST /api/payments/reconcile` for accounts that paid during the gap. Mobile IAP is still unbuilt and the mobile Upgrade button does nothing.
+:::
+
 **The model in one paragraph:** free users get a **sample** — Kaori visible and usable with a small daily voice allowance, other companions shown locked. Paid tiers unlock the full roster plus a monthly **voice-token** allotment (1 token = 1 spoken reply). Cosmetics (boards, outfits, environments) unlock through BOTH usage (XP/streaks) and payment tiers. Web sells via our existing Stripe; mobile sells via RevenueCat IAP; the backend Mongo user doc is the single source of truth.
 
 ## Why tokens — the unit economics
