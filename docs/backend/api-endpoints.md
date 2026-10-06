@@ -237,7 +237,9 @@ Base URL: `https://api.thetrickbook.com/api`
 - `POST /api/payments/admin/toggle-subscription`
 - `POST /api/payments/cancel-subscription`
 - `POST /api/payments/reactivate-subscription`
-- `POST /api/payments/webhook`
+- `GET /api/payments/verify-session?session_id=` (auth): confirms the caller's own paid Checkout Session after the redirect back from Stripe and activates it
+- `POST /api/payments/reconcile` (auth): applies any live Stripe subscription found for the caller's customer; never downgrades
+- `POST /api/payments/webhook` (Stripe signature over the raw body; deliveries are idempotent by event id)
 
 ## Blog (`/api/blog`)
 
