@@ -6,6 +6,10 @@ sidebar_position: 2
 
 Detailed guide for addressing security vulnerabilities in TrickBook.
 
+:::info[Status, 2026-10-06]
+Several sections below describe fixes that are already in production (environment-based secrets, token expiry, rate limiting, CORS, the pooled database connection, regex escaping). Treat them as history. The current open list lives in [Progress: September 24 to October 6](/docs/roadmap/progress-2026-10).
+:::
+
 ## Critical: Credential Rotation
 
 ### 1. MongoDB Atlas Password

@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Priority Roadmap
 
-Status: **Rewritten 2026-07-09** to align with what's actually built (Kaori 3D companion shipped) and the current product vision: launch the companions behind a paywall, then iterate — more tricks, more companions, better UX everywhere.
+Status: **Rewritten 2026-07-09**; row statuses refreshed 2026-10-06 against the code, see [Progress: September 24 to October 6](/docs/roadmap/progress-2026-10). Original framing: launch the companions behind a paywall, then iterate: more tricks, more companions, better UX everywhere.
 
 ## The vision in one paragraph
 
@@ -18,11 +18,11 @@ The feature is merged and prod-deployed; nothing installable contains it yet. Fu
 
 | # | Task | Repo | Effort | Status |
 |---|------|------|--------|--------|
-| 1 | **Secure the voice WebSocket** (JWT on upgrade, session caps, text-length cap) — live exposure TODAY | Backend | 1–2 days | Pending |
-| 2 | New EAS dev-client build + physical-device validation (MToon, voice, choreography) | Mobile | 1 day | Pending |
-| 3 | v3.2.0 TestFlight + Play internal builds (version bump, store pipeline dusted off) | Mobile | 1 day | Pending |
-| 4 | Monitoring: Sentry both services, kith-voice in ecosystem.config, ElevenLabs credit alarm, uptime checks | Backend | 1–3 days | Pending |
-| 5 | Release notes `docs/releases/v3.2.0.md` when the build ships | Docs | 0.5 day | Pending |
+| 1 | **Secure the voice WebSocket** (JWT on upgrade, session caps, text-length cap) | Backend | 1–2 days | Partial: session, per-IP and message caps shipped 2026-09-30; JWT on upgrade pending |
+| 2 | New EAS dev-client build + physical-device validation (MToon, voice, choreography) | Mobile | 1 day | Done (v3.2.0, v3.3.0) |
+| 3 | v3.2.0 TestFlight + Play internal builds (version bump, store pipeline dusted off) | Mobile | 1 day | Done: 3.3.0 live 2026-09-21 |
+| 4 | Monitoring: Sentry both services, kith-voice in ecosystem.config, ElevenLabs credit alarm, uptime checks | Backend | 1–3 days | Partial: `/health` shipped 2026-09-25; Sentry, spend alarm, uptime checks pending |
+| 5 | Release notes `docs/releases/v3.2.0.md` when the build ships | Docs | 0.5 day | Done |
 
 ### P1 — Monetization foundation (before public launch)
 
@@ -31,11 +31,11 @@ Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 | # | Task | Repo | Effort | Status |
 |---|------|------|--------|--------|
 | 1 | COGS levers: Flash-class TTS on stage + OpenRouter prompt caching | Backend | 0.5 day | Pending |
-| 2 | Token metering: `user.wallet.voiceTokens`, `usage_events`, `requireVoiceTokens` middleware, lazy daily grant | Backend | 3–5 days | Pending |
+| 2 | Token metering: `user.wallet.voiceTokens`, `usage_events`, `requireVoiceTokens` middleware, lazy daily grant | Backend | 3–5 days | Partial: text and voice metering with free/Plus tiers shipped 2026-09-30 (`kaoriUsage`); wallet and purchases pending |
 | 3 | Free-sample gating: Kaori-only for free tier, locked companion states + upsell UI | Backend + Mobile + Web | 3–5 days | Pending |
-| 4 | Web purchases: extend Stripe `payments.js` with tier + token-pack prices, site paywall/wallet UI | Backend + Web | 3–5 days | Pending |
+| 4 | Web purchases: extend Stripe `payments.js` with tier + token-pack prices, site paywall/wallet UI | Backend + Web | 3–5 days | Partial: Plus checkout activates since 2026-10-06 (webhook fix, verify-session, reconcile); tiers and token packs pending |
 | 5 | Mobile IAP via RevenueCat (fold into the companion EAS build) | Mobile + Backend | 5–10 days | Pending |
-| 6 | Basic rate caps on bot-chat (interim until metering lands) | Backend | 1 day | Pending |
+| 6 | Basic rate caps on bot-chat (interim until metering lands) | Backend | 1 day | Done 2026-09-30 |
 
 ### P2 — Companion iteration + the skate companion
 
@@ -60,7 +60,7 @@ Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 | 4 | Surf companion (Rico) — after skate + snow are strong | All | Later | Backlog |
 | 5 | Engineering-standards carryover: tests on critical paths, Zod API schemas, structured logging, API versioning | All | Ongoing | Partial |
 
-**Engineering-standards status (July 2026):** Biome + Husky + CI ✅ (mobile, backend, docs) · Node 20 on prod ✅ · Google Play closed alpha ✅ · Push notifications ✅ (v3.1.0) · rate limiting ⚠️ partial (auth/registration only) · Sentry, tests, health endpoint, graceful shutdown still pending — folded into P0#4 and P3#5 above.
+**Engineering-standards status (October 2026):** Biome + Husky + CI ✅ (all four repos) · Node 20 on prod ✅ · Google Play closed alpha ✅ · Push notifications ✅ (v3.1.0) · health endpoint ✅ (2026-09-25) · unit tests ✅ in every repo (backend node:test, web and mobile Jest) · schema validators ✅ (warn mode) · rate limiting ⚠️ partial (auth, registration, bot-chat, MCP) · Sentry and graceful-shutdown verification still pending, folded into P0#4 above.
 
 ---
 
@@ -71,7 +71,7 @@ Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 - [x] Kaori 3D stage + live voice + FS360 demos (merged PR #4)
 - [x] Backend persona / unified memory / voice pipeline in prod (2fa8388)
 - [ ] Secure voice endpoint + monitoring
-- [ ] v3.2.0 TestFlight + Play internal
+- [x] v3.2.0 TestFlight + Play internal (3.3.0 live 2026-09-21)
 - [ ] Token metering + free-sample paywall
 - [ ] Web purchases live; mobile IAP submitted
 - [ ] Public launch with paywall from day one
