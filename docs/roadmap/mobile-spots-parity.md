@@ -10,6 +10,8 @@ The website's Spots experience and backend capabilities are ahead of mobile. Thi
 
 Web includes richer discovery, filtering, map data, spot details, resort information, lodging, photos, videos, reviews, saved spots, lists, and enrichment. Mobile documentation and implementation evolved separately, creating uncertainty about consistent fields and actions.
 
+The current mobile Spots map is also harder to use than it should be. Improving map usability on a phone is a product requirement, not just a web/mobile parity task: users must be able to discover, inspect, and act on spots without fighting overlapping controls, cramped spot previews, or disruptive map movement.
+
 Events increases the importance of venue behavior because event records link to Spots. Mobile needs a coherent Spot detail and navigation experience before native Events is complete.
 
 ## Required Audit
@@ -38,6 +40,16 @@ Build a matrix across backend, web, iOS, and Android for:
 - Correct location permissions and privacy behavior
 - Event/Spot deep links
 - Regression coverage for critical flows
+
+## Mobile Map Usability Requirements
+
+- Keep the map as the primary surface, with search, filters, recenter, and map/list switching reachable one-handed and clear of the platform safe areas.
+- Make pins easy to select with touch-sized hit targets, visible selected states, sensible clustering, and predictable zoom behavior.
+- Show a compact spot preview after pin selection without obscuring most of the map; let users expand it into full spot details.
+- Preserve the user's viewport, selected spot, and active filters when moving between the map, list, and spot details.
+- Avoid automatic recentering after the user pans or zooms; provide an explicit way to search the visible area.
+- Handle location permission denial, loading, no-results, and network failures without blocking manual map browsing.
+- Validate the flow on representative small and large iOS and Android devices, including one-handed use and screen-reader labels.
 
 ## Suggested Delivery
 
