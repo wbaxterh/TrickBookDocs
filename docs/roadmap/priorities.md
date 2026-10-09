@@ -54,7 +54,7 @@ Full model: [Monetization: Paywall & Tokens](/docs/roadmap/monetization).
 
 | # | Task | Repo | Effort | Status |
 |---|------|------|--------|--------|
-| 1 | **Spots UX refactor** — browsing/filtering/detail flows re-designed to flagship quality; the map overlay work was the start | Mobile + Web | 1–2 weeks | Pending |
+| 1 | **Spots UX refactor** — make the mobile map easier to use, then redesign browsing/filtering/detail flows to flagship quality; the map overlay work was the start | Mobile + Web | 1–2 weeks | Pending |
 | 2 | **Full-app UX audit** (web + mobile): intuitiveness/value pass on every flow, informed by analytics | All | 1 week audit + fixes | Pending |
 | 3 | Usage-analytics instrumentation app-wide (PostHog exists on web; add mobile SDK + event taxonomy) | Mobile + Web | 3–5 days | Pending |
 | 4 | Surf companion (Rico) — after skate + snow are strong | All | Later | Backlog |
