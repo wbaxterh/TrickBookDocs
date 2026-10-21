@@ -5,7 +5,8 @@ description: Product, platform, streaming, monetization, licensing, and launch p
 
 # TV app expansion roadmap
 
-Status: **Strategy approved for validation; implementation not started**  
+Status: **Strategy approved for validation; implementation not started**
+
 Last researched: **October 21, 2026**
 
 :::caution[Not legal advice]
@@ -555,4 +556,3 @@ Do not start a new platform merely to collect a store badge. Advance when:
 6. Prototype Google TV remote navigation and playback on one low-cost device and one current 4K device.
 7. Decide the free launch catalog and which, if any, titles can legally participate in Plus.
 8. Re-check each store's billing, authentication, privacy, and certification terms immediately before implementation and submission.
-

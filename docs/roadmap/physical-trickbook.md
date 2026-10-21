@@ -5,7 +5,8 @@ description: Product roadmap for a printed trick progression journal connected t
 
 # Physical TrickBook
 
-Status: **Product concept; validation and prototype not started**  
+Status: **Product concept; validation and prototype not started**
+
 Last updated: **October 21, 2026**
 
 ## Product vision
@@ -463,4 +464,3 @@ These decisions should be settled through prototype use, not taste alone.
 5. Build permanent `/go/:code` redirects before printing any QR codes.
 6. Price two prototype formats and produce a 20–30 page test workbook.
 7. Recruit a four-week pilot cohort and measure actual repeat use.
-
