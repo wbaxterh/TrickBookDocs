@@ -197,6 +197,8 @@ const sidebars: SidebarsConfig = {
           label: 'Chrome Extension Integration (Deprecated)',
         },
         'roadmap/mobile-app-rebuild',
+        'roadmap/tv-app-expansion',
+        'roadmap/physical-trickbook',
         'roadmap/mobile-design-prompt',
         'roadmap/ai-companion-tools',
         'roadmap/mobile-spots-parity',
