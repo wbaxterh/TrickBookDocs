@@ -53,6 +53,7 @@ TrickBook is a platform for skateboarders and action sports enthusiasts to track
 - [Mobile App](/docs/mobile/overview) - React Native app structure
 - [Features](/docs/features/overview) - Feature documentation
 - [Engineering Standards](/docs/engineering/overview) - Code quality, testing, workflow
+- [Audits](/docs/audits) - Dated UX and engineering findings, evidence, and remediation tracking
 
 ### For Deployment
 

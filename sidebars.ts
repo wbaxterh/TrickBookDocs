@@ -161,6 +161,12 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Audits',
+      link: { type: 'doc', id: 'audits/index' },
+      items: ['audits/website-responsive-ux-2026-11-04'],
+    },
+    {
+      type: 'category',
       label: 'User Feedback',
       items: ['feedback/user-feedback-log'],
     },
