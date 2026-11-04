@@ -7,12 +7,14 @@ title: Spots Map
 
 The interactive map that lets riders **explore, add, tag, and save** action-sports spots — the primary discovery surface of the [Spots](/docs/features/spots) feature.
 
-Status: **✅ Live** · Last updated: 2026-07-11
+Status: **✅ Live** · Performance rework: **📋 Planned** · Last updated: 2026-11-04
 
 This page is the source of truth for the Spots **Map** specifically — the map UI on both mobile and web, the flows that hang off it, the deliberate UX/architecture decisions behind the mobile map (which is unusual for a good reason), the backend that powers it, and the QA plan that keeps it from crashing. For the broader Spots feature (schema, list/detail pages, ratings, resort UI, Chrome Extension), see [Spots](/docs/features/spots).
 
 :::tip[Related surfaces]
 - [Spots](/docs/features/spots) — parent feature: browse/list, spot detail, ratings, resort info, Chrome Extension bulk import.
+- [Spots Map Performance Rework](/docs/roadmap/spots-map-performance) — measured plan to replace the web's global downloads with viewport loading and low-zoom aggregation.
+- [Spots Rework — Execution Plan](/docs/roadmap/spots-rework-execution) — ticket-level work breakdown (phases, files, test gates) for the rework.
 - [Media](/docs/features/media) — the feed/upload surface where a spot gets tagged onto a video or post.
 - [AI Companions](/docs/features/ai-companions) — Kaori can search spots and submit spot drafts (admin-reviewed) via chat tools.
 - [Kaori AI Architecture](/docs/architecture/kaori) — background on the React Native New Architecture / Reanimated 4 constraints that also shape this map.
@@ -436,7 +438,7 @@ The crash does **not** reproduce on the iOS Simulator or with sparse data. Every
 | Offline support | 📋 Planned | Cache viewport pins / user Collections and tiles for offline browse; sync on reconnect |
 | Web clickable spot chip | 🚧 Gap | Feed shows tagged location as plain text, not a link to the spot page (trick tags are clickable — spot chip should match) |
 | Vestigial local-only "heart" favorite | 🚧 Cleanup | The mobile detail page has a leftover local-only heart favorite superseded by one-tap save; remove to avoid confusion |
-| `map-pins` uncapped payload | 🚧 Risk | No server-side limit/clustering on `map-pins`; a very large/dense viewport can return a large payload. Consider a server cap or server-side clustering |
+| `map-pins` uncapped payload | 📋 Planned | The [Spots Map Performance Rework](/docs/roadmap/spots-map-performance) adds viewport-first web loading, result ceilings, low-zoom clustering, cancellation, and spatial caching |
 | `POST /spots/bulk` has no admin gate / no owner/status | 🚧 Risk | Bulk-inserted spots set no `userId`/`approvalStatus`, so they're unowned and invisible on approved-only endpoints unless the payload pre-sets `approvalStatus: 'approved'` |
 | `feed.js` stores `userId` as string vs `spots.js` ObjectId | 🚧 Inconsistency | Cross-collection type mismatch in ownership comparisons; harmonize to avoid subtle auth bugs |
 

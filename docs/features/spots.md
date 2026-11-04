@@ -365,6 +365,7 @@ Spot images stored in AWS S3:
 
 ## Related Documentation
 
+- [Spots Map Performance Rework](/docs/roadmap/spots-map-performance) - Phased plan for viewport loading, clustering, caching, and removal of global web payloads
 - [Chrome Extension](/docs/chrome-extension/overview) - Map scraper for bulk import
 - [API Endpoints](/docs/backend/api-endpoints) - Full API reference
 - [Database Schema](/docs/backend/database) - MongoDB collections

@@ -202,6 +202,8 @@ const sidebars: SidebarsConfig = {
         'roadmap/mobile-design-prompt',
         'roadmap/ai-companion-tools',
         'roadmap/mobile-spots-parity',
+        'roadmap/spots-map-performance',
+        'roadmap/spots-rework-execution',
         'roadmap/trickipedia-network-first-pass',
         'roadmap/rider-encyclopedia-pilot',
       ],
