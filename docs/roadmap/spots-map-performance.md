@@ -5,7 +5,7 @@ sidebar_position: 12
 
 # Spots Map Performance Rework
 
-Status: **Planned** Â· Owner: Web + Backend Â· Research baseline: 2026-10-30
+Status: **Planned** | Owner: Web + Backend | Research baseline: 2026-10-30
 
 ## Outcome
 
@@ -21,9 +21,9 @@ A production audit found that Amplify and the Next.js shell were not the main bo
 - `GET /api/spots?limit=5000` returned about **13.7 MB** and took about **4.5 seconds** end to end.
 - `GET /api/spots/map-pins` returned about **5.2 MB** and took about **3.5 seconds** end to end.
 - The default web map initiated both requests, sending nearly **19 MB of overlapping data** before marker creation.
-- Cached `304` responses still took about **1.3â€“1.4 seconds**, indicating expensive backend work occurred before cache validation.
+- Cached `304` responses still took about **1.3-1.4 seconds**, indicating expensive backend work occurred before cache validation.
 
-The immediate issue is therefore global, duplicate data loadingâ€”not the hosting platform.
+The immediate issue is therefore global, duplicate data loading - not the hosting platform.
 
 ## Research conclusions
 
@@ -96,7 +96,7 @@ At world/country zoom, return server-generated clusters:
 ### Web behavior
 
 - Fetch after Google Maps `idle`, using current bounds and zoom.
-- Debounce movement by **200â€“300 ms**.
+- Debounce movement by **200-300 ms**.
 - Abort the previous request with `AbortController` and reject stale responses by sequence number.
 - Keep current markers visible during refresh and show a subtle loading state.
 - Send filters to the API instead of filtering a global catalog in the browser.
@@ -108,7 +108,7 @@ Mobile already uses viewport requests. Its marker-layer crash safeguards and phy
 
 ## Delivery plan
 
-### Phase 0 â€” Baseline and rollout safety
+### Phase 0 - Baseline and rollout safety
 
 - Add request timing, payload size, result count, zoom, cache status, and client map-ready telemetry.
 - Record p50/p95 latency, documents examined/returned, and current error rate.
@@ -117,7 +117,7 @@ Mobile already uses viewport requests. Its marker-layer crash safeguards and phy
 
 **Exit:** Baseline dashboard exists and rollback can occur without redeployment.
 
-### Phase 1 â€” Remove duplicate global loading
+### Phase 1 - Remove duplicate global loading
 
 - Do not call the 5,000-record list request while map view is active.
 - Lazy-load list data after the rider switches to list view.
@@ -126,7 +126,7 @@ Mobile already uses viewport requests. Its marker-layer crash safeguards and phy
 
 **Exit:** Default `/spots` makes no `/api/spots?limit=5000` request.
 
-### Phase 2 â€” Viewport-first web map
+### Phase 2 - Viewport-first web map
 
 - Extend and version the `map-pins` contract for bounds, zoom, and filters.
 - Enforce minimal projection, validation, and result ceilings.
@@ -135,7 +135,7 @@ Mobile already uses viewport requests. Its marker-layer crash safeguards and phy
 
 **Exit:** Normal viewport responses are under **200 KB compressed** and stale markers cannot win a race.
 
-### Phase 3 â€” Low-zoom aggregation and caching
+### Phase 3 - Low-zoom aggregation and caching
 
 - Return server-side clusters below the chosen zoom threshold.
 - Cache normalized spatial responses.
@@ -144,7 +144,7 @@ Mobile already uses viewport requests. Its marker-layer crash safeguards and phy
 
 **Exit:** World/country responses remain under **300 KB compressed** as the catalog grows.
 
-### Phase 4 â€” Scale review, only if required
+### Phase 4 - Scale review, only if required
 
 Evaluate H3 aggregation or vector tiles when measured p95 latency, payload size, catalog growth, or traffic exceeds the viewport API targets. This phase is explicitly not required for the initial rework.
 
@@ -181,7 +181,7 @@ Ship the web path behind a temporary feature flag, then ramp while comparing map
 
 ## Related documentation
 
-- [Spots Rework â€” Execution Plan](/docs/roadmap/spots-rework-execution) â€” ticket-level work breakdown for this plan
+- [Spots Rework - Execution Plan](/docs/roadmap/spots-rework-execution) - ticket-level work breakdown for this plan
 - [Spots Map](/docs/features/spots-map)
 - [Spots](/docs/features/spots)
 - [Backend API Endpoints](/docs/backend/api-endpoints)
