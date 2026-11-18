@@ -1,5 +1,5 @@
 ---
-title: TrickBook — Skateboarding: Level 1
+title: "TrickBook — Skateboarding: Level 1"
 sidebar_label: Book Overview
 description: Product concept and review hub for the first TrickBook skateboarding ebook.
 ---
