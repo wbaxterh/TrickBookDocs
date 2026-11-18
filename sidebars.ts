@@ -179,7 +179,12 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: 'Books',
       link: { type: 'doc', id: 'books/skateboarding-level-1/index' },
-      items: ['books/skateboarding-level-1/outline', 'books/skateboarding-level-1/style-guide'],
+      items: [
+        'books/skateboarding-level-1/outline',
+        'books/skateboarding-level-1/style-guide',
+        'books/skateboarding-level-1/publishing-workflow',
+        'books/skateboarding-level-1/chapter-01-history',
+      ],
     },
     {
       type: 'category',
