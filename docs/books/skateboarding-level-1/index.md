@@ -51,8 +51,8 @@ The book teaches someone how to join skateboarding, not merely how to perform tr
 
 ## Review documents
 
-- [Proposed book outline](./outline)
-- [Voice and visual style guide](./style-guide)
+- [Proposed book outline](/docs/books/skateboarding-level-1/outline)
+- [Voice and visual style guide](/docs/books/skateboarding-level-1/style-guide)
 
 ## Series direction
 
