@@ -53,6 +53,16 @@ The book teaches someone how to join skateboarding, not merely how to perform tr
 
 - [Proposed book outline](/docs/books/skateboarding-level-1/outline)
 - [Voice and visual style guide](/docs/books/skateboarding-level-1/style-guide)
+- [Publishing workflow](/docs/books/skateboarding-level-1/publishing-workflow)
+- [Chapter 1 manuscript and art direction](/docs/books/skateboarding-level-1/chapter-01-history)
+
+## Visual prototype
+
+[![TrickBook Skateboarding Level 1 visual prototype cover](/downloads/books/skateboarding-level-1/visual-prototype-cover-v1.png)](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)
+
+**[Download the nine-page branded visual prototype PDF](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)** *(v1, approximately 27 MB)*
+
+The prototype tests the retail cover, scrapbook and notebook graphic system, Chapter 1 sample spreads, Mack and Kaori callouts, color palette, typography, and generated-art direction. The artwork is concept material; trick mechanics, historical details, equipment geometry, lettering, and character consistency still require production review.
 
 ## Series direction
 

@@ -9,6 +9,12 @@ description: Review manuscript and illustration batch for the opening history ch
 This is manuscript copy, not final page layout. Dates, historical claims, rider selection, captions, and artwork require editorial approval before publication.
 :::
 
+## Download the visual prototype
+
+**[View or download the nine-page Chapter 1 visual prototype PDF](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)** *(v1, approximately 27 MB)*
+
+The prototype demonstrates the proposed cover, scrapbook and notebook visual system, sample history spreads, character callouts, and generated-art reference board.
+
 ## Nobody planned all of this
 
 Skateboarding did not begin with a rulebook, a league, or one person announcing that they had invented a new sport. Its early history is messier than that.
