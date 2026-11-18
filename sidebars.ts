@@ -177,6 +177,15 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: 'Books',
+      link: { type: 'doc', id: 'books/skateboarding-level-1/index' },
+      items: [
+        'books/skateboarding-level-1/outline',
+        'books/skateboarding-level-1/style-guide',
+      ],
+    },
+    {
+      type: 'category',
       label: 'Roadmap',
       items: [
         'roadmap/priorities',
