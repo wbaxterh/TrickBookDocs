@@ -146,14 +146,46 @@ Avoid announcing obvious structure, such as “In this chapter, we will explore.
 
 Use an original minimalist comic system with stick-like figures, simple geometry, handwritten callouts, clear motion arrows, and occasional exaggerated outcomes. The goal is quick comprehension and a handmade skate-zine personality—not imitation of any specific cartoonist.
 
+### Color hierarchy
+
+- **Primary:** Fluorescent yellow. It should own covers, chapter markers, major callouts, navigation cues, and the most recognizable brand moments.
+- **Foundation:** Warm paper and dense black ink.
+- **Secondary:** Electric blue for diagrams, movement arrows, links, and controlled contrast.
+- **Restricted accent:** Orange may appear sparingly, but it must never compete with yellow or become the dominant chapter color.
+
+Every spread should remain readable without the accent colors. Color supports hierarchy; it does not replace it.
+
 ### Visual priorities
 
 - Movement must be readable before it is stylish.
 - Foot placement and board orientation must remain technically accurate.
+- Every skateboard must have exactly two trucks and four wheels in physically plausible positions. Perspective may hide a wheel, but the construction must still be internally correct; hero and instructional boards should show all four wheels whenever practical.
 - Use consistent visual symbols for stance, direction, weight, pop, rotation, risk, and common mistakes.
 - Maintain enough negative space for small-screen ebook reading.
 - Design diagrams so they can survive grayscale printing when practical.
 - Use color as information, not decoration alone.
+
+### Layout and spacing system
+
+- Establish trim, bleed, safe area, baseline grid, and minimum gutter before composing pages.
+- Use one documented spacing scale for headings, paragraphs, captions, callouts, and image edges.
+- Keep headings with the first paragraph that follows them; prevent widows, orphans, and isolated subsection headings.
+- Verify that no critical faces, boards, labels, or motion paths enter the gutter or trim-risk area.
+- Maintain consistent paragraph measure and line spacing across the chapter.
+- Check every page at full size, thumbnail size, and as a facing-page spread.
+- Treat intentionally rough collage edges as artwork; the underlying typography and alignment must remain precise.
+
+### Generated-art acceptance gate
+
+No generated image enters a review PDF without a visual inspection at full resolution. Confirm:
+
+1. **Board construction:** two trucks, four wheels, correct mounting, plausible deck and hardware.
+2. **Body mechanics:** correct anatomy, stance, foot placement, board orientation, and direction of travel.
+3. **Historical accuracy:** era-appropriate equipment, terrain, and clothing silhouettes.
+4. **Continuity:** recurring characters, clothing, board setup, palette, and line treatment remain consistent.
+5. **Composition:** sufficient trim-safe space, readable focal point, and no accidental gutter collision.
+
+If an image fails any check, regenerate or correct it before layout. A strong overall mood does not excuse a wrong skateboard.
 
 ### Suggested character treatment
 
@@ -208,3 +240,5 @@ Before approving a section, ask:
 - Could the illustration teach the point faster than another paragraph?
 - Are historical, medical, legal, and product claims sourced appropriately?
 - Have we left room for different bodies, scenes, terrain, and learning paths?
+- Have all visible skateboards passed the two-truck/four-wheel construction check?
+- Have margins, gutters, heading spacing, widows, orphans, and page breaks been inspected in the rendered PDF?

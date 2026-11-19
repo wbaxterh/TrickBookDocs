@@ -58,11 +58,13 @@ The book teaches someone how to join skateboarding, not merely how to perform tr
 
 ## Visual prototype
 
-[![TrickBook Skateboarding Level 1 visual prototype cover](/downloads/books/skateboarding-level-1/visual-prototype-cover-v1.png)](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)
+[![Yellow-led TrickBook Skateboarding Level 1 Chapter 1 cover](/downloads/books/skateboarding-level-1/chapter-01-cover-v2.png)](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Chapter-01-v2.pdf)
 
-**[Download the nine-page branded visual prototype PDF](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)** *(v1, approximately 27 MB)*
+**[Download the complete 15-page Chapter 1 layout](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Chapter-01-v2.pdf)** *(v2, approximately 13 MB)*
 
-The prototype tests the retail cover, scrapbook and notebook graphic system, Chapter 1 sample spreads, Mack and Kaori callouts, color palette, typography, and generated-art direction. The artwork is concept material; trick mechanics, historical details, equipment geometry, lettering, and character consistency still require production review.
+The v2 review edition uses fluorescent yellow as the primary identity color, includes the complete Chapter 1 manuscript, corrects the cover skateboard to two trucks and four clearly visible wheels, and applies a consistent trim, margin, spacing, hierarchy, and page-break system.
+
+The [original nine-page visual prototype](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf) remains archived for comparison.
 
 ## Series direction
 

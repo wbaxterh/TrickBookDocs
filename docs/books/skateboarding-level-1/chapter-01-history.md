@@ -9,11 +9,15 @@ description: Review manuscript and illustration batch for the opening history ch
 This is manuscript copy, not final page layout. Dates, historical claims, rider selection, captions, and artwork require editorial approval before publication.
 :::
 
-## Download the visual prototype
+## Download Chapter 1
 
-**[View or download the nine-page Chapter 1 visual prototype PDF](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf)** *(v1, approximately 27 MB)*
+**[View or download the complete 15-page Chapter 1 layout](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Chapter-01-v2.pdf)** *(v2, approximately 13 MB)*
 
-The prototype demonstrates the proposed cover, scrapbook and notebook visual system, sample history spreads, character callouts, and generated-art reference board.
+[![Yellow-led Chapter 1 cover with a four-wheel skateboard](/downloads/books/skateboarding-level-1/chapter-01-cover-v2.png)](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Chapter-01-v2.pdf)
+
+This edition contains the complete Chapter 1 manuscript in the yellow-led scrapbook and notebook system. It replaces the sample-only v1 prototype for editorial review. Generated artwork remains concept material until equipment, mechanics, historical details, and character consistency receive final production sign-off.
+
+The [original nine-page visual prototype](/downloads/books/skateboarding-level-1/TrickBook-Skateboarding-Level-1-Visual-Prototype-v1.pdf) remains available for comparison.
 
 ## Nobody planned all of this
 
